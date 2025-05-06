@@ -1,4 +1,4 @@
-# TreasuryToken Platform - Progress Report
+# Quantera Platform - Progress Report
 
 ## Completed Tasks
 

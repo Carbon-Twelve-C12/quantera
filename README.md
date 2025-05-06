@@ -1,21 +1,21 @@
-# TreasuryToken Platform
+# Quantera Platform
 
 ## Overview
-TreasuryToken is an Ethereum-based platform for tokenizing U.S. Treasury securities. It enables fractional ownership, transparent trading, and automated yield distribution through blockchain technology with enhanced capabilities from Ethereum's Pectra upgrade.
+Quantera is a blockchain-based platform for tokenizing financial assets, starting with U.S. Treasury securities. It enables fractional ownership, transparent trading, and automated yield distribution through blockchain technology with enhanced capabilities from Ethereum's Pectra upgrade. The platform is designed to expand to support various financial assets beyond treasuries.
 
 ## Features
-- Tokenization of Treasury bills, notes, and bonds
+- Tokenization of financial assets (currently U.S. Treasury bills, notes, and bonds)
 - Smart account integration (EIP-7702)
 - Layer 2 integration with blob optimization (EIP-7691)
 - Compliance framework for regulatory adherence
-- Secondary market for trading tokenized treasuries
+- Secondary market for trading tokenized assets
 - Programmatic yield distribution
 - Delegation system for portfolio management
 - Institutional validator support
 
 ## Project Structure
 ```
-TreasuryToken/
+Quantera/
 ├── contracts/             # Smart contracts
 │   ├── accounts/          # Smart account templates
 │   ├── l2/                # Layer 2 bridge contracts
@@ -33,9 +33,9 @@ TreasuryToken/
 - **Frontend Components**: Basic implementation of TreasuryTokenList and TreasuryTokenDetail components
 
 ## Recent Implementations
-- L2Bridge contract with blob data optimization (EIP-7691) for efficient cross-layer treasury trading
-- SmartAccountTemplates for programmable accounts with various treasury management strategies
-- TreasuryTokenClient for backend interaction with tokenized treasury contracts
+- L2Bridge contract with blob data optimization (EIP-7691) for efficient cross-layer asset trading
+- SmartAccountTemplates for programmable accounts with various asset management strategies
+- TreasuryTokenClient for backend interaction with tokenized asset contracts
 
 ## Development Setup
 
@@ -79,16 +79,16 @@ TreasuryToken/
    ```
 
 ## Smart Contract Architecture
-- **TreasuryRegistry**: Central registry for all tokenized treasury securities
-- **TreasuryToken**: ERC-1400 compatible token representing treasury ownership
+- **TreasuryRegistry**: Central registry for all tokenized financial assets
+- **TreasuryToken**: ERC-1400 compatible token representing asset ownership
 - **ComplianceModule**: Ensures regulatory compliance for transfers
 - **TradingModule**: Facilitates buying and selling of tokens
 - **L2Bridge**: Enables Layer 2 integration for efficient trading with blob optimization
-- **SmartAccountTemplates**: Ready-to-use programmable account logic for treasury management
+- **SmartAccountTemplates**: Ready-to-use programmable account logic for asset management
 
 ## Backend Services
 - **Alloy Integration**: Interfaces with Ethereum blockchain using Alloy framework
-- **Treasury Management**: Handles lifecycle of tokenized treasuries
+- **Treasury Management**: Handles lifecycle of tokenized assets
 - **Trading Service**: Manages order book and trade execution
 - **User Management**: Handles registration, verification, and portfolios
 - **API Layer**: RESTful API for frontend and third-party integration

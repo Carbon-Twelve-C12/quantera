@@ -1,12 +1,12 @@
-# Technical Specification for TreasuryToken Platform 
+# Technical Specification for Quantera Platform 
 
 ## 1. Introduction
 
 ### 1.1 Purpose
-This technical specification details the architecture, components, and implementation of the TreasuryToken platform, an Ethereum-based system for tokenizing U.S. Treasury securities. This document serves as the definitive technical reference for developers building the platform, with specific attention to leveraging the Pectra upgrade capabilities.
+This technical specification details the architecture, components, and implementation of the Quantera platform, a blockchain-based system for tokenizing financial assets, starting with U.S. Treasury securities. This document serves as the definitive technical reference for developers building the platform, with specific attention to leveraging the Pectra upgrade capabilities.
 
 ### 1.2 Scope
-This specification covers the MVP version of the platform, focusing exclusively on the tokenization of treasury securities (bills, notes, and bonds). It details all technical aspects including smart contracts, backend services, frontend components, and integration points, with a strategic focus on Ethereum's Pectra upgrade advantages.
+This specification covers the MVP version of the platform, focusing initially on the tokenization of treasury securities (bills, notes, and bonds) with a roadmap to expand to other financial assets. It details all technical aspects including smart contracts, backend services, frontend components, and integration points, with a strategic focus on Ethereum's Pectra upgrade advantages.
 
 ### 1.3 Definitions
 - **Treasury Security**: Government debt instrument issued by the U.S. Department of the Treasury
@@ -22,7 +22,7 @@ This specification covers the MVP version of the platform, focusing exclusively 
 ## 2. System Architecture
 
 ### 2.1 High-Level Architecture
-The TreasuryToken platform consists of four primary components:
+The Quantera platform consists of four primary components:
 1. **Smart Contracts**: Ethereum-based contracts for treasury tokens, registry, and compliance
 2. **Backend Services**: Rust-based services using Alloy framework for contract interaction
 3. **API Layer**: RESTful API for frontend and third-party integration

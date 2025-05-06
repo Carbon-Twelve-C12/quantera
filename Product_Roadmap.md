@@ -1,9 +1,9 @@
-# Product Roadmap for TreasuryToken Platform (Pectra-Enhanced)
+# Product Roadmap for Quantera Platform
 
 ## 1. Vision and Strategy
 
 ### 1.1 Product Vision
-TreasuryToken aims to democratize access to U.S. Treasury securities by creating a decentralized platform that enables fractional ownership, transparent trading, and automated yield distribution through blockchain technology. Leveraging Ethereum's Pectra upgrade, we will transform traditionally institutional investment products into accessible, programmable digital assets for a broader range of investors with unprecedented efficiency and user experience.
+Quantera aims to democratize access to financial assets by creating a decentralized platform that enables fractional ownership, transparent trading, and automated yield distribution through blockchain technology. Starting with U.S. Treasury securities and leveraging Ethereum's Pectra upgrade, we will transform traditionally institutional investment products into accessible, programmable digital assets for a broader range of investors with unprecedented efficiency and user experience.
 
 ### 1.2 Strategic Objectives
 1. **Create Market Access**: Enable individual investors to access treasury securities with lower minimum investments
