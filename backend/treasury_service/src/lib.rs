@@ -5,6 +5,10 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use thiserror::Error;
 
+// Create and export clients module
+mod clients;
+pub use clients::*;
+
 /// Custom error type for Treasury service operations
 #[derive(Debug, Error)]
 pub enum Error {

@@ -21,12 +21,15 @@
 - [x] Implemented TreasuryToken.sol contract with ERC-1400 compatibility and Pectra features (EIP-7702, EIP-2537)
 - [x] Implemented ComplianceModule.sol contract with verification statuses and regulatory rules
 - [x] Implemented TradingModule.sol contract with order matching and L2 bridging capabilities
+- [x] Implemented L2Bridge.sol contract with blob data optimization (EIP-7691)
+- [x] Implemented SmartAccountTemplates.sol with templates for yield reinvestment, automated trading, portfolio rebalancing, and conditional transfers
 
 ### Backend Structure
 - [x] Set up Rust workspace structure
 - [x] Created Ethereum client module with Pectra support
 - [x] Implemented TreasuryRegistryClient for contract interaction
 - [x] Implemented TreasuryService for business logic
+- [x] Implemented TreasuryTokenClient for interacting with token contracts
 
 ### Frontend Components
 - [x] Created TreasuryTokenList component for displaying treasury tokens
@@ -38,21 +41,8 @@
 
 ## Next Steps
 
-### Smart Contract Implementation
-1. Implement L2Bridge.sol contract
-   - Implement order bridging to L2
-   - Implement trade settlement from L2
-   - Implement blob data optimization (EIP-7691)
-
-2. Implement SmartAccountTemplates.sol
-   - Implement yield reinvestment template
-   - Implement automated trading template
-   - Implement portfolio rebalancing template
-   - Implement conditional transfer template
-
 ### Backend Implementation
 1. Complete the backend services
-   - Implement TreasuryTokenClient
    - Implement ComplianceClient
    - Implement TradingClient
    - Implement L2Client
@@ -87,6 +77,9 @@
 
 ### Testing
 1. Complete unit testing for all contracts
+   - Test L2Bridge contract
+   - Test SmartAccountTemplates contract
+   - Test interaction between contracts
 2. Implement integration tests for backend services
 3. Implement end-to-end tests for the complete system
 
@@ -98,15 +91,15 @@
 
 ## Current Priorities
 
-1. Complete the L2Bridge contract implementation
-2. Implement remaining backend client classes
+1. Implement ComplianceClient for backend contract interaction
+2. Implement remaining backend client classes (TradingClient, L2Client)
 3. Create API layer for frontend communication
 4. Expand the frontend with additional pages and wallet connectivity
 5. Implement comprehensive test suites
 
 ## Timeline
 
-Based on our progress, we are currently in Week 2 of Phase 1. We've completed most of the core contract implementation and have started on the backend services and frontend components. The next steps should be completed within the next 2-3 weeks to stay on track with the implementation plan.
+Based on our progress, we are currently in Week 3 of Phase 1. We've completed all core contract implementations including the L2Bridge contract with blob data optimization (EIP-7691) and SmartAccountTemplates contract with various templates. We've also implemented key backend components including the TreasuryTokenClient for interacting with token contracts. The next steps should be completed within the next 2 weeks to stay on track with the implementation plan.
 
 ## Challenges and Considerations
 
@@ -115,11 +108,14 @@ Based on our progress, we are currently in Week 2 of Phase 1. We've completed mo
 3. **Compliance**: Regulatory compliance mechanisms need thorough verification
 4. **Security**: All smart contracts must undergo careful security review
 5. **Frontend UX**: The trading interface needs to be intuitive despite complex underlying mechanics
+6. **Smart Account Templates**: Ensuring the templates are secure, efficient, and user-friendly
+7. **Backend Client Interoperability**: Ensuring all backend clients work together seamlessly
 
 ## Next Meeting Agenda
 
-1. Review current contract implementations
-2. Discuss L2 bridging strategy
-3. Review API design for frontend communication
-4. Plan security audit
-5. Update timeline and priorities 
+1. Review current contract implementations including the newly added L2Bridge and SmartAccountTemplates
+2. Review the TreasuryTokenClient implementation and integration
+3. Discuss remaining backend client implementation strategy
+4. Review API design for frontend communication
+5. Plan security audit
+6. Update timeline and priorities 

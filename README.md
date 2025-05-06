@@ -27,6 +27,16 @@ TreasuryToken/
 └── docs/                  # Documentation
 ```
 
+## Development Status
+- **Smart Contracts**: Completed core contracts including TreasuryRegistry, TreasuryToken, ComplianceModule, TradingModule, L2Bridge, and SmartAccountTemplates
+- **Backend Services**: Implemented Ethereum client, TreasuryRegistryClient, TreasuryService and TreasuryTokenClient
+- **Frontend Components**: Basic implementation of TreasuryTokenList and TreasuryTokenDetail components
+
+## Recent Implementations
+- L2Bridge contract with blob data optimization (EIP-7691) for efficient cross-layer treasury trading
+- SmartAccountTemplates for programmable accounts with various treasury management strategies
+- TreasuryTokenClient for backend interaction with tokenized treasury contracts
+
 ## Development Setup
 
 ### Prerequisites
@@ -40,8 +50,8 @@ TreasuryToken/
 ### Getting Started
 1. Clone the repository
    ```
-   git clone [repository-url]
-   cd treasurytoken
+   git clone https://github.com/mjohnson518/vault.git
+   cd vault
    ```
 
 2. Install backend dependencies
@@ -73,8 +83,8 @@ TreasuryToken/
 - **TreasuryToken**: ERC-1400 compatible token representing treasury ownership
 - **ComplianceModule**: Ensures regulatory compliance for transfers
 - **TradingModule**: Facilitates buying and selling of tokens
-- **L2Bridge**: Enables Layer 2 integration for efficient trading
-- **SmartAccountTemplates**: Ready-to-use programmable account logic
+- **L2Bridge**: Enables Layer 2 integration for efficient trading with blob optimization
+- **SmartAccountTemplates**: Ready-to-use programmable account logic for treasury management
 
 ## Backend Services
 - **Alloy Integration**: Interfaces with Ethereum blockchain using Alloy framework
