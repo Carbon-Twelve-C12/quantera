@@ -9,6 +9,48 @@ use thiserror::Error;
 mod clients;
 pub use clients::*;
 
+// Create and export yield scheduler
+mod yield_scheduler;
+pub use yield_scheduler::{
+    YieldSchedulerService,
+    YieldDistributionResult,
+    MaturityResult,
+    TreasurySnapshot,
+};
+
+// Create and export user service
+mod user_service;
+pub use user_service::{
+    UserService,
+    VerificationProvider,
+    MockVerificationProvider,
+    VerificationData,
+    AddressData,
+    IdData,
+    InstitutionalVerificationData,
+    RepresentativeData,
+    UserData,
+    VerificationDetails,
+    InstitutionalDetails,
+    InstitutionalRegistrationResult,
+    PortfolioHolding,
+    UserPortfolio,
+    VerificationStatus,
+    SmartAccountSetupResult,
+};
+
+// Create and export authentication service
+mod auth_service;
+pub use auth_service::{
+    AuthenticationService,
+    AuthMethod,
+    AuthRequest,
+    AuthChallenge,
+    AuthResult,
+    TokenValidationResult,
+    TwoFactorSetupResult,
+};
+
 /// Custom error type for Treasury service operations
 #[derive(Debug, Error)]
 pub enum Error {
@@ -32,6 +74,21 @@ pub enum Error {
     
     #[error("Registry operation failed: {0}")]
     RegistryOperation(String),
+    
+    #[error("Invalid state: {0}")]
+    InvalidState(String),
+    
+    #[error("Invalid parameter: {0}")]
+    InvalidParameter(String),
+    
+    #[error("Unauthorized: {0}")]
+    Unauthorized(String),
+    
+    #[error("Internal error: {0}")]
+    Internal(String),
+    
+    #[error("Feature not implemented: {0}")]
+    Unimplemented(String),
 }
 
 /// Treasury types

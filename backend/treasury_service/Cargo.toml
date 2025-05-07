@@ -2,22 +2,23 @@
 name = "treasury_service"
 version = "0.1.0"
 edition = "2021"
-description = "Treasury management service for TreasuryToken platform"
 
 [dependencies]
 ethereum_client = { path = "../ethereum_client" }
-tokio = { workspace = true }
-serde = { workspace = true }
+alloy-primitives = { workspace = true, features = ["serde"] }
+alloy-sol-types = { workspace = true }
+alloy-contract = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
-anyhow = { workspace = true }
-tracing = { workspace = true }
-dotenv = { workspace = true }
 async-trait = { workspace = true }
-chrono = { workspace = true }
-futures = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }
+chrono = { workspace = true, features = ["serde"] }
+hex = "0.4"
+rand = "0.8"
+jsonwebtoken = "9.1"
 
-# Alloy framework dependencies
-alloy-primitives = { workspace = true }
-alloy-sol-types = { workspace = true }
-alloy-contract = { workspace = true } 
+[dev-dependencies]
+tokio-test = "0.4"
+mockall = "0.12" 

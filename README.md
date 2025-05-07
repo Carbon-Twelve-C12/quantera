@@ -97,7 +97,30 @@ Quantera/
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
-[Contribution Guidelines]
+We welcome contributions to the Quantera Platform! Here's how you can help:
+
+### Reporting Issues
+- Use the GitHub issue tracker to report bugs or suggest enhancements
+- Include detailed steps to reproduce the issue
+- Mention your environment (OS, browser version, etc.)
+
+### Development Process
+1. Fork the repository
+2. Create a new branch for your feature (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Code Guidelines
+- Follow the language-specific conventions listed in our style guides
+- Write tests for new features and ensure existing tests pass
+- Document your code according to language-specific documentation standards
+- Ensure your code passes all CI/CD checks before submitting a PR
+
+### Security
+- If you discover a security vulnerability, please send an email to hello@marcjohnson.xyz
+- Do NOT create public GitHub issues for security vulnerabilities
 
 ## Contact
-[Contact Information]
+For questions, suggestions, or collaboration opportunities, please email:
+hello@marcjohnson.xyz
