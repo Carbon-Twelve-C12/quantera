@@ -19,6 +19,13 @@ hex = "0.4"
 rand = "0.8"
 jsonwebtoken = "9.1"
 
+# API dependencies
+warp = "0.3"
+http = "0.2"
+tower-http = { version = "0.4", features = ["cors", "trace"] }
+uuid = { version = "1.4", features = ["v4", "serde"] }
+futures = { workspace = true }
+
 [dev-dependencies]
 tokio-test = "0.4"
 mockall = "0.12" 

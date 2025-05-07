@@ -51,6 +51,9 @@ pub use auth_service::{
     TwoFactorSetupResult,
 };
 
+// Create and export API module
+pub mod api;
+
 /// Custom error type for Treasury service operations
 #[derive(Debug, Error)]
 pub enum Error {
@@ -254,7 +257,8 @@ impl TreasuryRegistryClient {
     /// Delegate operator permissions
     pub async fn delegate_operator(
         &self,
-        operator: Address,
+        user_address: Address,
+        operator_address: Address,
         approved: bool,
     ) -> Result<(), Error> {
         // Call the contract
@@ -262,7 +266,7 @@ impl TreasuryRegistryClient {
             self.contract_address,
             "delegateOperator(address,bool)",
             vec![
-                operator.into(),
+                operator_address.into(),
                 approved.into(),
             ],
         ).await.map_err(Error::EthereumClient)?;

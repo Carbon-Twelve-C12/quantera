@@ -21,6 +21,8 @@ Quantera/
 │   ├── l2/                # Layer 2 bridge contracts
 │   └── institutional/     # Institutional validator contracts
 ├── backend/               # Rust backend services
+│   ├── ethereum_client/   # Ethereum blockchain client
+│   └── treasury_service/  # Treasury management services and API
 ├── frontend/              # React frontend application
 ├── scripts/               # Development and deployment scripts
 ├── tests/                 # Test suites
@@ -28,14 +30,53 @@ Quantera/
 ```
 
 ## Development Status
-- **Smart Contracts**: Completed core contracts including TreasuryRegistry, TreasuryToken, ComplianceModule, TradingModule, L2Bridge, and SmartAccountTemplates
-- **Backend Services**: Implemented Ethereum client, TreasuryRegistryClient, TreasuryService and TreasuryTokenClient
+### Completed
+- **Smart Contracts**: All core contracts including TreasuryRegistry, TreasuryToken, ComplianceModule, TradingModule, L2Bridge, and SmartAccountTemplates
+- **Backend Services**: 
+  - Ethereum client with Pectra support
+  - Contract client implementations (TreasuryRegistryClient, TreasuryTokenClient, ComplianceClient, TradingClient, L2Client)
+  - Service layer components (YieldSchedulerService, UserService, AuthenticationService)
+  - RESTful API layer with Warp including authentication, treasury management, user management, and trading endpoints
 - **Frontend Components**: Basic implementation of TreasuryTokenList and TreasuryTokenDetail components
 
-## Recent Implementations
-- L2Bridge contract with blob data optimization (EIP-7691) for efficient cross-layer asset trading
-- SmartAccountTemplates for programmable accounts with various asset management strategies
-- TreasuryTokenClient for backend interaction with tokenized asset contracts
+### In Progress
+- Expanding frontend with additional pages and wallet connectivity
+- Implementing comprehensive test suites
+
+### Key Implementations
+- Blockchain Client: Ethereum client with EIP-7702, EIP-7691, and EIP-2537 support
+- YieldSchedulerService: Automated yield distribution and maturity processing for tokenized treasuries
+- UserService: User management, verification, and portfolio tracking
+- AuthenticationService: JWT-based authentication with wallet signatures
+- RESTful API: Comprehensive API endpoints for all platform features
+- L2 Integration: Efficient cross-layer trading with blob data optimization
+
+## API Endpoints
+The platform exposes the following API endpoints:
+
+### Authentication
+- `POST /auth/challenge`: Generate authentication challenge for wallet signature
+- `POST /auth/login`: Login with wallet signature
+- `POST /auth/logout`: Logout and invalidate token
+
+### Treasury Management
+- `GET /treasuries`: List all treasury tokens with filtering options
+- `GET /treasuries/{id}`: Get specific treasury details
+- `POST /treasuries`: Create new treasury token (restricted)
+- `GET /treasuries/{id}/yield`: Get yield information for a treasury
+
+### User Management
+- `POST /users/register`: Register a new user
+- `POST /users/verify`: Submit verification information
+- `POST /users/institutional/register`: Register an institutional user
+- `GET /users/{address}/portfolio`: Get user portfolio with analytics
+- `POST /users/smart-account/setup`: Configure smart account for automated strategies
+
+### Trading
+- `POST /trading/orders`: Place buy/sell orders for treasury tokens
+- `GET /trading/orders`: List orders with filtering options
+- `GET /trading/orders/{id}`: Get order details
+- `POST /trading/orders/cancel`: Cancel an existing order
 
 ## Development Setup
 
@@ -72,7 +113,13 @@ Quantera/
    ./setup_local_env.sh
    ```
 
-5. Run tests
+5. Run the API server
+   ```
+   cd backend
+   cargo run --bin server
+   ```
+
+6. Run tests
    ```
    cd tests
    cargo test
