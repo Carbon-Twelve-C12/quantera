@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# TreasuryToken Platform - Local Development Environment Setup Script
+# Quantera Platform - Local Development Environment Setup Script
 
-echo "Setting up TreasuryToken Platform local development environment..."
+echo "Setting up QuanteraPlatform local development environment..."
 
 # Exit on error
 set -e
@@ -52,7 +52,7 @@ cd backend
 
 # Create .env file for backend
 cat > .env << EOF
-# Environment variables for TreasuryToken Platform
+# Environment variables for Quantera Platform
 RUST_LOG=debug
 ETHEREUM_RPC_URL=http://localhost:8545
 IPFS_API_URL=http://localhost:5001
@@ -73,7 +73,7 @@ cd ../frontend
 if [ ! -f "package.json" ]; then
     cat > package.json << EOF
 {
-  "name": "treasurytoken-frontend",
+  "name": "quantera-frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -156,9 +156,9 @@ import React from 'react';
 function LandingPage() {
   return (
     <div className="container mt-5">
-      <h1>TreasuryToken Platform</h1>
+      <h1>Quantera Platform</h1>
       <p className="lead">
-        An Ethereum-based platform for tokenizing U.S. Treasury securities with Pectra capabilities.
+        An Ethereum-based platform for tokenizing securities.
       </p>
     </div>
   );
@@ -252,7 +252,7 @@ EOF
 chmod +x ../scripts/start_local_blockchain.sh
 chmod +x ../scripts/start_local_ipfs.sh
 
-echo "TreasuryToken Platform local development environment setup complete."
+echo "Quantera Platform local development environment setup complete."
 echo "To start the local blockchain: ./scripts/start_local_blockchain.sh"
 echo "To start the local IPFS node: ./scripts/start_local_ipfs.sh"
 echo "To start the backend: cd backend && cargo run"

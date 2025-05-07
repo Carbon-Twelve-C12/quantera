@@ -12,6 +12,8 @@ Quantera is a blockchain-based platform for tokenizing financial assets, startin
 - Programmatic yield distribution
 - Delegation system for portfolio management
 - Institutional validator support
+- Responsive UI with light/dark theme support
+- Seamless wallet connectivity integration
 
 ## Project Structure
 ```
@@ -24,6 +26,15 @@ Quantera/
 │   ├── ethereum_client/   # Ethereum blockchain client
 │   └── treasury_service/  # Treasury management services and API
 ├── frontend/              # React frontend application
+│   ├── public/            # Static assets
+│   └── src/               # React source code
+│       ├── api/           # API client for backend services
+│       ├── components/    # Reusable UI components
+│       │   └── common/    # Common components (Header, Footer, etc.)
+│       ├── contexts/      # React contexts (Theme, Wallet, etc.)
+│       ├── pages/         # Page components (Home, Marketplace, etc.)
+│       ├── styles/        # CSS and styling
+│       └── utils/         # Utility functions
 ├── scripts/               # Development and deployment scripts
 ├── tests/                 # Test suites
 └── docs/                  # Documentation
@@ -37,10 +48,16 @@ Quantera/
   - Contract client implementations (TreasuryRegistryClient, TreasuryTokenClient, ComplianceClient, TradingClient, L2Client)
   - Service layer components (YieldSchedulerService, UserService, AuthenticationService)
   - RESTful API layer with Warp including authentication, treasury management, user management, and trading endpoints
-- **Frontend Components**: Basic implementation of TreasuryTokenList and TreasuryTokenDetail components
+- **Frontend Components**: 
+  - Core page components (HomePage, MarketplacePage, PortfolioPage)
+  - Common components (Header, Footer, ImageWithFallback)
+  - Theme system with light/dark mode support
+  - Responsive design for all screen sizes
+  - Marketplace with filtering and sorting functionality
 
 ### In Progress
-- Expanding frontend with additional pages and wallet connectivity
+- Wallet connectivity integration
+- API integration with backend services
 - Implementing comprehensive test suites
 
 ### Key Implementations
@@ -50,6 +67,7 @@ Quantera/
 - AuthenticationService: JWT-based authentication with wallet signatures
 - RESTful API: Comprehensive API endpoints for all platform features
 - L2 Integration: Efficient cross-layer trading with blob data optimization
+- UI/UX: Responsive design with theme support and accessibility considerations
 
 ## API Endpoints
 The platform exposes the following API endpoints:
@@ -77,6 +95,31 @@ The platform exposes the following API endpoints:
 - `GET /trading/orders`: List orders with filtering options
 - `GET /trading/orders/{id}`: Get order details
 - `POST /trading/orders/cancel`: Cancel an existing order
+
+## Frontend Features
+
+### Core Pages
+- **Home**: Landing page with platform overview and key features
+- **Marketplace**: Browse, filter, and search available treasury tokens
+- **Portfolio**: View holdings, yield information, and historical performance
+- **404**: Custom not found page with proper navigation
+
+### Common Components
+- **Header**: Navigation bar with theme toggle and wallet connectivity
+- **Footer**: Platform information and social links
+- **ImageWithFallback**: Enhanced image component with error handling
+
+### Theme System
+- **Light/Dark Mode**: Complete theme support across all components
+- **Toggle Control**: Intuitive toggle with sun/moon icons
+- **Theme Persistence**: User preference saved in localStorage
+- **Smooth Transitions**: Animated transitions between themes
+
+### Responsive Design
+- **Mobile-First**: Optimized for all screen sizes from mobile to desktop
+- **Flexible Layouts**: Adaptive grid systems and component sizing
+- **Proper Spacing**: Consistent spacing and typography across devices
+- **Touch-Friendly**: Appropriately sized interactive elements for touch
 
 ## Development Setup
 
@@ -119,7 +162,13 @@ The platform exposes the following API endpoints:
    cargo run --bin server
    ```
 
-6. Run tests
+6. Run the frontend development server
+   ```
+   cd frontend
+   npm start
+   ```
+
+7. Run tests
    ```
    cd tests
    cargo test
