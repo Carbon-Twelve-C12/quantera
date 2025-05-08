@@ -16,6 +16,15 @@
   --gray-700: #334155;
   --gray-900: #0f172a;
 
+  /* Environmental theme colors */
+  --environmental-primary: #10b981;
+  --environmental-dark: #0d9488;
+  --environmental-light: #34d399;
+  --water-color: #0ea5e9;
+  --forest-color: #16a34a;
+  --biodiversity-color: #84cc16;
+  --carbon-color: #4ade80;
+
   /* Theme specific variables */
   --bg-color: var(--light-color);
   --text-color: var(--gray-900);
@@ -359,4 +368,165 @@ h1, h2, h3, h4, h5, h6,
 
 .btn-outline-danger {
   color: var(--danger-color);
+}
+
+/* Environmental asset specific styles */
+.environmental-card {
+  border-left: 4px solid var(--environmental-primary);
+}
+
+.btn-success {
+  background-color: var(--environmental-primary);
+  border-color: var(--environmental-primary);
+}
+
+.btn-success:hover {
+  background-color: var(--environmental-dark);
+  border-color: var(--environmental-dark);
+}
+
+.btn-outline-success {
+  border-color: var(--environmental-primary);
+  color: var(--environmental-primary);
+}
+
+.btn-outline-success:hover {
+  background-color: var(--environmental-primary);
+  border-color: var(--environmental-primary);
+  color: white;
+}
+
+.environmental-impact-icon {
+  font-size: 1.1rem;
+  margin-right: 0.5rem;
+}
+
+.environmental-impact-section {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  margin-top: 1rem;
+}
+
+.sdg-chip {
+  display: inline-block;
+  margin: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+
+.sdg-1 { background-color: #e5243b; } /* No Poverty */
+.sdg-2 { background-color: #DDA63A; } /* Zero Hunger */
+.sdg-3 { background-color: #4C9F38; } /* Good Health */
+.sdg-4 { background-color: #C5192D; } /* Quality Education */
+.sdg-5 { background-color: #FF3A21; } /* Gender Equality */
+.sdg-6 { background-color: #26BDE2; } /* Clean Water */
+.sdg-7 { background-color: #FCC30B; } /* Affordable Energy */
+.sdg-8 { background-color: #A21942; } /* Decent Work */
+.sdg-9 { background-color: #FD6925; } /* Industry, Innovation */
+.sdg-10 { background-color: #DD1367; } /* Reduced Inequalities */
+.sdg-11 { background-color: #FD9D24; } /* Sustainable Cities */
+.sdg-12 { background-color: #BF8B2E; } /* Responsible Consumption */
+.sdg-13 { background-color: #3F7E44; } /* Climate Action */
+.sdg-14 { background-color: #0A97D9; } /* Life Below Water */
+.sdg-15 { background-color: #56C02B; } /* Life on Land */
+.sdg-16 { background-color: #00689D; } /* Peace, Justice */
+.sdg-17 { background-color: #19486A; } /* Partnerships */
+
+/* Environmental asset cards in marketplace */
+.marketplace-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.marketplace-card .card-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.marketplace-card .card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.marketplace-card .card-img-container {
+  height: 180px;
+  overflow: hidden;
+}
+
+.marketplace-card .card-img-top {
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.marketplace-card:hover .card-img-top {
+  transform: scale(1.05);
+}
+
+.marketplace-card .environmental-metrics {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.marketplace-card .btn-container {
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+/* Environmental impact dashboard */
+.impact-metric-card {
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.impact-metric-card:hover {
+  transform: translateY(-5px);
+}
+
+.impact-metric-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.impact-metric-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.impact-metric-label {
+  color: var(--gray-700);
+  font-size: 0.875rem;
+}
+
+/* Water protection indicator */
+.water-protection-icon {
+  color: var(--water-color);
+}
+
+/* Carbon offset indicator */
+.carbon-offset-icon {
+  color: var(--carbon-color);
+}
+
+/* Land protection indicator */
+.land-protection-icon {
+  color: var(--forest-color);
+}
+
+/* Biodiversity protection indicator */
+.biodiversity-icon {
+  color: var(--biodiversity-color);
 } 
