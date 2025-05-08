@@ -1,19 +1,19 @@
-# Quantera Platform
+# Quantera Platform - Asset Tokenization Ecosystem
 
 ## Overview
-Quantera is a blockchain-based platform for tokenizing financial assets, starting with U.S. Treasury securities. It enables fractional ownership, transparent trading, and automated yield distribution through blockchain technology with enhanced capabilities from Ethereum's Pectra upgrade. The platform is designed to expand to support various financial assets beyond treasuries.
+Quantera is a comprehensive blockchain-based ecosystem for tokenizing any financial asset class. While initially focused on U.S. Treasury securities, the platform is architecturally designed for multi-asset support with superior liquidity solutions, yield optimization, and cross-chain interoperability. Leveraging Ethereum's capabilities, Quantera aims to become the leading tokenization platform globally, serving both institutional and individual investors. The platform provides specialized support for environmental assets and sustainable finance instruments, positioning Quantera at the forefront of Web3 sustainability solutions.
 
-## Features
-- Tokenization of financial assets (currently U.S. Treasury bills, notes, and bonds)
-- Smart account integration (EIP-7702)
-- Layer 2 integration with blob optimization (EIP-7691)
-- Compliance framework for regulatory adherence
-- Secondary market for trading tokenized assets
-- Programmatic yield distribution
-- Delegation system for portfolio management
-- Institutional validator support
-- Responsive UI with light/dark theme support
-- Seamless wallet connectivity integration
+## Key Features
+- **Asset-Agnostic Tokenization**: Modular system for tokenizing any asset class
+- **Advanced Liquidity Solutions**: AMM with concentrated liquidity positions
+- **Intelligent Yield Optimization**: Strategy marketplace and auto-compounding
+- **Smart Account Integration** (EIP-7702): Programmable account logic
+- **Cross-Chain Interoperability**: Unified experience across multiple blockchains
+- **Superior Compliance Framework**: Global regulatory adaptability
+- **Environmental Asset Support**: Specialized features for carbon credits, biodiversity credits, RECs, and more
+- **Impact Tracking & Reporting**: Comprehensive ESG metrics and reporting tools
+- **White-Label Customization**: For institutional asset managers
+- **Developer Ecosystem**: SDK and template marketplace
 
 ## Project Structure
 ```
@@ -21,10 +21,13 @@ Quantera/
 ├── contracts/             # Smart contracts
 │   ├── accounts/          # Smart account templates
 │   ├── l2/                # Layer 2 bridge contracts
-│   └── institutional/     # Institutional validator contracts
+│   ├── institutional/     # Institutional validator contracts
+│   ├── factories/         # Asset factory contracts
+│   ├── liquidity/         # Liquidity pool contracts
+│   └── yield/             # Yield optimizer contracts
 ├── backend/               # Rust backend services
 │   ├── ethereum_client/   # Ethereum blockchain client
-│   └── treasury_service/  # Treasury management services and API
+│   └── treasury_service/  # Asset management services and API
 ├── frontend/              # React frontend application
 │   ├── public/            # Static assets
 │   └── src/               # React source code
@@ -38,36 +41,47 @@ Quantera/
 ├── scripts/               # Development and deployment scripts
 ├── tests/                 # Test suites
 └── docs/                  # Documentation
+    └── sustainable_finance_initiative.md  # Environmental asset documentation
 ```
 
 ## Development Status
 ### Completed
-- **Smart Contracts**: All core contracts including TreasuryRegistry, TreasuryToken, ComplianceModule, TradingModule, L2Bridge, and SmartAccountTemplates
+- **Smart Contracts**: Core contracts including TreasuryRegistry, TreasuryToken, ComplianceModule, TradingModule
 - **Backend Services**: 
   - Ethereum client with Pectra support
-  - Contract client implementations (TreasuryRegistryClient, TreasuryTokenClient, ComplianceClient, TradingClient, L2Client)
-  - Service layer components (YieldSchedulerService, UserService, AuthenticationService)
-  - RESTful API layer with Warp including authentication, treasury management, user management, and trading endpoints
+  - Contract client implementations
+  - Service layer components
+  - RESTful API layer with comprehensive endpoints
 - **Frontend Components**: 
-  - Core page components (HomePage, MarketplacePage, PortfolioPage)
-  - Common components (Header, Footer, ImageWithFallback)
-  - Theme system with light/dark mode support
-  - Responsive design for all screen sizes
-  - Marketplace with filtering and sorting functionality
+  - Core page components
+  - Common components
+  - Theme system with light/dark mode
+  - Responsive design for all devices
+- **Environmental Asset Integration**:
+  - Updated asset class enum from "CARBON_CREDIT" to "ENVIRONMENTAL_ASSET" for broader inclusivity
+  - Support for biodiversity credits, renewable energy certificates, and water rights
+  - Implementation of impact tracking mechanisms
+  - Verification and certification integration for environmental credits
 
 ### In Progress
-- Wallet connectivity integration
-- API integration with backend services
-- Implementing comprehensive test suites
+- **Asset Factory Implementation**: Multi-asset tokenization templates
+- **Liquidity Pools**: Advanced AMM with dynamic fees
+- **Yield Optimizer**: Auto-compounding and strategy marketplace
+- **Smart Account Templates**: Advanced investment strategies
+- **Cross-Chain Integration**: Enhanced L2 bridge with blob data optimization
+- **Frontend Wallet Connectivity**: Unified interface for all supporting wallets
+- **Environmental Impact Dashboard**: Real-time tracking and visualization of impact metrics
+- **Certification Standard Integration**: Direct connections to environmental asset verification frameworks
 
-### Key Implementations
-- Blockchain Client: Ethereum client with EIP-7702, EIP-7691, and EIP-2537 support
-- YieldSchedulerService: Automated yield distribution and maturity processing for tokenized treasuries
-- UserService: User management, verification, and portfolio tracking
-- AuthenticationService: JWT-based authentication with wallet signatures
-- RESTful API: Comprehensive API endpoints for all platform features
-- L2 Integration: Efficient cross-layer trading with blob data optimization
-- UI/UX: Responsive design with theme support and accessibility considerations
+### Next Steps
+- Complete implementation of AssetFactory.sol contract
+- Implement LiquidityPools.sol contract with concentrated liquidity
+- Develop YieldOptimizer.sol with strategy marketplace
+- Create SmartAccountTemplates.sol with advanced investment strategies
+- Enhance L2Bridge.sol for multi-chain support
+- Expand the frontend interface to support new features
+- Build ESG scoring and impact visualization dashboards
+- Implement environmental asset verification and certification system
 
 ## API Endpoints
 The platform exposes the following API endpoints:
@@ -77,11 +91,33 @@ The platform exposes the following API endpoints:
 - `POST /auth/login`: Login with wallet signature
 - `POST /auth/logout`: Logout and invalidate token
 
-### Treasury Management
-- `GET /treasuries`: List all treasury tokens with filtering options
-- `GET /treasuries/{id}`: Get specific treasury details
-- `POST /treasuries`: Create new treasury token (restricted)
-- `GET /treasuries/{id}/yield`: Get yield information for a treasury
+### Asset Management
+- `GET /assets`: List all assets with filtering options
+- `GET /assets/{id}`: Get specific asset details
+- `POST /assets`: Create new asset using templates (restricted)
+- `GET /assets/{id}/yield`: Get yield information for an asset
+
+### Liquidity
+- `GET /liquidity/pools`: List all liquidity pools
+- `GET /liquidity/pools/{id}`: Get specific pool details
+- `POST /liquidity/provide`: Add liquidity to a pool
+- `POST /liquidity/withdraw`: Remove liquidity from a pool
+
+### Yield Strategies
+- `GET /yield/strategies`: List all yield strategies
+- `GET /yield/strategies/{id}`: Get specific strategy details
+- `POST /yield/strategies/apply`: Apply strategy to holdings
+- `GET /yield/forecasts/{assetId}`: Get yield forecasts for an asset
+
+### Environmental Assets
+- `GET /environmental/assets`: List all environmental assets
+- `GET /environmental/assets/{id}`: Get specific environmental asset details
+- `GET /environmental/assets/type/{type}`: Filter assets by environmental type
+- `POST /environmental/assets/{id}/retire`: Retire environmental credits
+- `GET /environmental/impact/{assetId}`: Get impact metrics for an asset
+- `GET /environmental/impact/portfolio/{address}`: Get aggregate impact for a portfolio
+- `GET /environmental/certifications`: List available certification standards
+- `GET /environmental/reports/{timeframe}`: Generate impact reports
 
 ### User Management
 - `POST /users/register`: Register a new user
@@ -91,7 +127,7 @@ The platform exposes the following API endpoints:
 - `POST /users/smart-account/setup`: Configure smart account for automated strategies
 
 ### Trading
-- `POST /trading/orders`: Place buy/sell orders for treasury tokens
+- `POST /trading/orders`: Place buy/sell orders for assets
 - `GET /trading/orders`: List orders with filtering options
 - `GET /trading/orders/{id}`: Get order details
 - `POST /trading/orders/cancel`: Cancel an existing order
@@ -99,27 +135,38 @@ The platform exposes the following API endpoints:
 ## Frontend Features
 
 ### Core Pages
-- **Home**: Landing page with platform overview and key features
-- **Marketplace**: Browse, filter, and search available treasury tokens
-- **Portfolio**: View holdings, yield information, and historical performance
-- **404**: Custom not found page with proper navigation
+- **Home**: Platform overview showcasing multi-asset support
+- **Marketplace**: Browse, filter, and search available assets
+- **Portfolio**: View holdings, yield information, and performance
+- **Asset Factory**: Create and customize new asset tokens
+- **Liquidity**: Manage liquidity positions across assets
+- **Yield Optimizer**: Browse and apply yield strategies
+- **Smart Accounts**: Configure automated investment strategies
+- **Environmental Impact**: View and track sustainability metrics
+- **Impact Dashboard**: Visualize environmental impact of investments
 
-### Common Components
-- **Header**: Navigation bar with theme toggle and wallet connectivity
-- **Footer**: Platform information and social links
-- **ImageWithFallback**: Enhanced image component with error handling
+### Advanced Components
+- **Asset Template Explorer**: Browse templates for different asset classes
+- **Liquidity Pool Visualizer**: Interactive view of pool positions
+- **Yield Strategy Selector**: Compare and select strategies
+- **Cross-Chain Navigator**: Seamlessly switch between blockchain networks
+- **Risk Assessment Dashboard**: Analyze portfolio risk metrics
+- **Environmental Asset Marketplace**: Specialized interface for sustainable investments
+- **Impact Reporting Tool**: Generate customizable ESG reports
+- **Certification Verification System**: Validate environmental asset credentials
 
-### Theme System
-- **Light/Dark Mode**: Complete theme support across all components
-- **Toggle Control**: Intuitive toggle with sun/moon icons
-- **Theme Persistence**: User preference saved in localStorage
-- **Smooth Transitions**: Animated transitions between themes
+## Sustainable Finance Initiative
 
-### Responsive Design
-- **Mobile-First**: Optimized for all screen sizes from mobile to desktop
-- **Flexible Layouts**: Adaptive grid systems and component sizing
-- **Proper Spacing**: Consistent spacing and typography across devices
-- **Touch-Friendly**: Appropriately sized interactive elements for touch
+Quantera is committed to advancing sustainable finance through our platform:
+
+- **Environmental Asset Support**: Specialized features for carbon credits, biodiversity credits, RECs, and more
+- **Impact Measurement**: Comprehensive tracking of environmental and social impacts
+- **Verification Integration**: Direct connections to leading certification standards
+- **Transparent Reporting**: Customizable ESG reporting frameworks for various stakeholders
+- **Yield Enhancement**: Specialized strategies for environmental asset holders
+- **Cross-Chain Capabilities**: Efficient trading of environmental assets across blockchain ecosystems
+
+For more details, see our [Sustainable Finance Initiative](docs/sustainable_finance_initiative.md) documentation.
 
 ## Development Setup
 
@@ -174,20 +221,30 @@ The platform exposes the following API endpoints:
    cargo test
    ```
 
-## Smart Contract Architecture
-- **TreasuryRegistry**: Central registry for all tokenized financial assets
-- **TreasuryToken**: ERC-1400 compatible token representing asset ownership
-- **ComplianceModule**: Ensures regulatory compliance for transfers
-- **TradingModule**: Facilitates buying and selling of tokens
-- **L2Bridge**: Enables Layer 2 integration for efficient trading with blob optimization
-- **SmartAccountTemplates**: Ready-to-use programmable account logic for asset management
+## Enhanced Architecture
+- **Asset Factory**: Modular system for creating and managing tokenized assets
+- **Treasury Registry**: Central registry for all tokenized assets
+- **Asset Tokens**: ERC-1400 compatible tokens with advanced features
+- **Compliance Module**: Global regulatory framework adapters
+- **Trading Module**: Order book with AMM integration
+- **Liquidity Pools**: Advanced AMM with concentrated liquidity
+- **Yield Optimizer**: Strategy marketplace for yield maximization
+- **L2 Bridge**: Cross-chain integration for efficient trading
+- **Smart Account Templates**: Programmable account logic for asset management
+- **Environmental Asset System**: Specialized contracts for sustainability-focused assets
+- **Impact Tracker**: Measurement and verification of environmental impacts
 
 ## Backend Services
-- **Alloy Integration**: Interfaces with Ethereum blockchain using Alloy framework
-- **Treasury Management**: Handles lifecycle of tokenized assets
-- **Trading Service**: Manages order book and trade execution
-- **User Management**: Handles registration, verification, and portfolios
-- **API Layer**: RESTful API for frontend and third-party integration
+- **Alloy Integration**: Ethereum blockchain interaction with Pectra support
+- **Asset Management**: Lifecycle handling for all asset types
+- **Trading Service**: Order matching and execution
+- **Liquidity Service**: Pooled liquidity management
+- **Yield Service**: Strategy execution and optimization
+- **User Management**: Registration, verification, and portfolio tracking
+- **Authentication**: Secure wallet-based authentication
+- **API Layer**: Comprehensive RESTful API
+- **Environmental Verification Service**: Integration with certification standards
+- **Impact Analytics Service**: Environmental impact calculation and reporting
 
 ## License
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.

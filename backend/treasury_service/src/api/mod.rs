@@ -10,6 +10,7 @@ use crate::{
         TradingClient,
         L2Client,
     },
+    AssetManagementService,
 };
 use warp::{Filter, Rejection, Reply};
 use std::sync::Arc;
@@ -18,6 +19,7 @@ use serde::{Serialize, Deserialize};
 use tracing::{info, error, debug};
 use http::StatusCode;
 use ethereum_client::EthereumClient;
+use ethereum_client::Address;
 
 // Import individual route modules
 mod auth;
@@ -25,6 +27,9 @@ mod treasury;
 mod user;
 mod trading;
 mod health;
+mod liquidity_pools_api;
+mod yield_optimizer_api;
+mod environmental_assets;
 
 // Re-export for easy access
 pub use auth::routes as auth_routes;
@@ -32,6 +37,9 @@ pub use treasury::routes as treasury_routes;
 pub use user::routes as user_routes;
 pub use trading::routes as trading_routes;
 pub use health::routes as health_routes;
+pub use liquidity_pools_api::liquidity_pools_routes;
+pub use yield_optimizer_api::yield_optimizer_routes;
+pub use environmental_assets::routes as environmental_assets_routes;
 
 /// Container for token clients
 #[derive(Clone)]
@@ -59,6 +67,7 @@ pub struct ApiServices {
     pub trading_client: Arc<TradingClient>,
     pub l2_client: Arc<L2Client>,
     pub token_clients: Arc<TokenClientsContainer>,
+    pub asset_management_service: Arc<AssetManagementService>,
 }
 
 /// Create all API routes
@@ -82,12 +91,34 @@ pub fn routes(
     // Trading routes
     let trading_routes = trading::routes(api_services.clone());
     
+    // Liquidity pool routes
+    let liquidity_routes = liquidity_pools_api::liquidity_pools_routes(
+        api_services.ethereum_client.clone(),
+        // Using a placeholder address - replace with actual address
+        Address::from_slice(&[0u8; 20])
+    );
+    
+    // Yield optimizer routes
+    let yield_routes = yield_optimizer_api::yield_optimizer_routes(
+        api_services.ethereum_client.clone(),
+        // Using a placeholder address - replace with actual address
+        Address::from_slice(&[0u8; 20]) 
+    );
+    
+    // Environmental assets routes
+    let environmental_routes = environmental_assets::routes(
+        api_services.asset_management_service.clone()
+    );
+    
     // Combine all routes with prefix
     let api_routes = health_routes
         .or(auth_routes)
         .or(treasury_routes)
         .or(user_routes)
         .or(trading_routes)
+        .or(liquidity_routes)
+        .or(yield_routes)
+        .or(environmental_routes)
         .with(warp::trace::request())
         .recover(handle_rejection);
     

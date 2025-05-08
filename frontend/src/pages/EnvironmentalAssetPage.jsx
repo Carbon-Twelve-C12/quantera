@@ -50,12 +50,14 @@ import { useAuth } from '../contexts/AuthContext';
 import api from '../api/api';
 import ImpactDashboard from '../components/common/ImpactDashboard';
 import SustainableYieldStrategies from '../components/common/SustainableYieldStrategies';
+import { useTheme as useAppTheme } from '../contexts/ThemeContext';
 
 const EnvironmentalAssetPage = () => {
   const { assetId } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const theme = useTheme();
+  const { theme: appTheme } = useAppTheme();
   
   const [asset, setAsset] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -386,7 +388,13 @@ const EnvironmentalAssetPage = () => {
       </Box>
       
       {/* Asset Header */}
-      <Card sx={{ mb: 4, overflow: 'hidden' }}>
+      <Card sx={{ 
+        mb: 4, 
+        overflow: 'hidden',
+        bgcolor: 'background.paper',
+        color: 'text.primary',
+        borderColor: 'divider'
+      }}>
         <Grid container>
           <Grid item xs={12} md={5}>
             <Box 
@@ -432,7 +440,7 @@ const EnvironmentalAssetPage = () => {
                 />
               </Box>
               
-              <Typography variant="h4" component="h1" gutterBottom>
+              <Typography variant="h4" component="h1" gutterBottom color="text.primary">
                 {asset.project_name}
               </Typography>
               
@@ -440,7 +448,7 @@ const EnvironmentalAssetPage = () => {
                 {asset.project_location} • {asset.standard}
               </Typography>
               
-              <Typography variant="body1" paragraph>
+              <Typography variant="body1" paragraph color="text.primary">
                 {asset.description}
               </Typography>
               
@@ -500,55 +508,60 @@ const EnvironmentalAssetPage = () => {
         <Grid container spacing={4}>
           {/* Project Details */}
           <Grid item xs={12} md={5}>
-            <Card sx={{ mb: 4 }}>
+            <Card sx={{ 
+              mb: 4,
+              bgcolor: 'background.paper',
+              color: 'text.primary',
+              borderColor: 'divider'
+            }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom color="text.primary">
                   Project Details
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 
-                <TableContainer component={Paper} elevation={0}>
+                <TableContainer component={Paper} elevation={0} sx={{ bgcolor: 'background.paper' }}>
                   <Table size="small">
                     <TableBody>
                       <TableRow>
-                        <TableCell component="th" scope="row">Project ID</TableCell>
-                        <TableCell align="right">{asset.project_id}</TableCell>
+                        <TableCell component="th" scope="row" sx={{ color: 'text.secondary' }}>Project ID</TableCell>
+                        <TableCell align="right" sx={{ color: 'text.primary' }}>{asset.project_id}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell component="th" scope="row">Standard</TableCell>
-                        <TableCell align="right">{asset.standard}</TableCell>
+                        <TableCell component="th" scope="row" sx={{ color: 'text.secondary' }}>Standard</TableCell>
+                        <TableCell align="right" sx={{ color: 'text.primary' }}>{asset.standard}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell component="th" scope="row">Methodology</TableCell>
-                        <TableCell align="right">{asset.methodology}</TableCell>
+                        <TableCell component="th" scope="row" sx={{ color: 'text.secondary' }}>Methodology</TableCell>
+                        <TableCell align="right" sx={{ color: 'text.primary' }}>{asset.methodology}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell component="th" scope="row">Project Developer</TableCell>
-                        <TableCell align="right">{asset.project_developer}</TableCell>
+                        <TableCell component="th" scope="row" sx={{ color: 'text.secondary' }}>Project Developer</TableCell>
+                        <TableCell align="right" sx={{ color: 'text.primary' }}>{asset.project_developer}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell component="th" scope="row">Issuance Date</TableCell>
-                        <TableCell align="right">{formatDate(asset.issuance_date)}</TableCell>
+                        <TableCell component="th" scope="row" sx={{ color: 'text.secondary' }}>Issuance Date</TableCell>
+                        <TableCell align="right" sx={{ color: 'text.primary' }}>{formatDate(asset.issuance_date)}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell component="th" scope="row">Expiration Date</TableCell>
-                        <TableCell align="right">{formatDate(asset.expiration_date)}</TableCell>
+                        <TableCell component="th" scope="row" sx={{ color: 'text.secondary' }}>Expiration Date</TableCell>
+                        <TableCell align="right" sx={{ color: 'text.primary' }}>{formatDate(asset.expiration_date)}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell component="th" scope="row">Verification Date</TableCell>
-                        <TableCell align="right">{formatDate(asset.verification_date)}</TableCell>
+                        <TableCell component="th" scope="row" sx={{ color: 'text.secondary' }}>Verification Date</TableCell>
+                        <TableCell align="right" sx={{ color: 'text.primary' }}>{formatDate(asset.verification_date)}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell component="th" scope="row">Verifier</TableCell>
-                        <TableCell align="right">{asset.impact_metrics.third_party_verifier || 'N/A'}</TableCell>
+                        <TableCell component="th" scope="row" sx={{ color: 'text.secondary' }}>Verifier</TableCell>
+                        <TableCell align="right" sx={{ color: 'text.primary' }}>{asset.impact_metrics.third_party_verifier || 'N/A'}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell component="th" scope="row">Total Supply</TableCell>
-                        <TableCell align="right">{parseInt(asset.total_supply).toLocaleString()} credits</TableCell>
+                        <TableCell component="th" scope="row" sx={{ color: 'text.secondary' }}>Total Supply</TableCell>
+                        <TableCell align="right" sx={{ color: 'text.primary' }}>{parseInt(asset.total_supply).toLocaleString()} credits</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell component="th" scope="row">Available Supply</TableCell>
-                        <TableCell align="right">{parseInt(asset.available_supply).toLocaleString()} credits</TableCell>
+                        <TableCell component="th" scope="row" sx={{ color: 'text.secondary' }}>Available Supply</TableCell>
+                        <TableCell align="right" sx={{ color: 'text.primary' }}>{parseInt(asset.available_supply).toLocaleString()} credits</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
@@ -569,7 +582,7 @@ const EnvironmentalAssetPage = () => {
                   </Button>
                 </Box>
                 
-                <Typography variant="subtitle2" gutterBottom sx={{ mt: 3 }}>
+                <Typography variant="subtitle2" gutterBottom sx={{ mt: 3 }} color="text.primary">
                   Certification Documents
                 </Typography>
                 
@@ -600,9 +613,13 @@ const EnvironmentalAssetPage = () => {
             </Card>
             
             {/* Additional Actions */}
-            <Card>
+            <Card sx={{ 
+              bgcolor: 'background.paper',
+              color: 'text.primary',
+              borderColor: 'divider'
+            }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom color="text.primary">
                   Additional Actions
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
@@ -627,31 +644,31 @@ const EnvironmentalAssetPage = () => {
                 
                 {asset.security_details && (
                   <Box mt={2}>
-                    <Typography variant="subtitle2" gutterBottom>
+                    <Typography variant="subtitle2" gutterBottom color="text.primary">
                       Tokenized Security Details
                     </Typography>
-                    <TableContainer component={Paper} elevation={0}>
+                    <TableContainer component={Paper} elevation={0} sx={{ bgcolor: 'background.paper' }}>
                       <Table size="small">
                         <TableBody>
                           <TableRow>
-                            <TableCell component="th" scope="row">Token Standard</TableCell>
-                            <TableCell align="right">{asset.security_details.token_standard}</TableCell>
+                            <TableCell component="th" scope="row" sx={{ color: 'text.secondary' }}>Token Standard</TableCell>
+                            <TableCell align="right" sx={{ color: 'text.primary' }}>{asset.security_details.token_standard}</TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell component="th" scope="row">Contract Address</TableCell>
+                            <TableCell component="th" scope="row" sx={{ color: 'text.secondary' }}>Contract Address</TableCell>
                             <TableCell align="right">
-                              <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                              <Typography variant="body2" sx={{ fontFamily: 'monospace', color: 'text.primary' }}>
                                 {asset.security_details.contract_address.substring(0, 6)}...{asset.security_details.contract_address.substring(38)}
                               </Typography>
                             </TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell component="th" scope="row">Blockchain</TableCell>
-                            <TableCell align="right">{asset.security_details.blockchain}</TableCell>
+                            <TableCell component="th" scope="row" sx={{ color: 'text.secondary' }}>Blockchain</TableCell>
+                            <TableCell align="right" sx={{ color: 'text.primary' }}>{asset.security_details.blockchain}</TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell component="th" scope="row">Token ID</TableCell>
-                            <TableCell align="right">{asset.security_details.token_id}</TableCell>
+                            <TableCell component="th" scope="row" sx={{ color: 'text.secondary' }}>Token ID</TableCell>
+                            <TableCell align="right" sx={{ color: 'text.primary' }}>{asset.security_details.token_id}</TableCell>
                           </TableRow>
                         </TableBody>
                       </Table>
@@ -675,9 +692,14 @@ const EnvironmentalAssetPage = () => {
           
           {/* Impact Metrics */}
           <Grid item xs={12} md={7}>
-            <Card sx={{ mb: 4 }}>
+            <Card sx={{ 
+              mb: 4,
+              bgcolor: 'background.paper',
+              color: 'text.primary',
+              borderColor: 'divider'
+            }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom color="text.primary">
                   Environmental Impact
                 </Typography>
                 <Divider sx={{ mb: 3 }} />
@@ -685,9 +707,15 @@ const EnvironmentalAssetPage = () => {
                 <Grid container spacing={3}>
                   {asset.impact_metrics.carbon_offset_tons > 0 && (
                     <Grid item xs={12} sm={6}>
-                      <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'background.paper', borderRadius: 2 }}>
+                      <Box sx={{ 
+                        textAlign: 'center', 
+                        p: 2, 
+                        borderRadius: 2,
+                        bgcolor: appTheme === 'dark' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
+                        boxShadow: appTheme === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.05)'
+                      }}>
                         <ForestOutlined color="success" sx={{ fontSize: 40, mb: 1 }} />
-                        <Typography variant="h5" gutterBottom>
+                        <Typography variant="h5" gutterBottom color="text.primary">
                           {asset.impact_metrics.carbon_offset_tons.toLocaleString()} tons
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
@@ -699,9 +727,15 @@ const EnvironmentalAssetPage = () => {
                   
                   {asset.impact_metrics.land_area_protected_hectares > 0 && (
                     <Grid item xs={12} sm={6}>
-                      <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'background.paper', borderRadius: 2 }}>
+                      <Box sx={{ 
+                        textAlign: 'center', 
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: appTheme === 'dark' ? 'rgba(22, 163, 74, 0.1)' : 'rgba(22, 163, 74, 0.05)',
+                        boxShadow: appTheme === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.05)'
+                      }}>
                         <NatureOutlined color="success" sx={{ fontSize: 40, mb: 1 }} />
-                        <Typography variant="h5" gutterBottom>
+                        <Typography variant="h5" gutterBottom color="text.primary">
                           {asset.impact_metrics.land_area_protected_hectares.toLocaleString()} ha
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
@@ -713,9 +747,15 @@ const EnvironmentalAssetPage = () => {
                   
                   {asset.impact_metrics.renewable_energy_mwh > 0 && (
                     <Grid item xs={12} sm={6}>
-                      <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'background.paper', borderRadius: 2 }}>
+                      <Box sx={{ 
+                        textAlign: 'center', 
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: appTheme === 'dark' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(245, 158, 11, 0.05)',
+                        boxShadow: appTheme === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.05)'
+                      }}>
                         <WbSunnyOutlined color="warning" sx={{ fontSize: 40, mb: 1 }} />
-                        <Typography variant="h5" gutterBottom>
+                        <Typography variant="h5" gutterBottom color="text.primary">
                           {asset.impact_metrics.renewable_energy_mwh.toLocaleString()} MWh
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
@@ -727,9 +767,15 @@ const EnvironmentalAssetPage = () => {
                   
                   {asset.impact_metrics.water_protected_liters > 0 && (
                     <Grid item xs={12} sm={6}>
-                      <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'background.paper', borderRadius: 2 }}>
+                      <Box sx={{ 
+                        textAlign: 'center', 
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: appTheme === 'dark' ? 'rgba(14, 165, 233, 0.1)' : 'rgba(14, 165, 233, 0.05)',
+                        boxShadow: appTheme === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.05)'
+                      }}>
                         <WaterOutlined color="primary" sx={{ fontSize: 40, mb: 1 }} />
-                        <Typography variant="h5" gutterBottom>
+                        <Typography variant="h5" gutterBottom color="text.primary">
                           {(asset.impact_metrics.water_protected_liters / 1000).toLocaleString()} kL
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
@@ -741,7 +787,7 @@ const EnvironmentalAssetPage = () => {
                 </Grid>
                 
                 <Box sx={{ mt: 4 }}>
-                  <Typography variant="subtitle1" gutterBottom>
+                  <Typography variant="subtitle1" gutterBottom color="text.primary">
                     Sustainable Development Goals Alignment
                   </Typography>
                   
@@ -762,7 +808,7 @@ const EnvironmentalAssetPage = () => {
                 
                 {asset.co_benefits && asset.co_benefits.length > 0 && (
                   <Box sx={{ mt: 4 }}>
-                    <Typography variant="subtitle1" gutterBottom>
+                    <Typography variant="subtitle1" gutterBottom color="text.primary">
                       Co-Benefits
                     </Typography>
                     
@@ -782,9 +828,13 @@ const EnvironmentalAssetPage = () => {
             </Card>
             
             {/* Mini Impact Dashboard */}
-            <Card>
+            <Card sx={{ 
+              bgcolor: 'background.paper',
+              color: 'text.primary',
+              borderColor: 'divider'
+            }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom color="text.primary">
                   Impact of One Credit
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
@@ -796,22 +846,28 @@ const EnvironmentalAssetPage = () => {
                         Equivalent to:
                       </Typography>
                       
-                      <Typography variant="body1">
+                      <Typography variant="body1" color="text.primary">
                         • {(asset.impact_metrics.carbon_offset_tons / parseInt(asset.total_supply) * 100).toFixed(2)} kg of CO₂ offset
                       </Typography>
                       
-                      <Typography variant="body1">
+                      <Typography variant="body1" color="text.primary">
                         • {(asset.impact_metrics.carbon_offset_tons / parseInt(asset.total_supply) * 4).toFixed(2)} trees planted
                       </Typography>
                       
-                      <Typography variant="body1">
+                      <Typography variant="body1" color="text.primary">
                         • {(asset.impact_metrics.carbon_offset_tons / parseInt(asset.total_supply) * 2.5).toFixed(2)} gallons of gasoline not consumed
                       </Typography>
                     </Box>
                   </Grid>
                   
                   <Grid item xs={12} md={6}>
-                    <Alert severity="info">
+                    <Alert severity="info" sx={{
+                      backgroundColor: appTheme === 'dark' ? 'rgba(30, 136, 229, 0.15)' : 'rgba(30, 136, 229, 0.1)',
+                      color: 'text.primary',
+                      '& .MuiAlert-icon': {
+                        color: appTheme === 'dark' ? '#90caf9' : '#1e88e5'
+                      }
+                    }}>
                       Purchasing just one credit from this project makes a measurable impact on the environment and supports sustainable development goals.
                     </Alert>
                   </Grid>
@@ -824,9 +880,13 @@ const EnvironmentalAssetPage = () => {
       
       <Box sx={{ display: tabValue === 1 ? 'block' : 'none' }}>
         {/* Detailed Impact Dashboard */}
-        <Card>
+        <Card sx={{ 
+          bgcolor: 'background.paper',
+          color: 'text.primary',
+          borderColor: 'divider'
+        }}>
           <CardContent>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" gutterBottom color="text.primary">
               Environmental Impact Details
             </Typography>
             <Divider sx={{ mb: 3 }} />
@@ -840,9 +900,13 @@ const EnvironmentalAssetPage = () => {
       
       <Box sx={{ display: tabValue === 2 ? 'block' : 'none' }}>
         {/* Yield Strategies */}
-        <Card>
+        <Card sx={{ 
+          bgcolor: 'background.paper',
+          color: 'text.primary',
+          borderColor: 'divider'
+        }}>
           <CardContent>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" gutterBottom color="text.primary">
               Generate Yield with Environmental Impact
             </Typography>
             <Typography variant="body2" color="text.secondary" paragraph>
@@ -865,10 +929,19 @@ const EnvironmentalAssetPage = () => {
       </Box>
       
       {/* Buy Dialog */}
-      <Dialog open={buyDialogOpen} onClose={handleBuyClose}>
+      <Dialog 
+        open={buyDialogOpen} 
+        onClose={handleBuyClose}
+        PaperProps={{
+          sx: {
+            bgcolor: 'background.paper',
+            color: 'text.primary',
+          }
+        }}
+      >
         <DialogTitle>Purchase Environmental Credits</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText color="text.secondary">
             You are about to purchase credits from {asset.project_name}. Each credit costs ${asset.price_per_unit}.
           </DialogContentText>
           <TextField
@@ -878,6 +951,16 @@ const EnvironmentalAssetPage = () => {
             type="number"
             fullWidth
             variant="outlined"
+            InputProps={{
+              sx: {
+                color: 'text.primary'
+              }
+            }}
+            InputLabelProps={{
+              sx: {
+                color: 'text.secondary'
+              }
+            }}
           />
         </DialogContent>
         <DialogActions>
@@ -889,10 +972,19 @@ const EnvironmentalAssetPage = () => {
       </Dialog>
       
       {/* Retire Dialog */}
-      <Dialog open={retireDialogOpen} onClose={handleRetireClose}>
+      <Dialog 
+        open={retireDialogOpen} 
+        onClose={handleRetireClose}
+        PaperProps={{
+          sx: {
+            bgcolor: 'background.paper',
+            color: 'text.primary',
+          }
+        }}
+      >
         <DialogTitle>Retire Environmental Credits</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText color="text.secondary">
             Retiring credits permanently removes them from circulation, claiming their environmental benefit. This action cannot be undone.
           </DialogContentText>
           <TextField
@@ -905,6 +997,16 @@ const EnvironmentalAssetPage = () => {
             value={retireAmount}
             onChange={(e) => setRetireAmount(e.target.value)}
             sx={{ mb: 2 }}
+            InputProps={{
+              sx: {
+                color: 'text.primary'
+              }
+            }}
+            InputLabelProps={{
+              sx: {
+                color: 'text.secondary'
+              }
+            }}
           />
           <TextField
             margin="dense"
@@ -914,6 +1016,16 @@ const EnvironmentalAssetPage = () => {
             value={retireReason}
             onChange={(e) => setRetireReason(e.target.value)}
             sx={{ mb: 2 }}
+            InputProps={{
+              sx: {
+                color: 'text.primary'
+              }
+            }}
+            InputLabelProps={{
+              sx: {
+                color: 'text.secondary'
+              }
+            }}
           />
           <TextField
             margin="dense"
@@ -923,6 +1035,16 @@ const EnvironmentalAssetPage = () => {
             value={beneficiary}
             onChange={(e) => setBeneficiary(e.target.value)}
             sx={{ mb: 2 }}
+            InputProps={{
+              sx: {
+                color: 'text.primary'
+              }
+            }}
+            InputLabelProps={{
+              sx: {
+                color: 'text.secondary'
+              }
+            }}
           />
           <FormControlLabel
             control={
@@ -932,6 +1054,7 @@ const EnvironmentalAssetPage = () => {
               />
             }
             label="Make this retirement public"
+            sx={{ color: 'text.primary' }}
           />
         </DialogContent>
         <DialogActions>

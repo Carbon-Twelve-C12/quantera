@@ -1,12 +1,12 @@
-# Technical Specification for Quantera Platform 
+# Technical Specification for Quantera Platform - Asset Tokenization Ecosystem
 
 ## 1. Introduction
 
 ### 1.1 Purpose
-This technical specification details the architecture, components, and implementation of the Quantera platform, a blockchain-based system for tokenizing financial assets, starting with U.S. Treasury securities. This document serves as the definitive technical reference for developers building the platform, with specific attention to leveraging the Pectra upgrade capabilities.
+This technical specification details the architecture, components, and implementation of the Quantera platform, a comprehensive blockchain-based ecosystem for tokenizing any financial asset class. While initially focused on U.S. Treasury securities, the platform is architecturally designed for multi-asset support with superior liquidity solutions, yield optimization, and cross-chain interoperability. This document serves as the definitive technical reference for developers building the platform, with specific attention to leveraging the recent Pectra upgrade capabilities and creating a truly asset-agnostic foundation.
 
 ### 1.2 Scope
-This specification covers the MVP version of the platform, focusing initially on the tokenization of treasury securities (bills, notes, and bonds) with a roadmap to expand to other financial assets. It details all technical aspects including smart contracts, backend services, frontend components, and integration points, with a strategic focus on Ethereum's Pectra upgrade advantages.
+This specification covers the implementation roadmap of the platform, from MVP to full ecosystem development. It begins with treasury securities tokenization (bills, notes, and bonds) and expands to a complete multi-asset toolkit supporting any tokenizable asset class. It details all technical aspects including smart contracts, backend services, frontend components, and integration points, with architectural decisions designed to support our vision of becoming the leading tokenization platform globally.
 
 ### 1.3 Definitions
 - **Treasury Security**: Government debt instrument issued by the U.S. Department of the Treasury
@@ -18,6 +18,23 @@ This specification covers the MVP version of the platform, focusing initially on
 - **ERC-1400**: Ethereum token standard for security tokens with transfer restrictions
 - **Smart Account**: EIP-7702-enabled wallet that can execute programmatic logic
 - **Delegation**: The ability to authorize other accounts to act on behalf of a primary account
+- **Asset Factory**: System for creating and managing tokenized assets of different classes
+- **Liquidity Pool**: Smart contract that facilitates trading between asset pairs
+- **Yield Optimizer**: System that automatically manages yield strategies
+- **AMM**: Automated Market Maker, a decentralized exchange mechanism
+
+### 1.4 Platform Vision
+Quantera aims to become the leading tokenization platform for all asset classes by providing:
+
+1. **Asset Class Versatility**: A fully modular system supporting any asset type
+2. **Superior Liquidity**: Advanced AMM with concentrated liquidity positions
+3. **Yield Maximization**: Intelligent yield strategies with auto-compounding
+4. **Cross-Chain Presence**: Unified experience across multiple blockchains
+5. **Institutional-Grade Compliance**: Global regulatory framework adapters
+6. **White-Label Capabilities**: Customizable interfaces for asset managers
+7. **Developer Ecosystem**: Open SDK and template marketplace
+
+The platform is designed to scale from initial treasury tokenization to a full ecosystem supporting global asset managers, investors, and financial institutions.
 
 ## 2. System Architecture
 
