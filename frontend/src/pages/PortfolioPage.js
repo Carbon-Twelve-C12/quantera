@@ -1,13 +1,49 @@
-import React from 'react';
-import { Container, Row, Col, Card, Table, Button, Badge, Alert } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-import { FaWallet, FaChartLine, FaExchangeAlt } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  Container,
+  Typography,
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  Chip,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Tabs,
+  Tab,
+  Alert,
+  Divider,
+  useTheme
+} from '@mui/material';
+import {
+  AccountBalance as AccountBalanceIcon,
+  TrendingUp as TrendingUpIcon,
+  PieChart as PieChartIcon,
+  ForestOutlined as ForestIcon,
+  WaterOutlined as WaterIcon,
+  BarChart as BarChartIcon,
+  Wallet as WalletIcon,
+  Insights as InsightsIcon,
+  EmojiNature as NatureIcon,
+  ShoppingCart as ShoppingCartIcon
+} from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext';
+import { useTheme as useAppTheme } from '../contexts/ThemeContext';
 
 // Mock portfolio data
 const MOCK_PORTFOLIO = {
   totalValue: 25675.50,
   totalYield: 978.25,
   yieldRate: 3.81,
+  impactScore: 85,
+  carbonOffset: 150.8,
   holdings: [
     {
       id: '0x1',
@@ -19,7 +55,8 @@ const MOCK_PORTFOLIO = {
       yield: 3.75,
       yieldAmount: 184.22,
       maturity: '2023-12-15',
-      type: 'T-Bill'
+      type: 'T-Bill',
+      category: 'treasury'
     },
     {
       id: '0x2',
@@ -31,7 +68,8 @@ const MOCK_PORTFOLIO = {
       yield: 4.15,
       yieldAmount: 476.84,
       maturity: '2025-09-15',
-      type: 'T-Note'
+      type: 'T-Note',
+      category: 'treasury'
     },
     {
       id: '0x3',
@@ -43,147 +81,467 @@ const MOCK_PORTFOLIO = {
       yield: 4.65,
       yieldAmount: 430.13,
       maturity: '2033-09-15',
-      type: 'T-Bond'
+      type: 'T-Bond',
+      category: 'treasury'
+    },
+    {
+      id: '0x5f0f0e0d0c0b0a09080706050403020100000005',
+      name: 'Amazon Rainforest Carbon Credits',
+      symbol: 'AMZN-CC',
+      quantity: 50,
+      price: 24.75,
+      value: 1237.50,
+      yield: 0,
+      yieldAmount: 0,
+      impactMetrics: {
+        carbonOffset: 50.0,
+        landProtected: 3.0,
+        waterSaved: 500000
+      },
+      certificationStandard: 'Verra',
+      type: 'Carbon Credit',
+      category: 'environmental',
+      vintage: 2023,
+      sdgAlignment: [13, 15]
+    },
+    {
+      id: '0x5f0f0e0d0c0b0a09080706050403020100000006',
+      name: 'Blue Carbon Mangrove Credits',
+      symbol: 'BLUE-C',
+      quantity: 45,
+      price: 18.50,
+      value: 832.50,
+      yield: 0,
+      yieldAmount: 0,
+      impactMetrics: {
+        carbonOffset: 22.5,
+        landProtected: 0.6,
+        waterSaved: 900000
+      },
+      certificationStandard: 'Gold Standard',
+      type: 'Biodiversity Credit',
+      category: 'environmental',
+      vintage: 2023,
+      sdgAlignment: [13, 14, 15]
     }
   ]
 };
 
 const PortfolioPage = () => {
-  // In a real application, this would check the authentication status
-  const isAuthenticated = false;
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const theme = useTheme();
+  const { theme: appTheme } = useAppTheme();
+  const [tabValue, setTabValue] = useState(0);
 
-  if (!isAuthenticated) {
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
+
+  // Filter assets based on tab
+  const filteredAssets = MOCK_PORTFOLIO.holdings.filter(asset => {
+    if (tabValue === 0) return true; // All assets
+    if (tabValue === 1) return asset.category === 'treasury'; // Treasury only
+    if (tabValue === 2) return asset.category === 'environmental'; // Environmental only
+    return true;
+  });
+
+  // Calculate environmental impact
+  const totalCarbonOffset = MOCK_PORTFOLIO.holdings
+    .filter(asset => asset.category === 'environmental')
+    .reduce((sum, asset) => sum + (asset.impactMetrics?.carbonOffset || 0), 0);
+  
+  const totalLandProtected = MOCK_PORTFOLIO.holdings
+    .filter(asset => asset.category === 'environmental')
+    .reduce((sum, asset) => sum + (asset.impactMetrics?.landProtected || 0), 0);
+  
+  const totalWaterSaved = MOCK_PORTFOLIO.holdings
+    .filter(asset => asset.category === 'environmental')
+    .reduce((sum, asset) => sum + (asset.impactMetrics?.waterSaved || 0), 0);
+
+  // Check if user is authenticated
+  if (!currentUser) {
     return (
-      <Container className="py-5">
-        <Card className="border-0 shadow-sm text-center p-5">
-          <Card.Body>
-            <FaWallet size={64} className="text-muted mb-4" />
-            <h2>Connect Your Wallet</h2>
-            <p className="lead mb-4">
+      <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
+        <Card sx={{ 
+          p: 5, 
+          borderRadius: 2,
+          bgcolor: 'background.paper',
+          color: 'text.primary'
+        }}>
+          <CardContent>
+            <WalletIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 4 }} />
+            <Typography variant="h4" gutterBottom>
+              Connect Your Wallet
+            </Typography>
+            <Typography variant="body1" paragraph color="text.secondary">
               Please connect your Ethereum wallet to view your treasury token portfolio.
-            </p>
-            <Button variant="primary" size="lg">Connect Wallet</Button>
-          </Card.Body>
+            </Typography>
+            <Button 
+              variant="contained" 
+              size="large"
+              onClick={() => {}} // Would trigger wallet connection
+            >
+              Connect Wallet
+            </Button>
+          </CardContent>
         </Card>
       </Container>
     );
   }
 
   return (
-    <Container className="py-4">
-      <h1 className="mb-4">My Portfolio</h1>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+      <Typography variant="h4" gutterBottom color="text.primary">
+        My Portfolio
+      </Typography>
       
-      <Row className="g-4 mb-4">
-        <Col md={4}>
-          <Card className="border-0 shadow-sm h-100">
-            <Card.Body className="d-flex flex-column align-items-center justify-content-center p-4">
-              <div className="rounded-circle bg-primary bg-opacity-10 p-3 mb-3">
-                <FaWallet className="text-primary" size={30} />
-              </div>
-              <h2 className="mb-1">${MOCK_PORTFOLIO.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
-              <p className="text-muted mb-0">Total Portfolio Value</p>
-            </Card.Body>
+      {/* Portfolio Summary Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ 
+            height: '100%', 
+            bgcolor: 'background.paper',
+            color: 'text.primary',
+            borderColor: 'divider' 
+          }}>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                borderRadius: '50%',
+                bgcolor: theme.palette.primary.main + '20',
+                p: 1.5,
+                width: 60,
+                height: 60,
+                mx: 'auto',
+                mb: 2
+              }}>
+                <AccountBalanceIcon color="primary" fontSize="large" />
+              </Box>
+              <Typography variant="h5" component="div" gutterBottom color="text.primary">
+                ${MOCK_PORTFOLIO.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Total Portfolio Value
+              </Typography>
+            </CardContent>
           </Card>
-        </Col>
-        <Col md={4}>
-          <Card className="border-0 shadow-sm h-100">
-            <Card.Body className="d-flex flex-column align-items-center justify-content-center p-4">
-              <div className="rounded-circle bg-success bg-opacity-10 p-3 mb-3">
-                <FaChartLine className="text-success" size={30} />
-              </div>
-              <h2 className="mb-1">${MOCK_PORTFOLIO.totalYield.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
-              <p className="text-muted mb-0">Total Yield Earned</p>
-            </Card.Body>
+        </Grid>
+        
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ 
+            height: '100%', 
+            bgcolor: 'background.paper',
+            color: 'text.primary',
+            borderColor: 'divider'
+          }}>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                borderRadius: '50%',
+                bgcolor: theme.palette.success.main + '20',
+                p: 1.5,
+                width: 60,
+                height: 60,
+                mx: 'auto',
+                mb: 2
+              }}>
+                <TrendingUpIcon color="success" fontSize="large" />
+              </Box>
+              <Typography variant="h5" component="div" gutterBottom color="text.primary">
+                ${MOCK_PORTFOLIO.totalYield.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Total Yield Earned
+              </Typography>
+            </CardContent>
           </Card>
-        </Col>
-        <Col md={4}>
-          <Card className="border-0 shadow-sm h-100">
-            <Card.Body className="d-flex flex-column align-items-center justify-content-center p-4">
-              <div className="rounded-circle bg-info bg-opacity-10 p-3 mb-3">
-                <FaExchangeAlt className="text-info" size={30} />
-              </div>
-              <h2 className="mb-1">{MOCK_PORTFOLIO.yieldRate.toFixed(2)}%</h2>
-              <p className="text-muted mb-0">Average Yield Rate</p>
-            </Card.Body>
+        </Grid>
+        
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ 
+            height: '100%', 
+            bgcolor: 'background.paper',
+            color: 'text.primary',
+            borderColor: 'divider'
+          }}>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                borderRadius: '50%',
+                bgcolor: theme.palette.info.main + '20',
+                p: 1.5,
+                width: 60,
+                height: 60,
+                mx: 'auto',
+                mb: 2
+              }}>
+                <PieChartIcon color="info" fontSize="large" />
+              </Box>
+              <Typography variant="h5" component="div" gutterBottom color="text.primary">
+                {MOCK_PORTFOLIO.yieldRate.toFixed(2)}%
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Average Yield Rate
+              </Typography>
+            </CardContent>
           </Card>
-        </Col>
-      </Row>
+        </Grid>
+        
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ 
+            height: '100%', 
+            bgcolor: 'background.paper',
+            color: 'text.primary',
+            borderColor: 'divider' 
+          }}>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                borderRadius: '50%',
+                bgcolor: '#10b981' + '20', // Environmental green with transparency
+                p: 1.5,
+                width: 60,
+                height: 60,
+                mx: 'auto',
+                mb: 2
+              }}>
+                <ForestIcon sx={{ color: '#10b981' }} fontSize="large" />
+              </Box>
+              <Typography variant="h5" component="div" gutterBottom color="text.primary">
+                {totalCarbonOffset.toFixed(1)} tons
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Carbon Offset
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
       
-      <Card className="border-0 shadow-sm mb-4">
-        <Card.Header>
-          <h4 className="mb-0">Treasury Holdings</h4>
-        </Card.Header>
-        <Card.Body className="p-0">
-          <Table responsive hover className="align-middle mb-0">
-            <thead>
-              <tr>
-                <th>Treasury</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Value</th>
-                <th>Yield</th>
-                <th>Maturity</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {MOCK_PORTFOLIO.holdings.map((holding) => (
-                <tr key={holding.id}>
-                  <td>
-                    <div className="d-flex align-items-center">
-                      <div>
-                        <div className="fw-bold">{holding.name}</div>
-                        <div className="small text-muted d-flex align-items-center">
-                          {holding.symbol}
-                          <Badge bg="secondary" className="ms-2">
-                            {holding.type}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>{holding.quantity}</td>
-                  <td>${holding.price}</td>
-                  <td>${holding.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                  <td>
-                    <div className="text-success fw-bold">{holding.yield}%</div>
-                    <small className="text-muted">${holding.yieldAmount}</small>
-                  </td>
-                  <td>{holding.maturity}</td>
-                  <td>
-                    <div className="d-flex gap-2">
+      {/* Environmental Impact Summary */}
+      <Card sx={{ 
+        mb: 4, 
+        bgcolor: 'background.paper',
+        color: 'text.primary',
+        borderColor: 'divider' 
+      }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom color="text.primary">
+            Environmental Impact Summary
+          </Typography>
+          <Divider sx={{ mb: 3 }} />
+          
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <Box sx={{ 
+                textAlign: 'center', 
+                p: 2,
+                borderRadius: 2,
+                bgcolor: appTheme === 'dark' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
+                boxShadow: appTheme === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.05)'
+              }}>
+                <ForestIcon sx={{ color: '#10b981', fontSize: 40, mb: 1 }} />
+                <Typography variant="h5" gutterBottom color="text.primary">
+                  {totalCarbonOffset.toFixed(1)} tons
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Carbon Offset (CO₂e)
+                </Typography>
+              </Box>
+            </Grid>
+            
+            <Grid item xs={12} md={4}>
+              <Box sx={{ 
+                textAlign: 'center', 
+                p: 2,
+                borderRadius: 2,
+                bgcolor: appTheme === 'dark' ? 'rgba(22, 163, 74, 0.1)' : 'rgba(22, 163, 74, 0.05)',
+                boxShadow: appTheme === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.05)'
+              }}>
+                <NatureIcon sx={{ color: '#16a34a', fontSize: 40, mb: 1 }} />
+                <Typography variant="h5" gutterBottom color="text.primary">
+                  {totalLandProtected.toFixed(1)} ha
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Land Area Protected
+                </Typography>
+              </Box>
+            </Grid>
+            
+            <Grid item xs={12} md={4}>
+              <Box sx={{ 
+                textAlign: 'center', 
+                p: 2,
+                borderRadius: 2,
+                bgcolor: appTheme === 'dark' ? 'rgba(14, 165, 233, 0.1)' : 'rgba(14, 165, 233, 0.05)',
+                boxShadow: appTheme === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.05)'
+              }}>
+                <WaterIcon sx={{ color: '#0ea5e9', fontSize: 40, mb: 1 }} />
+                <Typography variant="h5" gutterBottom color="text.primary">
+                  {(totalWaterSaved / 1000).toFixed(0)} kL
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Water Protected
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+          
+          <Box sx={{ mt: 3, textAlign: 'center' }}>
+            <Button 
+              variant="outlined" 
+              color="primary" 
+              startIcon={<BarChartIcon />}
+              component={Link}
+              to="/environmental/impact"
+            >
+              View Detailed Impact Dashboard
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+      
+      {/* Holdings Tabs and Table */}
+      <Card sx={{ 
+        mb: 4, 
+        bgcolor: 'background.paper',
+        color: 'text.primary',
+        borderColor: 'divider' 
+      }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2, pt: 2 }}>
+          <Tabs 
+            value={tabValue} 
+            onChange={handleTabChange} 
+            aria-label="portfolio tabs"
+          >
+            <Tab label="All Assets" />
+            <Tab label="Treasury Securities" />
+            <Tab label="Environmental Assets" />
+          </Tabs>
+        </Box>
+        
+        <TableContainer sx={{ overflowX: 'auto' }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Asset</TableCell>
+                <TableCell align="right">Quantity</TableCell>
+                <TableCell align="right">Price</TableCell>
+                <TableCell align="right">Value</TableCell>
+                <TableCell align="right">{tabValue === 2 ? 'Impact' : 'Yield'}</TableCell>
+                <TableCell align="right">{tabValue === 2 ? 'Vintage' : 'Maturity'}</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredAssets.map((asset) => (
+                <TableRow key={asset.id} hover>
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body1" fontWeight="medium" color="text.primary">
+                        {asset.name}
+                      </Typography>
+                      <Box display="flex" alignItems="center" mt={0.5}>
+                        <Typography variant="body2" color="text.secondary" mr={1}>
+                          {asset.symbol}
+                        </Typography>
+                        <Chip 
+                          label={asset.type} 
+                          size="small" 
+                          color={asset.category === 'environmental' ? 'success' : 'primary'}
+                          variant="outlined" 
+                        />
+                      </Box>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="right">{asset.quantity}</TableCell>
+                  <TableCell align="right">${asset.price}</TableCell>
+                  <TableCell align="right">${asset.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                  <TableCell align="right">
+                    {asset.category === 'environmental' ? (
+                      <Typography color="success.main" variant="body2">
+                        {asset.impactMetrics.carbonOffset} tons CO₂
+                      </Typography>
+                    ) : (
+                      <>
+                        <Typography color="success.main" fontWeight="medium">
+                          {asset.yield}%
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          ${asset.yieldAmount}
+                        </Typography>
+                      </>
+                    )}
+                  </TableCell>
+                  <TableCell align="right">
+                    {asset.category === 'environmental' ? asset.vintage : asset.maturity}
+                  </TableCell>
+                  <TableCell align="right">
+                    <Box display="flex" gap={1} justifyContent="flex-end">
                       <Button 
-                        as={Link} 
-                        to={`/treasury/${holding.id}`} 
-                        variant="outline-primary" 
-                        size="sm"
+                        variant="outlined" 
+                        size="small"
+                        onClick={() => {
+                          if (asset.category === 'environmental') {
+                            navigate(`/environmental/assets/${asset.id}`);
+                          } else {
+                            navigate(`/treasury/${asset.id}`);
+                          }
+                        }}
                       >
                         Details
                       </Button>
                       <Button 
-                        variant="outline-success" 
-                        size="sm"
+                        variant="outlined"
+                        color="primary"
+                        size="small"
+                        startIcon={<ShoppingCartIcon />}
+                        onClick={() => navigate('/trading')}
                       >
                         Trade
                       </Button>
-                    </div>
-                  </td>
-                </tr>
+                    </Box>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
+            </TableBody>
           </Table>
-        </Card.Body>
+        </TableContainer>
       </Card>
       
-      <Alert variant="info" className="d-flex align-items-center">
-        <FaWallet className="me-3 fs-4" />
-        <div>
-          <h5 className="mb-1">Yield Distribution</h5>
-          <p className="mb-0">
-            Your next yield distribution is scheduled for December 15, 2023. Yields are automatically 
-            distributed to your wallet address.
-          </p>
-        </div>
+      <Alert 
+        severity="info" 
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          bgcolor: appTheme === 'dark' ? 'rgba(30, 136, 229, 0.15)' : 'rgba(30, 136, 229, 0.1)',
+          color: 'text.primary',
+          '& .MuiAlert-icon': {
+            color: appTheme === 'dark' ? '#90caf9' : '#1e88e5'
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <InsightsIcon sx={{ mr: 2, fontSize: 28 }} />
+          <Box>
+            <Typography variant="h6" component="div" fontSize={18}>
+              Yield Distribution
+            </Typography>
+            <Typography variant="body2">
+              Your next yield distribution is scheduled for December 15, 2023. Yields are automatically 
+              distributed to your wallet address.
+            </Typography>
+          </Box>
+        </Box>
       </Alert>
     </Container>
   );
