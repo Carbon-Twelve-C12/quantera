@@ -9,6 +9,7 @@ import PortfolioPage from './pages/PortfolioPage';
 import EnvironmentalAssetPage from './pages/EnvironmentalAssetPage';
 import EnvironmentalMarketplacePage from './pages/EnvironmentalMarketplacePage';
 import ImpactDashboardPage from './pages/ImpactDashboardPage';
+import SmartAccountPage from './pages/SmartAccountPage';
 import { ThemeProvider as BootstrapThemeProvider } from './contexts/ThemeContext';
 import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
 import { AuthProvider } from './contexts/AuthContext';
@@ -84,6 +85,9 @@ function App() {
                   <Route path="/environmental/marketplace" element={<EnvironmentalMarketplacePage />} />
                   <Route path="/environmental/assets/:assetId" element={<EnvironmentalAssetPage />} />
                   <Route path="/environmental/impact" element={<ImpactDashboardPage />} />
+
+                  {/* Smart Account Route */}
+                  <Route path="/smart-account" element={<SmartAccountPage />} />
                   
                   <Route path="*" element={
                     <Container className="py-5 text-center">
