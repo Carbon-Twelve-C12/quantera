@@ -40,9 +40,13 @@ Thumbs.db
 
 # Cache files
 .cache/
-frontend/node_modules/
-frontend/.cache/
 **/node_modules/
 **/.cache/
+**/.pnp.*
+**/*.pack
+**/*.old
+**/default-development/
+frontend/node_modules/
+frontend/.cache/
 frontend/node_modules/.cache/
 frontend/node_modules/.cache/default-development/ 
