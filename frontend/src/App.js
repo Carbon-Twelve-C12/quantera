@@ -10,6 +10,7 @@ import EnvironmentalAssetPage from './pages/EnvironmentalAssetPage';
 import EnvironmentalMarketplacePage from './pages/EnvironmentalMarketplacePage';
 import ImpactDashboardPage from './pages/ImpactDashboardPage';
 import SmartAccountPage from './pages/SmartAccountPage';
+import TradingPage from './pages/TradingPage';
 import { ThemeProvider as BootstrapThemeProvider } from './contexts/ThemeContext';
 import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
 import { AuthProvider } from './contexts/AuthContext';
@@ -80,6 +81,7 @@ function App() {
                   <Route path="/" element={<HomePage />} />
                   <Route path="/marketplace" element={<MarketplacePage />} />
                   <Route path="/portfolio" element={<PortfolioPage />} />
+                  <Route path="/trading" element={<TradingPage />} />
                   
                   {/* Environmental Asset Routes */}
                   <Route path="/environmental/marketplace" element={<EnvironmentalMarketplacePage />} />
