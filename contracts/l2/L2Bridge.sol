@@ -1,433 +1,767 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.17;
 
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 import "../interfaces/IL2Bridge.sol";
-import "../interfaces/ITradingModule.sol";
 
 /**
  * @title L2Bridge
- * @dev Implementation of the Layer 2 bridge for treasury token trading optimization
- * Supports Pectra upgrade capabilities including blob data optimization (EIP-7691)
+ * @dev Contract for bridging orders and trades between L1 and various L2 chains
+ * with enhanced cross-chain capabilities and Pectra EIP support
  */
-contract L2Bridge is IL2Bridge {
-    // Reference to the L1 bridge address
-    address public l1BridgeAddress;
+contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
+    using Counters for Counters.Counter;
+    using ECDSA for bytes32;
+    using MessageHashUtils for bytes32;
+
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
+    bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
+
+    // Constants
+    uint256 public constant GWEI = 1e9;
+
+    // Counters
+    Counters.Counter private _messageIdCounter;
+    Counters.Counter private _orderIdCounter;
+    Counters.Counter private _tradeIdCounter;
+
+    // Mappings
+    mapping(bytes32 => CrossChainMessage) public messages;
+    mapping(uint64 => L2ChainInfo) public chains;
+    mapping(address => bytes32[]) public senderMessages;
+    mapping(uint64 => bytes32[]) public chainMessages;
+    mapping(bytes32 => bytes32) public messageIdByOrderId;
+    mapping(bytes32 => bytes32) public messageIdByTradeId;
+    mapping(address => OrderBridgingRequest[]) public userOrders;
+    mapping(address => TradeSettlementRequest[]) public userTrades;
+    mapping(bytes32 => bool) public processedMessages;
     
-    // L2 chain ID
-    uint256 public l2ChainId;
-    
-    // Current blob gas price
-    uint256 public blobGasPrice;
-    
-    // Address of the admin
-    address public admin;
-    
-    // Mapping of L2 orders by order ID
-    mapping(bytes32 => L2Order) public l2Orders;
-    
-    // Mapping of L2 trades by trade ID
-    mapping(bytes32 => L2Trade) public l2Trades;
-    
-    // Mapping of L1 order ID to L2 order ID
-    mapping(bytes32 => bytes32) public l1ToL2OrderIds;
-    
-    // Mapping of orders by treasury ID
-    mapping(bytes32 => bytes32[]) public treasuryOrders;
-    
-    // Active buy orders by treasury
-    mapping(bytes32 => bytes32[]) public activeBuyOrders;
-    
-    // Active sell orders by treasury
-    mapping(bytes32 => bytes32[]) public activeSellOrders;
-    
-    // Mapping of settled L2 trades
-    mapping(bytes32 => bool) public settledTrades;
-    
-    /**
-     * @dev Modifier to ensure caller is the admin
-     */
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "L2Bridge: caller is not the admin");
-        _;
+    // Events
+    event ChainAdded(uint64 indexed chainId, string name, L2Chain chainType);
+    event ChainUpdated(uint64 indexed chainId, string name, bool enabled);
+    event MessageSent(bytes32 indexed messageId, uint64 indexed destinationChainId, address indexed sender);
+    event MessageReceived(bytes32 indexed messageId, uint64 indexed sourceChainId, address indexed recipient);
+    event MessageStatusUpdated(bytes32 indexed messageId, MessageStatus status);
+    event OrderBridged(bytes32 indexed orderId, bytes32 indexed messageId, uint64 indexed destinationChainId);
+    event TradeSettled(bytes32 indexed tradeId, bytes32 indexed messageId, uint64 indexed destinationChainId);
+    event MessageRetried(bytes32 indexed messageId, uint64 indexed destinationChainId);
+    event BlobDataUsed(bytes32 indexed messageId, uint64 indexed chainId, uint256 dataSize);
+
+    // Constructor
+    constructor() {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(ADMIN_ROLE, msg.sender);
     }
-    
+
+    //--------------------------------------------------------------------------
+    // Chain Management Functions
+    //--------------------------------------------------------------------------
+
     /**
-     * @dev Modifier to ensure caller is the L1 bridge
+     * @dev Add a new L2 chain
+     * @param chainId The chain ID
+     * @param chainType The type of L2 chain
+     * @param name The name of the chain
+     * @param bridgeAddress The address of the bridge on the L2 chain
+     * @param rollupAddress The address of the rollup contract (if applicable)
+     * @param verificationBlocks Number of blocks to wait for verification
+     * @param gasTokenSymbol Symbol of the gas token on the L2
+     * @param nativeTokenPriceUsd Price of native token in USD (scaled by 1e18)
+     * @param averageBlockTime Average block time in seconds
+     * @param blobEnabled Whether the chain supports EIP-7691 blob data
+     * @param maxMessageSize Maximum message size in bytes
      */
-    modifier onlyL1Bridge() {
-        require(msg.sender == l1BridgeAddress, "L2Bridge: caller is not the L1 bridge");
-        _;
-    }
-    
-    /**
-     * @dev Constructor
-     * @param _l1BridgeAddress The address of the L1 bridge
-     * @param _l2ChainId The L2 chain ID
-     * @param _initialBlobGasPrice The initial blob gas price
-     */
-    constructor(address _l1BridgeAddress, uint256 _l2ChainId, uint256 _initialBlobGasPrice) {
-        l1BridgeAddress = _l1BridgeAddress;
-        l2ChainId = _l2ChainId;
-        blobGasPrice = _initialBlobGasPrice;
-        admin = msg.sender;
-    }
-    
-    /**
-     * @dev Create an L2 order from a bridged L1 order
-     * @param l1OrderId The order ID on L1
-     * @param treasuryId The unique identifier for the treasury
-     * @param owner The address of the order owner
-     * @param isBuyOrder Whether the order is a buy order
-     * @param amount The amount of tokens
-     * @param price The price per token
-     * @param expirationTime The expiration time of the order
-     * @param extraData Any additional data for the order
-     * @return The unique identifier for the created L2 order
-     */
-    function createL2Order(
-        bytes32 l1OrderId,
-        bytes32 treasuryId,
-        address owner,
-        bool isBuyOrder,
-        uint256 amount,
-        uint256 price,
-        uint256 expirationTime,
-        bytes calldata extraData
-    ) external override onlyL1Bridge returns (bytes32) {
-        // Generate a unique L2 order ID
-        bytes32 l2OrderId = keccak256(abi.encodePacked(
-            l1OrderId,
-            treasuryId,
-            owner,
-            isBuyOrder,
-            amount,
-            price,
-            expirationTime,
-            block.timestamp
-        ));
+    function addChain(
+        uint64 chainId,
+        L2Chain chainType,
+        string calldata name,
+        address bridgeAddress,
+        address rollupAddress,
+        uint64 verificationBlocks,
+        string calldata gasTokenSymbol,
+        uint256 nativeTokenPriceUsd,
+        uint64 averageBlockTime,
+        bool blobEnabled,
+        uint64 maxMessageSize
+    ) external onlyRole(ADMIN_ROLE) {
+        require(chains[chainId].chainId == 0, "Chain already exists");
         
-        // Create L2 order
-        L2Order memory newOrder = L2Order({
-            orderId: l2OrderId,
-            treasuryId: treasuryId,
-            owner: owner,
-            isBuyOrder: isBuyOrder,
-            amount: amount,
-            price: price,
-            expirationTime: expirationTime,
-            isActive: true,
-            l1OrderId: l1OrderId,
-            extraData: extraData
+        chains[chainId] = L2ChainInfo({
+            chainId: chainId,
+            chainType: chainType,
+            name: name,
+            enabled: true,
+            bridgeAddress: bridgeAddress,
+            rollupAddress: rollupAddress,
+            verificationBlocks: verificationBlocks,
+            gasTokenSymbol: gasTokenSymbol,
+            nativeTokenPriceUsd: nativeTokenPriceUsd,
+            averageBlockTime: averageBlockTime,
+            blob_enabled: blobEnabled,
+            maxMessageSize: maxMessageSize
         });
         
-        // Store the order
-        l2Orders[l2OrderId] = newOrder;
-        l1ToL2OrderIds[l1OrderId] = l2OrderId;
-        treasuryOrders[treasuryId].push(l2OrderId);
+        emit ChainAdded(chainId, name, chainType);
+    }
+
+    /**
+     * @dev Update an existing L2 chain
+     * @param chainId The chain ID to update
+     * @param bridgeAddress The address of the bridge on the L2 chain
+     * @param verificationBlocks Number of blocks to wait for verification
+     * @param nativeTokenPriceUsd Price of native token in USD (scaled by 1e18)
+     * @param averageBlockTime Average block time in seconds
+     * @param enabled Whether the chain is enabled
+     * @param blobEnabled Whether the chain supports EIP-7691 blob data
+     */
+    function updateChain(
+        uint64 chainId,
+        address bridgeAddress,
+        uint64 verificationBlocks,
+        uint256 nativeTokenPriceUsd,
+        uint64 averageBlockTime,
+        bool enabled,
+        bool blobEnabled
+    ) external onlyRole(ADMIN_ROLE) {
+        require(chains[chainId].chainId != 0, "Chain does not exist");
         
-        // Add to active orders
-        if (isBuyOrder) {
-            activeBuyOrders[treasuryId].push(l2OrderId);
-        } else {
-            activeSellOrders[treasuryId].push(l2OrderId);
+        L2ChainInfo storage chain = chains[chainId];
+        chain.bridgeAddress = bridgeAddress;
+        chain.verificationBlocks = verificationBlocks;
+        chain.nativeTokenPriceUsd = nativeTokenPriceUsd;
+        chain.averageBlockTime = averageBlockTime;
+        chain.enabled = enabled;
+        chain.blob_enabled = blobEnabled;
+        
+        emit ChainUpdated(chainId, chain.name, enabled);
+    }
+
+    /**
+     * @dev Check if a chain is supported and enabled
+     * @param chainId The chain ID to check
+     * @return True if the chain is supported and enabled
+     */
+    function isChainSupported(uint64 chainId) public view returns (bool) {
+        return chains[chainId].chainId != 0 && chains[chainId].enabled;
+    }
+
+    /**
+     * @dev Get all supported L2 chains
+     * @return Array of L2ChainInfo structs
+     */
+    function getSupportedChains() external view returns (L2ChainInfo[] memory) {
+        uint256 count = 0;
+        
+        // Count enabled chains
+        for (uint64 i = 1; i < 10000; i++) {
+            if (chains[i].chainId != 0 && chains[i].enabled) {
+                count++;
+            }
         }
         
-        // Emit event
-        emit OrderBridgedFromL1(l1OrderId, l2OrderId, treasuryId);
+        L2ChainInfo[] memory result = new L2ChainInfo[](count);
+        uint256 index = 0;
         
-        return l2OrderId;
-    }
-    
-    /**
-     * @dev Execute trade on L2
-     * @param buyOrderId The unique identifier for the buy order
-     * @param sellOrderId The unique identifier for the sell order
-     * @return The unique identifier for the created L2 trade
-     */
-    function executeL2Trade(bytes32 buyOrderId, bytes32 sellOrderId) external override returns (bytes32) {
-        // Get order details
-        L2Order storage buyOrder = l2Orders[buyOrderId];
-        L2Order storage sellOrder = l2Orders[sellOrderId];
-        
-        // Validate orders
-        require(buyOrder.isActive, "L2Bridge: buy order not active");
-        require(sellOrder.isActive, "L2Bridge: sell order not active");
-        require(buyOrder.treasuryId == sellOrder.treasuryId, "L2Bridge: treasury ID mismatch");
-        require(buyOrder.isBuyOrder, "L2Bridge: not a buy order");
-        require(!sellOrder.isBuyOrder, "L2Bridge: not a sell order");
-        require(buyOrder.price >= sellOrder.price, "L2Bridge: price mismatch");
-        require(block.timestamp <= buyOrder.expirationTime, "L2Bridge: buy order expired");
-        require(block.timestamp <= sellOrder.expirationTime, "L2Bridge: sell order expired");
-        
-        // Determine trade amount (minimum of buy and sell amounts)
-        uint256 tradeAmount = buyOrder.amount < sellOrder.amount ? buyOrder.amount : sellOrder.amount;
-        
-        // Generate a unique trade ID
-        bytes32 tradeId = keccak256(abi.encodePacked(
-            buyOrderId,
-            sellOrderId,
-            tradeAmount,
-            block.timestamp
-        ));
-        
-        // Create trade
-        L2Trade memory newTrade = L2Trade({
-            tradeId: tradeId,
-            treasuryId: buyOrder.treasuryId,
-            buyer: buyOrder.owner,
-            seller: sellOrder.owner,
-            amount: tradeAmount,
-            price: sellOrder.price, // Use sell price (lowest price)
-            timestamp: block.timestamp,
-            buyOrderId: buyOrderId,
-            sellOrderId: sellOrderId
-        });
-        
-        // Store the trade
-        l2Trades[tradeId] = newTrade;
-        
-        // Update order amounts
-        buyOrder.amount -= tradeAmount;
-        sellOrder.amount -= tradeAmount;
-        
-        // Update order status if fully filled
-        if (buyOrder.amount == 0) {
-            buyOrder.isActive = false;
-            _removeOrderFromActive(buyOrderId, buyOrder.treasuryId, true);
+        // Populate result array
+        for (uint64 i = 1; i < 10000; i++) {
+            if (chains[i].chainId != 0 && chains[i].enabled) {
+                result[index] = chains[i];
+                index++;
+            }
         }
         
-        if (sellOrder.amount == 0) {
-            sellOrder.isActive = false;
-            _removeOrderFromActive(sellOrderId, sellOrder.treasuryId, false);
+        return result;
+    }
+
+    /**
+     * @dev Get information about a specific L2 chain
+     * @param chainId The chain ID
+     * @return The L2ChainInfo for the specified chain
+     */
+    function getChainInfo(uint64 chainId) external view returns (L2ChainInfo memory) {
+        require(chains[chainId].chainId != 0, "Chain does not exist");
+        return chains[chainId];
+    }
+
+    /**
+     * @dev Get all supported chain IDs
+     * @return Array of chain IDs
+     */
+    function getSupportedChainIds() external view returns (uint64[] memory) {
+        uint256 count = 0;
+        
+        // Count enabled chains
+        for (uint64 i = 1; i < 10000; i++) {
+            if (chains[i].chainId != 0 && chains[i].enabled) {
+                count++;
+            }
         }
         
-        // Emit event
-        emit L2TradeExecuted(tradeId, buyOrder.treasuryId, buyOrderId, sellOrderId);
+        uint64[] memory result = new uint64[](count);
+        uint256 index = 0;
         
-        return tradeId;
+        // Populate result array
+        for (uint64 i = 1; i < 10000; i++) {
+            if (chains[i].chainId != 0 && chains[i].enabled) {
+                result[index] = i;
+                index++;
+            }
+        }
+        
+        return result;
     }
-    
+
+    //--------------------------------------------------------------------------
+    // Message Management Functions
+    //--------------------------------------------------------------------------
+
     /**
-     * @dev Generate proof for L1 settlement
-     * This implementation leverages EIP-7691 for blob data optimization
-     * @param tradeId The unique identifier for the L2 trade
-     * @return The proof data for L1 settlement
+     * @dev Generate a new unique message ID
+     * @return The new message ID
      */
-    function generateSettlementProof(bytes32 tradeId) external view override returns (bytes memory) {
-        // Get trade details
-        L2Trade memory trade = l2Trades[tradeId];
-        
-        // Ensure trade exists
-        require(trade.tradeId == tradeId, "L2Bridge: trade does not exist");
-        
-        // Get order details
-        L2Order memory buyOrder = l2Orders[trade.buyOrderId];
-        L2Order memory sellOrder = l2Orders[trade.sellOrderId];
-        
-        // For EIP-7691 blob optimization, we pack the proof data in an efficient blob format
-        // The proof includes the trade details and state root information for validation
-        
-        // Get current state root (in a real implementation, this would be a secure state root)
-        bytes32 stateRoot = _getCurrentStateRoot();
-        
-        // Create optimized blob proof data
-        bytes memory proofData = abi.encode(
-            // Trade details
-            trade.tradeId,
-            trade.treasuryId,
-            trade.buyer,
-            trade.seller,
-            trade.amount,
-            trade.price,
-            trade.timestamp,
-            
-            // Order references
-            buyOrder.l1OrderId,
-            sellOrder.l1OrderId,
-            
-            // Verification data
-            stateRoot,
-            block.number,
-            l2ChainId
-        );
-        
-        return proofData;
+    function _generateMessageId() private returns (bytes32) {
+        _messageIdCounter.increment();
+        return keccak256(abi.encodePacked(block.chainid, _messageIdCounter.current(), block.timestamp));
     }
-    
+
     /**
-     * @dev Settle trade back to L1
-     * @param tradeId The unique identifier for the L2 trade
-     * @return Success status
+     * @dev Create a new cross-chain message
+     * @param destinationChainId The destination chain ID
+     * @param recipient The recipient address on the destination chain
+     * @param data The message data
+     * @param amount The amount of tokens to transfer (if applicable)
+     * @return messageId The ID of the created message
      */
-    function settleTradeToL1(bytes32 tradeId) external override returns (bool) {
-        // Ensure trade exists and hasn't been settled
-        require(l2Trades[tradeId].tradeId == tradeId, "L2Bridge: trade does not exist");
-        require(!settledTrades[tradeId], "L2Bridge: trade already settled");
+    function _createMessage(
+        uint64 destinationChainId,
+        address recipient,
+        bytes memory data,
+        uint256 amount
+    ) private returns (bytes32) {
+        require(isChainSupported(destinationChainId), "Destination chain not supported");
         
-        // Mark as settled
-        settledTrades[tradeId] = true;
+        bytes32 messageId = _generateMessageId();
         
-        // Generate proof
-        bytes memory proofData = generateSettlementProof(tradeId);
+        CrossChainMessage storage message = messages[messageId];
+        message.messageId = messageId;
+        message.sourceChainId = uint64(block.chainid);
+        message.destinationChainId = destinationChainId;
+        message.sender = msg.sender;
+        message.recipient = recipient;
+        message.amount = amount;
+        message.data = data;
+        message.timestamp = block.timestamp;
+        message.nonce = _messageIdCounter.current();
+        message.status = MessageStatus.PENDING;
+        message.transactionHash = bytes32(uint256(uint160(tx.origin)));
         
-        // Get order IDs from L1
-        L2Trade memory trade = l2Trades[tradeId];
-        L2Order memory buyOrder = l2Orders[trade.buyOrderId];
-        L2Order memory sellOrder = l2Orders[trade.sellOrderId];
+        // Add message to sender and chain mappings
+        senderMessages[msg.sender].push(messageId);
+        chainMessages[destinationChainId].push(messageId);
         
-        // Call L1 to settle the trade (this would be a cross-chain message in practice)
-        // In an actual implementation, this would use a proper L2->L1 messaging system
-        // For this example, we simulate the L1 bridge call
-        bytes32 l1TradeId = _simulateL1Settlement(
-            buyOrder.l1OrderId,
-            sellOrder.l1OrderId,
-            proofData
-        );
+        emit MessageSent(messageId, destinationChainId, msg.sender);
         
-        // Emit event
-        emit TradeSettledToL1(tradeId, l1TradeId);
+        return messageId;
+    }
+
+    /**
+     * @dev Update a message's status
+     * @param messageId The message ID
+     * @param status The new status
+     * @param failureReason The reason for failure (if applicable)
+     */
+    function updateMessageStatus(
+        bytes32 messageId,
+        MessageStatus status,
+        string calldata failureReason
+    ) external onlyRole(OPERATOR_ROLE) {
+        require(messages[messageId].messageId == messageId, "Message does not exist");
+        
+        CrossChainMessage storage message = messages[messageId];
+        message.status = status;
+        
+        if (status == MessageStatus.CONFIRMED) {
+            message.confirmationTimestamp = block.timestamp;
+            message.confirmationTransactionHash = bytes32(uint256(uint160(tx.origin)));
+        } else if (status == MessageStatus.FAILED) {
+            message.failureReason = failureReason;
+        }
+        
+        emit MessageStatusUpdated(messageId, status);
+    }
+
+    /**
+     * @dev Retry a failed message
+     * @param messageId The message ID to retry
+     * @return success True if the retry was successful
+     */
+    function retryMessage(bytes32 messageId) external nonReentrant returns (bool) {
+        require(messages[messageId].messageId == messageId, "Message does not exist");
+        require(messages[messageId].status == MessageStatus.FAILED, "Message is not failed");
+        require(messages[messageId].sender == msg.sender || hasRole(OPERATOR_ROLE, msg.sender), "Not authorized");
+        
+        CrossChainMessage storage message = messages[messageId];
+        message.status = MessageStatus.PENDING;
+        message.failureReason = "";
+        
+        emit MessageRetried(messageId, message.destinationChainId);
         
         return true;
     }
-    
+
     /**
-     * @dev Get all active L2 orders for a treasury
-     * @param treasuryId The unique identifier for the treasury
-     * @return Array of L2 order IDs
+     * @dev Get the status of a message
+     * @param messageId The message ID
+     * @return The message status
      */
-    function getActiveL2Orders(bytes32 treasuryId) external view override returns (bytes32[] memory) {
-        // Combine active buy and sell orders
-        bytes32[] memory buyOrders = activeBuyOrders[treasuryId];
-        bytes32[] memory sellOrders = activeSellOrders[treasuryId];
+    function getMessageStatus(bytes32 messageId) external view returns (MessageStatus) {
+        require(messages[messageId].messageId == messageId, "Message does not exist");
+        return messages[messageId].status;
+    }
+
+    /**
+     * @dev Get the details of a message
+     * @param messageId The message ID
+     * @return The message details
+     */
+    function getMessageDetails(bytes32 messageId) external view returns (CrossChainMessage memory) {
+        require(messages[messageId].messageId == messageId, "Message does not exist");
+        return messages[messageId];
+    }
+
+    /**
+     * @dev Get all messages sent by a user
+     * @param sender The sender address
+     * @return Array of message IDs
+     */
+    function getMessagesBySender(address sender) external view returns (bytes32[] memory) {
+        return senderMessages[sender];
+    }
+
+    /**
+     * @dev Get all messages for a specific chain
+     * @param chainId The chain ID
+     * @return Array of message IDs
+     */
+    function getMessagesByChain(uint64 chainId) external view returns (bytes32[] memory) {
+        return chainMessages[chainId];
+    }
+
+    /**
+     * @dev Get all pending messages
+     * @return Array of message IDs
+     */
+    function getPendingMessages() external view returns (bytes32[] memory) {
+        uint256 totalMessages = _messageIdCounter.current();
+        uint256 pendingCount = 0;
         
-        // Create array for all active orders
-        bytes32[] memory allOrders = new bytes32[](buyOrders.length + sellOrders.length);
-        
-        // Populate array
-        for (uint256 i = 0; i < buyOrders.length; i++) {
-            allOrders[i] = buyOrders[i];
-        }
-        
-        for (uint256 i = 0; i < sellOrders.length; i++) {
-            allOrders[buyOrders.length + i] = sellOrders[i];
-        }
-        
-        return allOrders;
-    }
-    
-    /**
-     * @dev Get L2 order details
-     * @param orderId The unique identifier for the L2 order
-     * @return The L2 order details
-     */
-    function getL2OrderDetails(bytes32 orderId) external view override returns (L2Order memory) {
-        return l2Orders[orderId];
-    }
-    
-    /**
-     * @dev Get L2 trade details
-     * @param tradeId The unique identifier for the L2 trade
-     * @return The L2 trade details
-     */
-    function getL2TradeDetails(bytes32 tradeId) external view override returns (L2Trade memory) {
-        return l2Trades[tradeId];
-    }
-    
-    /**
-     * @dev Update blob gas price (admin only)
-     * @param newBlobGasPrice The new blob gas price
-     */
-    function updateBlobGasPrice(uint256 newBlobGasPrice) external override onlyAdmin {
-        blobGasPrice = newBlobGasPrice;
-        emit BlobGasPriceUpdated(newBlobGasPrice);
-    }
-    
-    /**
-     * @dev Get the current blob gas price
-     * @return The current blob gas price
-     */
-    function getBlobGasPrice() external view override returns (uint256) {
-        return blobGasPrice;
-    }
-    
-    /**
-     * @dev Get the L1 bridge address
-     * @return The L1 bridge address
-     */
-    function getL1BridgeAddress() external view override returns (address) {
-        return l1BridgeAddress;
-    }
-    
-    /**
-     * @dev Get the L2 chain ID
-     * @return The L2 chain ID
-     */
-    function getL2ChainId() external view override returns (uint256) {
-        return l2ChainId;
-    }
-    
-    /**
-     * @dev Update the L1 bridge address (admin only)
-     * @param newL1BridgeAddress The new L1 bridge address
-     */
-    function updateL1BridgeAddress(address newL1BridgeAddress) external onlyAdmin {
-        l1BridgeAddress = newL1BridgeAddress;
-    }
-    
-    /**
-     * @dev Remove an order from the active orders list
-     * @param orderId The order ID to remove
-     * @param treasuryId The treasury ID
-     * @param isBuyOrder Whether it's a buy order
-     */
-    function _removeOrderFromActive(bytes32 orderId, bytes32 treasuryId, bool isBuyOrder) internal {
-        bytes32[] storage activeOrders = isBuyOrder ? activeBuyOrders[treasuryId] : activeSellOrders[treasuryId];
-        
-        // Find and remove order
-        for (uint256 i = 0; i < activeOrders.length; i++) {
-            if (activeOrders[i] == orderId) {
-                // Replace with the last element and pop
-                activeOrders[i] = activeOrders[activeOrders.length - 1];
-                activeOrders.pop();
-                break;
+        // First, count pending messages
+        for (uint256 i = 1; i <= totalMessages; i++) {
+            bytes32 messageId = keccak256(abi.encodePacked(block.chainid, i, 0)); // Approximate ID for checking
+            if (messages[messageId].status == MessageStatus.PENDING) {
+                pendingCount++;
             }
         }
+        
+        bytes32[] memory pendingMessages = new bytes32[](pendingCount);
+        uint256 index = 0;
+        
+        // Then populate the array
+        for (uint256 i = 1; i <= totalMessages; i++) {
+            bytes32 messageId = keccak256(abi.encodePacked(block.chainid, i, 0)); // Approximate ID for checking
+            if (messages[messageId].status == MessageStatus.PENDING) {
+                pendingMessages[index] = messageId;
+                index++;
+            }
+        }
+        
+        return pendingMessages;
     }
-    
+
     /**
-     * @dev Get the current state root for verification
-     * @return The current state root
+     * @dev Get the count of messages for a chain
+     * @param chainId The chain ID
+     * @return The message count
      */
-    function _getCurrentStateRoot() internal view returns (bytes32) {
-        // In a real implementation, this would get the current L2 state root
-        // For this example, we create a simulated state root
-        return keccak256(abi.encodePacked(
-            block.number,
-            block.timestamp,
-            block.difficulty,
-            blockhash(block.number - 1)
-        ));
+    function getMessageCount(uint64 chainId) external view returns (uint64) {
+        return uint64(chainMessages[chainId].length);
     }
-    
+
     /**
-     * @dev Simulate L1 settlement (in practice, this would be a cross-chain message)
-     * @param buyOrderId L1 buy order ID
-     * @param sellOrderId L1 sell order ID
-     * @param proofData Proof data for settlement
-     * @return Simulated L1 trade ID
+     * @dev Verify a message with provided proof
+     * @param messageId The message ID
+     * @param proof The verification proof
+     * @return True if the message is verified
      */
-    function _simulateL1Settlement(
-        bytes32 buyOrderId,
-        bytes32 sellOrderId,
-        bytes memory proofData
-    ) internal view returns (bytes32) {
-        // In a real implementation, this would send a message to L1
-        // For this example, we create a simulated L1 trade ID
-        return keccak256(abi.encodePacked(
-            buyOrderId,
-            sellOrderId,
-            proofData,
-            block.timestamp
-        ));
+    function verifyMessage(bytes32 messageId, bytes calldata proof) external view returns (bool) {
+        require(messages[messageId].messageId == messageId, "Message does not exist");
+        
+        CrossChainMessage storage message = messages[messageId];
+        L2ChainInfo storage chain = chains[message.destinationChainId];
+        
+        // Simplified verification for demonstration
+        // In a real implementation, this would verify merkle proofs or other cryptographic evidence
+        if (chain.rollupAddress != address(0)) {
+            // For Optimistic Rollups, verify against the rollup contract
+            bytes32 messageHash = keccak256(abi.encodePacked(
+                message.messageId,
+                message.sourceChainId,
+                message.destinationChainId,
+                message.sender,
+                message.recipient,
+                message.data
+            ));
+            
+            // Verify signature in the proof
+            bytes32 ethSignedMessageHash = messageHash.toEthSignedMessageHash();
+            address signer = ethSignedMessageHash.recover(proof);
+            
+            return signer == chain.rollupAddress || hasRole(RELAYER_ROLE, signer);
+        }
+        
+        // Default case - simplified validation
+        return proof.length > 0;
+    }
+
+    //--------------------------------------------------------------------------
+    // Bridge Order Functions
+    //--------------------------------------------------------------------------
+
+    /**
+     * @dev Bridge an order to an L2 chain
+     * @param request The order bridging request
+     * @return result The order bridging result
+     */
+    function bridgeOrder(OrderBridgingRequest calldata request) 
+        external 
+        nonReentrant 
+        whenNotPaused 
+        returns (OrderBridgingResult memory result) 
+    {
+        require(isChainSupported(request.destinationChainId), "Destination chain not supported");
+        require(request.user == msg.sender || hasRole(OPERATOR_ROLE, msg.sender), "Not authorized");
+        require(request.expiration > block.timestamp, "Order expired");
+        
+        // Prepare order data for the message
+        bytes memory orderData = abi.encode(
+            request.order_id,
+            request.treasury_id,
+            request.user,
+            request.is_buy,
+            request.amount,
+            request.price,
+            request.expiration,
+            request.signature
+        );
+        
+        // Calculate fee based on destination chain and data size
+        L2ChainInfo storage chain = chains[request.destinationChainId];
+        
+        // Determine if we should use blob data (EIP-7691) based on size and chain support
+        bool useBlob = chain.blob_enabled && 
+                     orderData.length > 100_000 && 
+                     orderData.length <= chain.maxMessageSize;
+        
+        // Create cross-chain message
+        bytes32 messageId = _createMessage(
+            request.destinationChainId,
+            chain.bridgeAddress,
+            orderData,
+            0
+        );
+        
+        // Calculate estimated confirmation time
+        uint64 estimatedTime = chain.verificationBlocks * chain.averageBlockTime;
+        
+        // Link order ID to message ID
+        messageIdByOrderId[request.order_id] = messageId;
+        
+        // Store order in user orders
+        userOrders[request.user].push(request);
+        
+        // Increment order counter
+        _orderIdCounter.increment();
+        
+        // Create result
+        result = OrderBridgingResult({
+            message_id: messageId,
+            source_transaction_hash: bytes32(uint256(uint160(tx.origin))),
+            estimated_confirmation_time: estimatedTime,
+            bridging_fee: 0, // In a real implementation, this would be calculated based on gas prices
+            status: MessageStatus.PENDING
+        });
+        
+        if (useBlob) {
+            emit BlobDataUsed(messageId, request.destinationChainId, orderData.length);
+        }
+        
+        emit OrderBridged(request.order_id, messageId, request.destinationChainId);
+        
+        return result;
+    }
+
+    /**
+     * @dev Get orders bridged by a user
+     * @param user The user address
+     * @return Array of order bridging requests
+     */
+    function getOrdersByUser(address user) external view returns (OrderBridgingRequest[] memory) {
+        return userOrders[user];
+    }
+
+    /**
+     * @dev Get the total count of bridged orders
+     * @return The order count
+     */
+    function getBridgedOrderCount() external view returns (uint64) {
+        return uint64(_orderIdCounter.current());
+    }
+
+    //--------------------------------------------------------------------------
+    // Settle Trade Functions
+    //--------------------------------------------------------------------------
+
+    /**
+     * @dev Settle a trade on an L2 chain
+     * @param request The trade settlement request
+     * @return result The trade settlement result
+     */
+    function settleTrade(TradeSettlementRequest calldata request) 
+        external 
+        nonReentrant 
+        whenNotPaused 
+        returns (TradeSettlementResult memory result) 
+    {
+        require(isChainSupported(request.destinationChainId), "Destination chain not supported");
+        require(msg.sender == request.buyer || msg.sender == request.seller || hasRole(OPERATOR_ROLE, msg.sender), "Not authorized");
+        
+        // Prepare trade data for the message
+        bytes memory tradeData = abi.encode(
+            request.trade_id,
+            request.buy_order_id,
+            request.sell_order_id,
+            request.treasury_id,
+            request.buyer,
+            request.seller,
+            request.amount,
+            request.price,
+            request.settlement_timestamp
+        );
+        
+        // Calculate fee based on destination chain and data size
+        L2ChainInfo storage chain = chains[request.destinationChainId];
+        
+        // Determine if we should use blob data (EIP-7691) based on size and chain support
+        bool useBlob = chain.blob_enabled && 
+                     tradeData.length > 100_000 && 
+                     tradeData.length <= chain.maxMessageSize;
+        
+        // Create cross-chain message
+        bytes32 messageId = _createMessage(
+            request.destinationChainId,
+            chain.bridgeAddress,
+            tradeData,
+            0
+        );
+        
+        // Calculate estimated confirmation time
+        uint64 estimatedTime = chain.verificationBlocks * chain.averageBlockTime;
+        
+        // Link trade ID to message ID
+        messageIdByTradeId[request.trade_id] = messageId;
+        
+        // Store trade in user trades
+        userTrades[request.buyer].push(request);
+        userTrades[request.seller].push(request);
+        
+        // Increment trade counter
+        _tradeIdCounter.increment();
+        
+        // Create result
+        result = TradeSettlementResult({
+            message_id: messageId,
+            source_transaction_hash: bytes32(uint256(uint160(tx.origin))),
+            estimated_confirmation_time: estimatedTime,
+            settlement_fee: 0, // In a real implementation, this would be calculated based on gas prices
+            status: MessageStatus.PENDING
+        });
+        
+        if (useBlob) {
+            emit BlobDataUsed(messageId, request.destinationChainId, tradeData.length);
+        }
+        
+        emit TradeSettled(request.trade_id, messageId, request.destinationChainId);
+        
+        return result;
+    }
+
+    /**
+     * @dev Get trades settled for a user
+     * @param user The user address
+     * @return Array of trade settlement requests
+     */
+    function getTradesByUser(address user) external view returns (TradeSettlementRequest[] memory) {
+        return userTrades[user];
+    }
+
+    /**
+     * @dev Get the total count of settled trades
+     * @return The trade count
+     */
+    function getSettledTradeCount() external view returns (uint64) {
+        return uint64(_tradeIdCounter.current());
+    }
+
+    //--------------------------------------------------------------------------
+    // Gas Estimation Functions
+    //--------------------------------------------------------------------------
+
+    /**
+     * @dev Estimate gas cost for bridging to an L2 chain
+     * @param destinationChainId The destination chain ID
+     * @param dataSize The size of the data in bytes
+     * @param useBlob Whether to use blob data (EIP-7691)
+     * @return The gas estimation
+     */
+    function estimateBridgingGas(
+        uint64 destinationChainId,
+        uint64 dataSize,
+        bool useBlob
+    ) external view returns (L2GasEstimation memory) {
+        require(isChainSupported(destinationChainId), "Destination chain not supported");
+        
+        L2ChainInfo storage chain = chains[destinationChainId];
+        
+        // Check if blob is supported on the chain
+        if (useBlob && !chain.blob_enabled) {
+            useBlob = false;
+        }
+        
+        // Base gas cost for transaction
+        uint256 gasLimit = 100_000;
+        
+        // Add gas for data
+        uint256 dataGas;
+        
+        if (useBlob) {
+            // Blob gas calculation based on EIP-7691
+            // Each blob can contain up to 128KB of data
+            uint256 blobCount = (dataSize + 131_071) / 131_072; // Ceiling division by 128KB
+            dataGas = blobCount * 120_000; // Approximate gas per blob
+        } else {
+            // Regular calldata gas cost (16 gas per non-zero byte, 4 gas per zero byte)
+            // We'll use an approximation of 14 gas per byte on average
+            dataGas = dataSize * 14;
+        }
+        
+        gasLimit += dataGas;
+        
+        // Gas prices in wei (10 gwei = 10 * 10^9 wei)
+        uint256 gasPrice = 10 * GWEI;
+        uint256 blobGasPrice = useBlob ? 5 * GWEI : 0;
+        
+        // Calculate total cost
+        uint256 totalCost = gasLimit * gasPrice;
+        uint256 blobCost = 0;
+        uint256 blobGasLimit = 0;
+        
+        if (useBlob) {
+            blobGasLimit = (dataSize + 131_071) / 131_072 * 120_000;
+            blobCost = blobGasLimit * blobGasPrice;
+            totalCost += blobCost;
+        }
+        
+        // Calculate USD cost
+        // nativeTokenPriceUsd is scaled by 1e18
+        // To prevent loss of precision, we scale up before division
+        uint256 usdCostScaled = (totalCost * chain.nativeTokenPriceUsd) / 1e18;
+        
+        // Return the estimation
+        return L2GasEstimation({
+            chainId: destinationChainId,
+            chainType: chain.chainType,
+            gasPriceWei: gasPrice,
+            gasLimit: gasLimit,
+            estimatedCostWei: totalCost,
+            estimatedCostUsd: usdCostScaled,
+            estimatedTimeSeconds: chain.verificationBlocks * chain.averageBlockTime,
+            blobGasPrice: useBlob ? blobGasPrice : 0,
+            blobGasLimit: blobGasLimit,
+            blobCostWei: blobCost
+        });
+    }
+
+    /**
+     * @dev Calculate the optimal data format (blob vs calldata) based on size and gas prices
+     * @param destinationChainId The destination chain ID
+     * @param dataSize The size of the data in bytes
+     * @return useBlob Whether to use blob data
+     */
+    function calculateOptimalDataFormat(
+        uint64 destinationChainId,
+        uint64 dataSize
+    ) external view returns (bool) {
+        require(isChainSupported(destinationChainId), "Destination chain not supported");
+        
+        L2ChainInfo storage chain = chains[destinationChainId];
+        
+        // If blob is not supported or data is too small, use calldata
+        if (!chain.blob_enabled || dataSize <= 100_000) {
+            return false;
+        }
+        
+        // If data is too large for calldata but can fit in blob, use blob
+        if (dataSize > 100_000 && dataSize <= chain.maxMessageSize) {
+            return true;
+        }
+        
+        // For intermediate sizes, calculate the cost of each approach
+        L2GasEstimation memory blobEstimation = this.estimateBridgingGas(destinationChainId, dataSize, true);
+        L2GasEstimation memory calldataEstimation = this.estimateBridgingGas(destinationChainId, dataSize, false);
+        
+        // Use the cheaper option
+        return blobEstimation.estimatedCostWei < calldataEstimation.estimatedCostWei;
+    }
+
+    //--------------------------------------------------------------------------
+    // Utility Functions
+    //--------------------------------------------------------------------------
+
+    /**
+     * @dev Check if blob data is enabled for a chain
+     * @param chainId The chain ID
+     * @return True if blob data is enabled
+     */
+    function isBlobEnabled(uint64 chainId) external view returns (bool) {
+        require(chains[chainId].chainId != 0, "Chain does not exist");
+        return chains[chainId].blob_enabled;
+    }
+
+    /**
+     * @dev Get the chain ID of the current network
+     * @return The chain ID
+     */
+    function getCurrentChainId() external view returns (uint64) {
+        return uint64(block.chainid);
+    }
+
+    /**
+     * @dev Pause the contract
+     */
+    function pause() external onlyRole(ADMIN_ROLE) {
+        _pause();
+    }
+
+    /**
+     * @dev Unpause the contract
+     */
+    function unpause() external onlyRole(ADMIN_ROLE) {
+        _unpause();
     }
 } 
