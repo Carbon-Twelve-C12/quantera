@@ -35,7 +35,6 @@ import {
   ShoppingCart as ShoppingCartIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { useTheme as useAppTheme } from '../contexts/ThemeContext';
 
 // Mock portfolio data
 const MOCK_PORTFOLIO = {
@@ -131,7 +130,6 @@ const PortfolioPage = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const theme = useTheme();
-  const { theme: appTheme } = useAppTheme();
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event, newValue) => {
@@ -192,7 +190,11 @@ const PortfolioPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
-      <Typography variant="h4" gutterBottom color="text.primary">
+      <Typography 
+        variant="h4" 
+        gutterBottom 
+        sx={{ color: theme.palette.mode === 'dark' ? 'text.secondary' : 'text.primary' }}
+      >
         My Portfolio
       </Typography>
       
@@ -346,8 +348,8 @@ const PortfolioPage = () => {
                 textAlign: 'center', 
                 p: 2,
                 borderRadius: 2,
-                bgcolor: appTheme === 'dark' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
-                boxShadow: appTheme === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.05)'
+                bgcolor: theme.palette.mode === 'dark' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
+                boxShadow: theme.palette.mode === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.05)'
               }}>
                 <ForestIcon sx={{ color: '#10b981', fontSize: 40, mb: 1 }} />
                 <Typography variant="h5" gutterBottom color="text.primary">
@@ -364,8 +366,8 @@ const PortfolioPage = () => {
                 textAlign: 'center', 
                 p: 2,
                 borderRadius: 2,
-                bgcolor: appTheme === 'dark' ? 'rgba(22, 163, 74, 0.1)' : 'rgba(22, 163, 74, 0.05)',
-                boxShadow: appTheme === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.05)'
+                bgcolor: theme.palette.mode === 'dark' ? 'rgba(22, 163, 74, 0.1)' : 'rgba(22, 163, 74, 0.05)',
+                boxShadow: theme.palette.mode === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.05)'
               }}>
                 <NatureIcon sx={{ color: '#16a34a', fontSize: 40, mb: 1 }} />
                 <Typography variant="h5" gutterBottom color="text.primary">
@@ -382,8 +384,8 @@ const PortfolioPage = () => {
                 textAlign: 'center', 
                 p: 2,
                 borderRadius: 2,
-                bgcolor: appTheme === 'dark' ? 'rgba(14, 165, 233, 0.1)' : 'rgba(14, 165, 233, 0.05)',
-                boxShadow: appTheme === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.05)'
+                bgcolor: theme.palette.mode === 'dark' ? 'rgba(14, 165, 233, 0.1)' : 'rgba(14, 165, 233, 0.05)',
+                boxShadow: theme.palette.mode === 'dark' ? '0 4px 6px rgba(0, 0, 0, 0.2)' : '0 4px 6px rgba(0, 0, 0, 0.05)'
               }}>
                 <WaterIcon sx={{ color: '#0ea5e9', fontSize: 40, mb: 1 }} />
                 <Typography variant="h5" gutterBottom color="text.primary">
@@ -523,21 +525,37 @@ const PortfolioPage = () => {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          bgcolor: appTheme === 'dark' ? 'rgba(30, 136, 229, 0.15)' : 'rgba(30, 136, 229, 0.1)',
-          color: 'text.primary',
+          bgcolor: theme.palette.mode === 'dark' ? 'rgba(30, 136, 229, 0.15)' : 'rgba(30, 136, 229, 0.1)',
+          border: 1,
+          borderColor: theme.palette.mode === 'dark' ? 'rgba(30, 136, 229, 0.3)' : 'rgba(30, 136, 229, 0.2)',
           '& .MuiAlert-icon': {
-            color: appTheme === 'dark' ? '#90caf9' : '#1e88e5'
+            color: theme.palette.mode === 'dark' ? '#90caf9' : '#1e88e5'
+          },
+          '.MuiAlert-message': {
+            color: 'inherit'
           }
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <InsightsIcon sx={{ mr: 2, fontSize: 28 }} />
+        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+          <InsightsIcon sx={{ 
+            mr: 2, 
+            fontSize: 28, 
+            color: theme.palette.mode === 'dark' ? '#90caf9' : '#1e88e5' 
+          }} />
           <Box>
-            <Typography variant="h6" component="div" fontSize={18}>
+            <Typography 
+              variant="h6" 
+              component="div" 
+              fontSize={18} 
+              sx={{ color: theme.palette.mode === 'dark' ? 'text.secondary' : 'text.primary' }}
+            >
               Yield Distribution
             </Typography>
-            <Typography variant="body2">
-              Your next yield distribution is scheduled for December 15, 2023. Yields are automatically 
+            <Typography 
+              variant="body2" 
+              sx={{ color: theme.palette.mode === 'dark' ? 'text.secondary' : 'text.primary' }}
+            >
+              Your next yield distribution is scheduled for August 15, 2025. Yields are automatically 
               distributed to your wallet address.
             </Typography>
           </Box>

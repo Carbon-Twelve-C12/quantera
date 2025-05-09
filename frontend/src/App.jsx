@@ -1,12 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 import { Box } from '@mui/material';
 
 // Layout Components
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
+import GlobalStyles from './styles/GlobalStyles';
 
 // Page Components
 import HomePage from './pages/HomePage';
@@ -26,74 +25,12 @@ import ImpactDashboardPage from './pages/ImpactDashboardPage';
 import { AuthProvider } from './contexts/AuthContext';
 import { WalletProvider } from './contexts/WalletContext';
 import { NotificationProvider } from './contexts/NotificationProvider';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 const App = () => {
-  // Create theme with light and dark mode support
-  const theme = createTheme({
-    palette: {
-      mode: 'light',
-      primary: {
-        main: '#1E88E5',
-      },
-      secondary: {
-        main: '#26A69A',
-      },
-      success: {
-        main: '#66BB6A',
-      },
-      background: {
-        default: '#f7f9fc',
-        paper: '#ffffff',
-      },
-    },
-    typography: {
-      fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-      h1: {
-        fontWeight: 700,
-      },
-      h2: {
-        fontWeight: 700,
-      },
-      h3: {
-        fontWeight: 600,
-      },
-      h4: {
-        fontWeight: 600,
-      },
-      h5: {
-        fontWeight: 600,
-      },
-      h6: {
-        fontWeight: 600,
-      },
-    },
-    shape: {
-      borderRadius: 10,
-    },
-    components: {
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            borderRadius: 8,
-            textTransform: 'none',
-            fontWeight: 600,
-          },
-        },
-      },
-      MuiCard: {
-        styleOverrides: {
-          root: {
-            borderRadius: 12,
-            boxShadow: '0 2px 12px 0 rgba(0,0,0,0.05)',
-          },
-        },
-      },
-    },
-  });
-
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <ThemeProvider>
+      <GlobalStyles />
       <AuthProvider>
         <WalletProvider>
           <NotificationProvider>
