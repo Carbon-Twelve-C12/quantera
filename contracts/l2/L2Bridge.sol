@@ -314,7 +314,7 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
         
         return true;
     }
-
+    
     /**
      * @dev Get the status of a message
      * @param messageId The message ID
@@ -763,5 +763,40 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      */
     function unpause() external onlyRole(ADMIN_ROLE) {
         _unpause();
+    }
+
+    /**
+     * @dev Helper function for testing - exposes the private _createMessage function
+     */
+    function createMessageForTest(
+        uint64 destinationChainId,
+        address recipient,
+        bytes memory data,
+        uint256 amount
+    ) external whenNotPaused returns (bytes32) {
+        require(isChainSupported(destinationChainId), "Destination chain not supported");
+        
+        bytes32 messageId = _generateMessageId();
+        
+        CrossChainMessage storage message = messages[messageId];
+        message.messageId = messageId;
+        message.sourceChainId = uint64(block.chainid);
+        message.destinationChainId = destinationChainId;
+        message.sender = msg.sender;
+        message.recipient = recipient;
+        message.amount = amount;
+        message.data = data;
+        message.timestamp = block.timestamp;
+        message.nonce = _messageIdCounter.current();
+        message.status = MessageStatus.PENDING;
+        message.transactionHash = bytes32(uint256(uint160(tx.origin)));
+        
+        // Add message to sender and chain mappings
+        senderMessages[msg.sender].push(messageId);
+        chainMessages[destinationChainId].push(messageId);
+        
+        emit MessageSent(messageId, destinationChainId, msg.sender);
+        
+        return messageId;
     }
 } 

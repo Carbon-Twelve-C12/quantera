@@ -9,6 +9,11 @@ use crate::{
         TreasuryTokenClient,
         TradingClient,
         L2Client,
+        L2BridgeClient,
+        SmartAccountClient,
+        AssetFactoryClient,
+        LiquidityPoolsClient,
+        YieldOptimizerClient,
     },
     AssetManagementService,
 };
@@ -30,6 +35,9 @@ mod health;
 mod liquidity_pools_api;
 mod yield_optimizer_api;
 mod environmental_assets;
+mod asset_factory_api;
+mod l2_bridge_api;
+mod smart_account_api;
 
 // Re-export for easy access
 pub use auth::routes as auth_routes;
@@ -40,6 +48,8 @@ pub use health::routes as health_routes;
 pub use liquidity_pools_api::liquidity_pools_routes;
 pub use yield_optimizer_api::yield_optimizer_routes;
 pub use environmental_assets::routes as environmental_assets_routes;
+pub use l2_bridge_api::routes as l2_bridge_routes;
+pub use smart_account_api::routes as smart_account_routes;
 
 /// Container for token clients
 #[derive(Clone)]
@@ -68,6 +78,11 @@ pub struct ApiServices {
     pub l2_client: Arc<L2Client>,
     pub token_clients: Arc<TokenClientsContainer>,
     pub asset_management_service: Arc<AssetManagementService>,
+    pub l2_bridge_client: Arc<L2BridgeClient<EthereumClient>>,
+    pub smart_account_client: Arc<SmartAccountClient<EthereumClient>>,
+    pub asset_factory_client: Arc<AssetFactoryClient<EthereumClient>>,
+    pub liquidity_pools_client: Arc<LiquidityPoolsClient<EthereumClient>>,
+    pub yield_optimizer_client: Arc<YieldOptimizerClient<EthereumClient>>,
 }
 
 /// Create all API routes
@@ -91,23 +106,39 @@ pub fn routes(
     // Trading routes
     let trading_routes = trading::routes(api_services.clone());
     
-    // Liquidity pool routes
+    // Liquidity pool routes - use the client from ApiServices
     let liquidity_routes = liquidity_pools_api::liquidity_pools_routes(
         api_services.ethereum_client.clone(),
-        // Using a placeholder address - replace with actual address
-        Address::from_slice(&[0u8; 20])
+        api_services.liquidity_pools_client.address
     );
     
-    // Yield optimizer routes
+    // Yield optimizer routes - use the client from ApiServices
     let yield_routes = yield_optimizer_api::yield_optimizer_routes(
         api_services.ethereum_client.clone(),
-        // Using a placeholder address - replace with actual address
-        Address::from_slice(&[0u8; 20]) 
+        api_services.yield_optimizer_client.address
     );
     
     // Environmental assets routes
     let environmental_routes = environmental_assets::routes(
         api_services.asset_management_service.clone()
+    );
+    
+    // Asset factory routes - use the client from ApiServices
+    let asset_factory_routes = asset_factory_api::routes(
+        api_services.ethereum_client.clone(),
+        api_services.asset_factory_client.address
+    );
+    
+    // L2 Bridge routes - use the client from ApiServices
+    let l2_bridge_routes = l2_bridge_api::routes(
+        api_services.ethereum_client.clone(),
+        api_services.l2_bridge_client.address
+    );
+    
+    // Smart Account routes - use the client from ApiServices
+    let smart_account_routes = smart_account_api::routes(
+        api_services.ethereum_client.clone(),
+        api_services.smart_account_client.address
     );
     
     // Combine all routes with prefix
@@ -119,6 +150,9 @@ pub fn routes(
         .or(liquidity_routes)
         .or(yield_routes)
         .or(environmental_routes)
+        .or(asset_factory_routes)
+        .or(l2_bridge_routes)
+        .or(smart_account_routes)
         .with(warp::trace::request())
         .recover(handle_rejection);
     

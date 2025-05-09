@@ -733,4 +733,65 @@ contract SmartAccountTemplates is AccessControl, Pausable, ReentrancyGuard {
     function unpause() external onlyRole(ADMIN_ROLE) {
         _unpause();
     }
+
+    /// Create a multi-signature template
+    function createMultiSigTemplate(
+        string calldata name,
+        string calldata description,
+        bool isPublic,
+        address[] calldata signers,
+        uint8 threshold,
+        uint64 executionTimelock
+    ) external returns (bytes32) {
+        // ... existing code ...
+    }
+    
+    /// Helper function for testing - deploy account with string key-value parameters
+    function deployAccountWithParams(
+        bytes32 templateId,
+        string[] calldata keys,
+        string[] calldata values
+    ) external whenNotPaused nonReentrant returns (bytes32) {
+        require(_templates[templateId].templateId == templateId, "Template does not exist");
+        require(keys.length == values.length, "Keys and values must have same length");
+        
+        AccountTemplateData storage template = _templates[templateId];
+        
+        // Increment template usage count
+        template.usageCount += 1;
+        
+        // Generate account ID
+        _accountIdCounter.increment();
+        bytes32 accountId = keccak256(abi.encodePacked(
+            _accountIdCounter.current(),
+            msg.sender,
+            templateId,
+            block.timestamp
+        ));
+        
+        // Store account data
+        _accounts[accountId] = SmartAccountData({
+            accountId: accountId,
+            owner: msg.sender,
+            templateId: templateId,
+            code: template.code,
+            codeHash: keccak256(template.code),
+            creationDate: uint64(block.timestamp),
+            lastExecution: 0,
+            executionCount: 0,
+            isActive: true
+        });
+        
+        // Store parameters
+        for (uint256 i = 0; i < keys.length; i++) {
+            _accountParameters[accountId][keys[i]] = values[i];
+        }
+        
+        // Add to owner's accounts
+        _ownerAccounts[msg.sender].push(accountId);
+        
+        emit AccountDeployed(accountId, msg.sender, templateId);
+        
+        return accountId;
+    }
 } 

@@ -1,0 +1,38 @@
+{
+  "name": "quantera-contracts-tests",
+  "version": "1.0.0",
+  "description": "Tests for Quantera Platform smart contracts",
+  "main": "index.js",
+  "scripts": {
+    "test": "hardhat test",
+    "test:integration": "hardhat test integration/**/*.js",
+    "test:unit": "hardhat test unit/**/*.js",
+    "coverage": "hardhat coverage",
+    "gas-report": "REPORT_GAS=true hardhat test",
+    "node": "hardhat node"
+  },
+  "keywords": [
+    "ethereum",
+    "solidity",
+    "smart-contracts",
+    "hardhat",
+    "testing"
+  ],
+  "author": "Quantera Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.6",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-etherscan": "^3.1.7",
+    "@openzeppelin/hardhat-upgrades": "^1.22.1",
+    "@openzeppelin/test-helpers": "^0.5.16",
+    "chai": "^4.3.7",
+    "dotenv": "^16.0.3",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.14.0",
+    "hardhat-gas-reporter": "^1.0.9",
+    "solidity-coverage": "^0.8.2"
+  }
+} 
