@@ -52,7 +52,7 @@ Quantera/
   - AssetFactory contract for multi-asset tokenization
   - LiquidityPools contract with concentrated liquidity positioning
   - YieldOptimizer contract with strategy marketplace and auto-compounding
-  - L2Bridge contract with enhanced cross-chain capabilities
+  - L2Bridge contract with enhanced cross-chain capabilities and EIP-7691 blob data optimization
   - SmartAccountTemplates contract with template management and account deployment
   - Integration tests between contracts
 - **Backend Services**: 
@@ -60,15 +60,17 @@ Quantera/
   - Contract client implementations
   - Service layer components
   - RESTful API layer with comprehensive endpoints
-  - L2BridgeClient for interacting with L2 bridge
+  - L2BridgeClient for interacting with L2 bridge with enhanced cross-chain capabilities
   - SmartAccountClient for managing smart account templates
   - API endpoints for L2 bridge and smart account functionality
+  - WebSocket service for real-time updates on L2 bridge messages and smart account operations
 - **Frontend Components**: 
   - Core page components
   - Common components
   - Theme system with light/dark mode support
   - Responsive design for all devices
   - Consistent styling across components
+  - L2Bridge interaction components with gas optimization
 - **Environmental Asset Integration**:
   - Updated asset class enum from "CARBON_CREDIT" to "ENVIRONMENTAL_ASSET" for broader inclusivity
   - Support for biodiversity credits, renewable energy certificates, and water rights
@@ -78,11 +80,9 @@ Quantera/
 ### In Progress
 - **Liquidity Pools Integration**: Frontend interface for concentrated liquidity provision
 - **Yield Optimizer Integration**: Strategy marketplace UI and implementation
-- **Cross-Chain Integration**: Enhanced L2 bridge with blob data optimization
 - **Frontend Wallet Connectivity**: Unified interface for all supporting wallets
 - **Environmental Impact Dashboard**: Real-time tracking and visualization of impact metrics
 - **Certification Standard Integration**: Direct connections to environmental asset verification frameworks
-- **API Enhancement**: Adding WebSocket support for real-time updates
 
 ### Next Steps
 - Implement YieldOptimizer API endpoints
