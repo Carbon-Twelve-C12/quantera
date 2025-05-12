@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "../interfaces/IL2Bridge.sol";
+import "./L2BridgeGasOptimizer.sol";
 
 /**
  * @title L2Bridge
@@ -42,6 +43,19 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     mapping(address => TradeSettlementRequest[]) public userTrades;
     mapping(bytes32 => bool) public processedMessages;
     
+    // Gas optimizer
+    L2BridgeGasOptimizer public gasOptimizer;
+
+    // Chain-specific limits
+    uint256 public maxRetryCount = 3;
+    uint256 public defaultExpirationPeriod = 7 days;
+    
+    // Domain separator for EIP-712 signatures
+    bytes32 private immutable _DOMAIN_SEPARATOR;
+    
+    // Type hash constants
+    bytes32 private constant ORDER_TYPEHASH = keccak256("Order(bytes32 orderId,bytes32 treasuryId,address user,bool isBuy,uint256 amount,uint256 price,uint64 expiration,uint256 destinationChainId)");
+
     // Events
     event ChainAdded(uint64 indexed chainId, string name, L2Chain chainType);
     event ChainUpdated(uint64 indexed chainId, string name, bool enabled);
@@ -54,9 +68,25 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     event BlobDataUsed(bytes32 indexed messageId, uint64 indexed chainId, uint256 dataSize);
 
     // Constructor
-    constructor() {
+    constructor(address gasOptimizerAddress) {
+        require(gasOptimizerAddress != address(0), "Gas optimizer address cannot be zero");
+        
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(ADMIN_ROLE, msg.sender);
+        _grantRole(RELAYER_ROLE, msg.sender);
+        _grantRole(OPERATOR_ROLE, msg.sender);
+        
+        gasOptimizer = L2BridgeGasOptimizer(gasOptimizerAddress);
+        
+        _DOMAIN_SEPARATOR = keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256("Quantera L2Bridge"),
+                keccak256("1"),
+                block.chainid,
+                address(this)
+            )
+        );
     }
 
     //--------------------------------------------------------------------------
