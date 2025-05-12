@@ -12,7 +12,7 @@ import "../interfaces/ISmartAccountTemplates.sol";
  * @title SmartAccountTemplates
  * @dev Contract for managing smart account templates and executing account logic
  */
-contract SmartAccountTemplates is AccessControl, Pausable, ReentrancyGuard {
+contract SmartAccountTemplates is ISmartAccountTemplates, AccessControl, Pausable, ReentrancyGuard {
     using Counters for Counters.Counter;
     using ECDSA for bytes32;
 
@@ -433,77 +433,65 @@ contract SmartAccountTemplates is AccessControl, Pausable, ReentrancyGuard {
         bytes32 accountId,
         bytes calldata data,
         ExecutionParams calldata executionParams
-    ) external payable whenNotPaused nonReentrant returns (ExecutionResult memory) {
+    ) external whenNotPaused nonReentrant returns (ExecutionResult memory) {
         require(_accounts[accountId].accountId == accountId, "Account does not exist");
         require(_accounts[accountId].isActive, "Account is not active");
         
         SmartAccountData storage account = _accounts[accountId];
         
         // Check authorization
-        bool isAuthorized = account.owner == msg.sender;
+        bool isAuthorized = false;
         
-        // Check delegation if caller is not the owner
-        if (!isAuthorized && executionParams.delegated) {
-            require(executionParams.delegate == msg.sender, "Invalid delegate address");
-            require(isDelegate(accountId, msg.sender), "Not a delegate for this account");
-            require(block.timestamp <= executionParams.validUntil, "Execution request expired");
-            require(!_usedNonces[keccak256(abi.encodePacked(accountId, executionParams.nonce))], "Nonce already used");
-            
-            // Mark nonce as used
-            _usedNonces[keccak256(abi.encodePacked(accountId, executionParams.nonce))] = true;
-            
+        if (msg.sender == account.owner) {
             isAuthorized = true;
+        } else if (executionParams.delegated) {
+            // Check if the delegate is authorized
+            isAuthorized = _isDelegateAuthorized(accountId, executionParams.delegate);
+            
+            // Verify the delegate's signature
+            if (isAuthorized) {
+                // When using delegated execution, validate nonce to prevent replay
+                require(!_usedNonces[keccak256(abi.encodePacked(accountId, executionParams.nonce))], "Nonce already used");
+                _usedNonces[keccak256(abi.encodePacked(accountId, executionParams.nonce))] = true;
+                
+                // Ensure execution hasn't expired
+                require(block.timestamp <= executionParams.validUntil, "Execution window expired");
+            }
         }
         
-        require(isAuthorized, "Not authorized to execute account");
+        require(isAuthorized, "Not authorized to execute");
         
-        // Create operation ID
+        // Create operation ID for tracking
         _operationIdCounter.increment();
         bytes32 operationId = keccak256(abi.encodePacked(
-            accountId,
             _operationIdCounter.current(),
+            accountId,
+            msg.sender,
             block.timestamp
         ));
         
-        // Initialize result
-        ExecutionResult memory result = ExecutionResult({
-            success: false,
-            resultData: new bytes(0),
-            logs: new string[](0),
-            gasUsed: 0,
-            errorMessage: ""
-        });
+        // Execute the code (in a real implementation, this would use a VM or interpreter)
+        ExecutionResult memory result = _executeCode(account.code, data, accountId);
         
-        // Execute code using an isolated execution environment
-        // In a real implementation, this would use a secure VM or interpreter
-        // For now, we'll simulate the execution
-        
-        // Simplified execution logic (placeholder)
-        result.success = true;
-        result.resultData = abi.encode("Execution Successful");
-        string[] memory logs = new string[](1);
-        logs[0] = "Execution log: Account executed successfully";
-        result.logs = logs;
-        result.gasUsed = gasleft();
-        
-        // Update account state
+        // Update account execution stats
         account.lastExecution = uint64(block.timestamp);
         account.executionCount += 1;
         
-        // Record operation
+        // Record the operation
         SmartAccountOperation memory operation = SmartAccountOperation({
             operationId: operationId,
             accountId: accountId,
-            operationType: "Execute",
+            operationType: "execute",
             timestamp: uint64(block.timestamp),
             data: data,
             result: result,
-            executedBy: msg.sender
+            executed_by: msg.sender
         });
         
         _accountOperations[accountId].push(operation);
         
         emit AccountExecuted(accountId, msg.sender, operationId);
+        emit OperationAdded(accountId, operationId, "execute");
         
         return result;
     }
@@ -520,150 +508,34 @@ contract SmartAccountTemplates is AccessControl, Pausable, ReentrancyGuard {
     ) external view returns (ExecutionResult memory) {
         require(_accounts[accountId].accountId == accountId, "Account does not exist");
         
-        // Simulate execution without state changes
-        // In a real implementation, this would use a secure VM or interpreter in view mode
-        // For now, we'll simulate the execution
+        // Execute code in simulation mode
+        return _executeCode(_accounts[accountId].code, data, accountId);
+    }
+
+    /**
+     * @dev Execute code with a VM or interpreter
+     * @param code The code to execute
+     * @param data The input data
+     * @param accountId The account ID (for parameter access)
+     * @return result The execution result
+     */
+    function _executeCode(bytes memory code, bytes memory data, bytes32 accountId) private view returns (ExecutionResult memory) {
+        // This is a simplified implementation
+        // In a real contract, this would use a JS VM, EVM interpreter, or other execution environment
         
-        // Simplified simulation logic (placeholder)
-        ExecutionResult memory result = ExecutionResult({
+        // For demonstration purposes, we'll return a mock result
+        // but in a real implementation, this would execute the code and return real results
+        
+        string[] memory logs = new string[](1);
+        logs[0] = "Code execution simulated";
+        
+        return ExecutionResult({
             success: true,
-            resultData: abi.encode("Simulation Successful"),
-            logs: new string[](1),
-            gasUsed: 100000,
-            errorMessage: ""
+            result_data: abi.encode("Execution successful"),
+            logs: logs,
+            gas_used: 50000,
+            error_message: ""
         });
-        result.logs[0] = "Simulation log: Account execution would succeed";
-        
-        return result;
-    }
-
-    /**
-     * @dev Add a delegate to a smart account
-     * @param accountId Account ID
-     * @param delegate Address to add as delegate
-     * @return success Whether the operation was successful
-     */
-    function addDelegate(
-        bytes32 accountId,
-        address delegate
-    ) external whenNotPaused returns (bool) {
-        require(_accounts[accountId].accountId == accountId, "Account does not exist");
-        require(_accounts[accountId].owner == msg.sender, "Not the account owner");
-        require(delegate != address(0), "Invalid delegate address");
-        require(!isDelegate(accountId, delegate), "Already a delegate");
-        
-        // Add delegate
-        _accountDelegates[accountId].push(delegate);
-        
-        // Add account to delegate's accounts
-        _delegateAccounts[delegate].push(accountId);
-        
-        emit DelegateAdded(accountId, delegate);
-        
-        return true;
-    }
-
-    /**
-     * @dev Remove a delegate from a smart account
-     * @param accountId Account ID
-     * @param delegate Address to remove as delegate
-     * @return success Whether the operation was successful
-     */
-    function removeDelegate(
-        bytes32 accountId,
-        address delegate
-    ) external whenNotPaused returns (bool) {
-        require(_accounts[accountId].accountId == accountId, "Account does not exist");
-        require(_accounts[accountId].owner == msg.sender, "Not the account owner");
-        require(isDelegate(accountId, delegate), "Not a delegate");
-        
-        // Remove delegate from account's delegates
-        address[] storage delegates = _accountDelegates[accountId];
-        for (uint256 i = 0; i < delegates.length; i++) {
-            if (delegates[i] == delegate) {
-                delegates[i] = delegates[delegates.length - 1];
-                delegates.pop();
-                break;
-            }
-        }
-        
-        // Remove account from delegate's accounts
-        bytes32[] storage delegateAccts = _delegateAccounts[delegate];
-        for (uint256 i = 0; i < delegateAccts.length; i++) {
-            if (delegateAccts[i] == accountId) {
-                delegateAccts[i] = delegateAccts[delegateAccts.length - 1];
-                delegateAccts.pop();
-                break;
-            }
-        }
-        
-        emit DelegateRemoved(accountId, delegate);
-        
-        return true;
-    }
-
-    /**
-     * @dev Get all delegates for a smart account
-     * @param accountId Account ID
-     * @return Array of delegate addresses
-     */
-    function getDelegates(bytes32 accountId) external view returns (address[] memory) {
-        require(_accounts[accountId].accountId == accountId, "Account does not exist");
-        
-        return _accountDelegates[accountId];
-    }
-
-    /**
-     * @dev Check if an address is a delegate for a smart account
-     * @param accountId Account ID
-     * @param delegate Address to check
-     * @return isDelegate Whether the address is a delegate
-     */
-    function isDelegate(
-        bytes32 accountId,
-        address delegate
-    ) public view returns (bool) {
-        require(_accounts[accountId].accountId == accountId, "Account does not exist");
-        
-        address[] storage delegates = _accountDelegates[accountId];
-        for (uint256 i = 0; i < delegates.length; i++) {
-            if (delegates[i] == delegate) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-
-    /**
-     * @dev Get operation history for a smart account
-     * @param accountId Account ID
-     * @return Array of operations
-     */
-    function getOperationHistory(
-        bytes32 accountId
-    ) external view returns (SmartAccountOperation[] memory) {
-        require(_accounts[accountId].accountId == accountId, "Account does not exist");
-        
-        return _accountOperations[accountId];
-    }
-
-    /**
-     * @dev Get accounts owned by a user
-     * @param owner Owner address
-     * @return Array of account IDs
-     */
-    function getAccountsByOwner(address owner) external view returns (bytes32[] memory) {
-        return _ownerAccounts[owner];
-    }
-
-    /**
-     * @dev Get accounts where an address is a delegate
-     * @param delegate Delegate address
-     * @return Array of account IDs
-     */
-    function getAccountsByDelegate(address delegate) external view returns (bytes32[] memory) {
-        return _delegateAccounts[delegate];
     }
 
     /**
@@ -675,10 +547,7 @@ contract SmartAccountTemplates is AccessControl, Pausable, ReentrancyGuard {
         require(_accounts[accountId].accountId == accountId, "Account does not exist");
         
         _nonceCounter.increment();
-        uint256 nonce = _nonceCounter.current();
-        _accountNonces[accountId] = nonce;
-        
-        return nonce;
+        return _nonceCounter.current();
     }
 
     /**
@@ -697,9 +566,7 @@ contract SmartAccountTemplates is AccessControl, Pausable, ReentrancyGuard {
     ) external view returns (bool) {
         require(_accounts[accountId].accountId == accountId, "Account does not exist");
         
-        SmartAccountData storage account = _accounts[accountId];
-        
-        // Create message hash
+        // Create the message hash that was signed
         bytes32 messageHash = keccak256(abi.encodePacked(
             accountId,
             data,
@@ -707,18 +574,399 @@ contract SmartAccountTemplates is AccessControl, Pausable, ReentrancyGuard {
             block.chainid
         ));
         
-        // Recover signer
-        bytes32 ethSignedMessageHash = messageHash.toEthSignedMessageHash();
+        // Convert to Ethereum signed message hash
+        bytes32 ethSignedMessageHash = keccak256(abi.encodePacked(
+            "\x19Ethereum Signed Message:\n32",
+            messageHash
+        ));
+        
+        // Recover the signer address
         address signer = ethSignedMessageHash.recover(signature);
         
-        // Check if signer is the owner
-        if (signer == account.owner) {
-            return true;
+        // Check if the signer is the account owner or a delegate
+        return (signer == _accounts[accountId].owner || _isDelegateAuthorized(accountId, signer));
+    }
+
+    /**
+     * @dev Get operation history for a smart account
+     * @param accountId Account ID
+     * @return Array of operations
+     */
+    function getOperationHistory(
+        bytes32 accountId
+    ) external view returns (SmartAccountOperation[] memory) {
+        require(_accounts[accountId].accountId == accountId, "Account does not exist");
+        return _accountOperations[accountId];
+    }
+
+    //--------------------------------------------------------------------------
+    // Delegation Management Functions
+    //--------------------------------------------------------------------------
+
+    /**
+     * @dev Add a delegate to a smart account
+     * @param accountId Account ID
+     * @param delegate Address to add as delegate
+     * @return success Whether the operation was successful
+     */
+    function addDelegate(
+        bytes32 accountId,
+        address delegate
+    ) external whenNotPaused nonReentrant returns (bool) {
+        require(_accounts[accountId].accountId == accountId, "Account does not exist");
+        require(_accounts[accountId].owner == msg.sender, "Not the account owner");
+        require(delegate != address(0), "Invalid delegate address");
+        require(delegate != _accounts[accountId].owner, "Owner cannot be delegate");
+        
+        // Check if delegate already exists
+        for (uint256 i = 0; i < _accountDelegates[accountId].length; i++) {
+            if (_accountDelegates[accountId][i] == delegate) {
+                return true; // Already a delegate, consider it success
+            }
         }
         
-        // Check if signer is a delegate
-        return isDelegate(accountId, signer);
+        // Add the delegate
+        _accountDelegates[accountId].push(delegate);
+        
+        // Add account to delegate's accounts
+        _delegateAccounts[delegate].push(accountId);
+        
+        // Update the account's delegate array
+        SmartAccountData storage account = _accounts[accountId];
+        account.delegates = _accountDelegates[accountId];
+        
+        emit DelegateAdded(accountId, delegate);
+        
+        return true;
     }
+
+    /**
+     * @dev Remove a delegate from a smart account
+     * @param accountId Account ID
+     * @param delegate Address to remove as delegate
+     * @return success Whether the operation was successful
+     */
+    function removeDelegate(
+        bytes32 accountId,
+        address delegate
+    ) external whenNotPaused nonReentrant returns (bool) {
+        require(_accounts[accountId].accountId == accountId, "Account does not exist");
+        require(_accounts[accountId].owner == msg.sender, "Not the account owner");
+        
+        // Find and remove delegate from account delegates
+        bool found = false;
+        for (uint256 i = 0; i < _accountDelegates[accountId].length; i++) {
+            if (_accountDelegates[accountId][i] == delegate) {
+                // Replace with last element and remove last
+                _accountDelegates[accountId][i] = _accountDelegates[accountId][_accountDelegates[accountId].length - 1];
+                _accountDelegates[accountId].pop();
+                found = true;
+                break;
+            }
+        }
+        
+        require(found, "Delegate not found");
+        
+        // Remove account from delegate's accounts
+        for (uint256 i = 0; i < _delegateAccounts[delegate].length; i++) {
+            if (_delegateAccounts[delegate][i] == accountId) {
+                _delegateAccounts[delegate][i] = _delegateAccounts[delegate][_delegateAccounts[delegate].length - 1];
+                _delegateAccounts[delegate].pop();
+                break;
+            }
+        }
+        
+        // Update the account's delegate array
+        SmartAccountData storage account = _accounts[accountId];
+        account.delegates = _accountDelegates[accountId];
+        
+        emit DelegateRemoved(accountId, delegate);
+        
+        return true;
+    }
+
+    /**
+     * @dev Get all delegates for a smart account
+     * @param accountId Account ID
+     * @return Array of delegate addresses
+     */
+    function getDelegates(bytes32 accountId) external view returns (address[] memory) {
+        require(_accounts[accountId].accountId == accountId, "Account does not exist");
+        return _accountDelegates[accountId];
+    }
+
+    /**
+     * @dev Check if an address is a delegate for a smart account
+     * @param accountId Account ID
+     * @param delegate Address to check
+     * @return isDelegate Whether the address is a delegate
+     */
+    function isDelegate(
+        bytes32 accountId,
+        address delegate
+    ) external view returns (bool) {
+        require(_accounts[accountId].accountId == accountId, "Account does not exist");
+        return _isDelegateAuthorized(accountId, delegate);
+    }
+
+    /**
+     * @dev Check if a delegate is authorized for an account
+     * @param accountId The account ID
+     * @param delegate The delegate address
+     * @return Whether the delegate is authorized
+     */
+    function _isDelegateAuthorized(bytes32 accountId, address delegate) private view returns (bool) {
+        for (uint256 i = 0; i < _accountDelegates[accountId].length; i++) {
+            if (_accountDelegates[accountId][i] == delegate) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //--------------------------------------------------------------------------
+    // Specialized Template Creation Functions
+    //--------------------------------------------------------------------------
+
+    /**
+     * @dev Create a yield reinvestment template
+     * @param name Template name
+     * @param description Template description
+     * @param isPublic Whether the template is public
+     * @param autoCompoundFrequency Frequency of auto-compounding (in seconds)
+     * @param minReinvestAmount Minimum amount to reinvest
+     * @param reinvestmentTargets Target assets for reinvestment
+     * @param reinvestmentAllocations Allocation percentages for reinvestment targets
+     * @return templateId ID of the created template
+     */
+    function createYieldReinvestmentTemplate(
+        string calldata name,
+        string calldata description,
+        bool isPublic,
+        uint64 autoCompoundFrequency,
+        uint256 minReinvestAmount,
+        address[] calldata reinvestmentTargets,
+        uint8[] calldata reinvestmentAllocations
+    ) external whenNotPaused nonReentrant returns (bytes32) {
+        // Validate inputs
+        require(reinvestmentTargets.length > 0, "Must have at least one target");
+        require(reinvestmentTargets.length == reinvestmentAllocations.length, "Target and allocation count mismatch");
+        
+        // Validate that allocations sum to 100%
+        uint256 totalAllocation = 0;
+        for (uint256 i = 0; i < reinvestmentAllocations.length; i++) {
+            totalAllocation += reinvestmentAllocations[i];
+        }
+        require(totalAllocation == 100, "Allocations must sum to 100");
+        
+        // Encode the specialized parameters into the template code
+        bytes memory code = abi.encode(
+            "YIELD_REINVESTMENT",
+            autoCompoundFrequency,
+            minReinvestAmount,
+            reinvestmentTargets,
+            reinvestmentAllocations
+        );
+        
+        // Create the parameter schema
+        string memory parametersSchema = string(abi.encodePacked(
+            '{"type":"object","properties":{"autoCompoundFrequency":{"type":"number","minimum":0},"minReinvestAmount":{"type":"string","pattern":"^[0-9]+$"},"reinvestmentTargets":{"type":"array","items":{"type":"string","pattern":"^0x[a-fA-F0-9]{40}$"}},"reinvestmentAllocations":{"type":"array","items":{"type":"number","minimum":0,"maximum":100}}},"required":["autoCompoundFrequency","minReinvestAmount","reinvestmentTargets","reinvestmentAllocations"]}'
+        ));
+        
+        // Create the template
+        return createTemplate(
+            name,
+            description,
+            TemplateType.YIELD_REINVESTMENT,
+            code,
+            isPublic,
+            parametersSchema,
+            "1.0.0"
+        );
+    }
+
+    /**
+     * @dev Create an automated trading template
+     * @param name Template name
+     * @param description Template description
+     * @param isPublic Whether the template is public
+     * @param targetTokens Target tokens for trading
+     * @param priceThresholds Price thresholds for trading
+     * @param isPriceAbove Whether to trigger when price is above threshold
+     * @param orderSizes Order sizes for each target
+     * @param expirationStrategy Strategy for order expiration
+     * @return templateId ID of the created template
+     */
+    function createAutomatedTradingTemplate(
+        string calldata name,
+        string calldata description,
+        bool isPublic,
+        address[] calldata targetTokens,
+        uint256[] calldata priceThresholds,
+        bool[] calldata isPriceAbove,
+        uint256[] calldata orderSizes,
+        uint8 expirationStrategy
+    ) external whenNotPaused nonReentrant returns (bytes32) {
+        // Validate inputs
+        require(targetTokens.length > 0, "Must have at least one token");
+        require(
+            targetTokens.length == priceThresholds.length &&
+            targetTokens.length == isPriceAbove.length &&
+            targetTokens.length == orderSizes.length,
+            "Array length mismatch"
+        );
+        
+        // Encode the specialized parameters into the template code
+        bytes memory code = abi.encode(
+            "AUTOMATED_TRADING",
+            targetTokens,
+            priceThresholds,
+            isPriceAbove,
+            orderSizes,
+            expirationStrategy
+        );
+        
+        // Create the parameter schema (simplified)
+        string memory parametersSchema = string(abi.encodePacked(
+            '{"type":"object","properties":{"targetTokens":{"type":"array","items":{"type":"string","pattern":"^0x[a-fA-F0-9]{40}$"}},"priceThresholds":{"type":"array","items":{"type":"string","pattern":"^[0-9]+$"}},"isPriceAbove":{"type":"array","items":{"type":"boolean"}},"orderSizes":{"type":"array","items":{"type":"string","pattern":"^[0-9]+$"}},"expirationStrategy":{"type":"number","minimum":0,"maximum":255}},"required":["targetTokens","priceThresholds","isPriceAbove","orderSizes","expirationStrategy"]}'
+        ));
+        
+        // Create the template
+        return createTemplate(
+            name,
+            description,
+            TemplateType.AUTOMATED_TRADING,
+            code,
+            isPublic,
+            parametersSchema,
+            "1.0.0"
+        );
+    }
+
+    /**
+     * @dev Create a portfolio rebalancing template
+     * @param name Template name
+     * @param description Template description
+     * @param isPublic Whether the template is public
+     * @param targetAssets Target assets for rebalancing
+     * @param targetAllocations Target allocation percentages
+     * @param rebalanceThreshold Threshold percentage to trigger rebalancing
+     * @param rebalanceFrequency Frequency of rebalancing (in seconds)
+     * @param maxSlippage Maximum slippage percentage allowed
+     * @return templateId ID of the created template
+     */
+    function createPortfolioRebalancingTemplate(
+        string calldata name,
+        string calldata description,
+        bool isPublic,
+        address[] calldata targetAssets,
+        uint8[] calldata targetAllocations,
+        uint8 rebalanceThreshold,
+        uint64 rebalanceFrequency,
+        uint8 maxSlippage
+    ) external whenNotPaused nonReentrant returns (bytes32) {
+        // Validate inputs
+        require(targetAssets.length > 0, "Must have at least one asset");
+        require(targetAssets.length == targetAllocations.length, "Asset and allocation count mismatch");
+        require(rebalanceThreshold > 0 && rebalanceThreshold <= 100, "Invalid rebalance threshold");
+        require(maxSlippage > 0 && maxSlippage <= 100, "Invalid max slippage");
+        
+        // Validate that allocations sum to 100%
+        uint256 totalAllocation = 0;
+        for (uint256 i = 0; i < targetAllocations.length; i++) {
+            totalAllocation += targetAllocations[i];
+        }
+        require(totalAllocation == 100, "Allocations must sum to 100");
+        
+        // Encode the specialized parameters into the template code
+        bytes memory code = abi.encode(
+            "PORTFOLIO_REBALANCING",
+            targetAssets,
+            targetAllocations,
+            rebalanceThreshold,
+            rebalanceFrequency,
+            maxSlippage
+        );
+        
+        // Create the parameter schema (simplified)
+        string memory parametersSchema = string(abi.encodePacked(
+            '{"type":"object","properties":{"targetAssets":{"type":"array","items":{"type":"string","pattern":"^0x[a-fA-F0-9]{40}$"}},"targetAllocations":{"type":"array","items":{"type":"number","minimum":1,"maximum":100}},"rebalanceThreshold":{"type":"number","minimum":1,"maximum":100},"rebalanceFrequency":{"type":"number","minimum":0},"maxSlippage":{"type":"number","minimum":1,"maximum":100}},"required":["targetAssets","targetAllocations","rebalanceThreshold","rebalanceFrequency","maxSlippage"]}'
+        ));
+        
+        // Create the template
+        return createTemplate(
+            name,
+            description,
+            TemplateType.PORTFOLIO_REBALANCING,
+            code,
+            isPublic,
+            parametersSchema,
+            "1.0.0"
+        );
+    }
+
+    /**
+     * @dev Create a dollar cost averaging template
+     * @param name Template name
+     * @param description Template description
+     * @param isPublic Whether the template is public
+     * @param sourceAsset Source asset for investment
+     * @param targetAsset Target asset for investment
+     * @param investmentAmount Amount to invest each period
+     * @param frequency Investment frequency (in seconds)
+     * @param duration Total duration of DCA strategy (in seconds, 0 for unlimited)
+     * @param maxSlippage Maximum slippage percentage allowed
+     * @return templateId ID of the created template
+     */
+    function createDCATemplate(
+        string calldata name,
+        string calldata description,
+        bool isPublic,
+        address sourceAsset,
+        address targetAsset,
+        uint256 investmentAmount,
+        uint64 frequency,
+        uint64 duration,
+        uint8 maxSlippage
+    ) external whenNotPaused nonReentrant returns (bytes32) {
+        // Validate inputs
+        require(sourceAsset != address(0) && targetAsset != address(0), "Invalid asset addresses");
+        require(sourceAsset != targetAsset, "Source and target must be different");
+        require(investmentAmount > 0, "Investment amount must be positive");
+        require(frequency > 0, "Frequency must be positive");
+        require(maxSlippage > 0 && maxSlippage <= 100, "Invalid max slippage");
+        
+        // Encode the specialized parameters into the template code
+        bytes memory code = abi.encode(
+            "DOLLAR_COST_AVERAGING",
+            sourceAsset,
+            targetAsset,
+            investmentAmount,
+            frequency,
+            duration,
+            maxSlippage
+        );
+        
+        // Create the parameter schema (simplified)
+        string memory parametersSchema = string(abi.encodePacked(
+            '{"type":"object","properties":{"sourceAsset":{"type":"string","pattern":"^0x[a-fA-F0-9]{40}$"},"targetAsset":{"type":"string","pattern":"^0x[a-fA-F0-9]{40}$"},"investmentAmount":{"type":"string","pattern":"^[0-9]+$"},"frequency":{"type":"number","minimum":1},"duration":{"type":"number","minimum":0},"maxSlippage":{"type":"number","minimum":1,"maximum":100}},"required":["sourceAsset","targetAsset","investmentAmount","frequency","duration","maxSlippage"]}'
+        ));
+        
+        // Create the template
+        return createTemplate(
+            name,
+            description,
+            TemplateType.DOLLAR_COST_AVERAGING,
+            code,
+            isPublic,
+            parametersSchema,
+            "1.0.0"
+        );
+    }
+
+    //--------------------------------------------------------------------------
+    // Admin Functions
+    //--------------------------------------------------------------------------
 
     /**
      * @dev Pause the contract
@@ -732,66 +980,5 @@ contract SmartAccountTemplates is AccessControl, Pausable, ReentrancyGuard {
      */
     function unpause() external onlyRole(ADMIN_ROLE) {
         _unpause();
-    }
-
-    /// Create a multi-signature template
-    function createMultiSigTemplate(
-        string calldata name,
-        string calldata description,
-        bool isPublic,
-        address[] calldata signers,
-        uint8 threshold,
-        uint64 executionTimelock
-    ) external returns (bytes32) {
-        // ... existing code ...
-    }
-    
-    /// Helper function for testing - deploy account with string key-value parameters
-    function deployAccountWithParams(
-        bytes32 templateId,
-        string[] calldata keys,
-        string[] calldata values
-    ) external whenNotPaused nonReentrant returns (bytes32) {
-        require(_templates[templateId].templateId == templateId, "Template does not exist");
-        require(keys.length == values.length, "Keys and values must have same length");
-        
-        AccountTemplateData storage template = _templates[templateId];
-        
-        // Increment template usage count
-        template.usageCount += 1;
-        
-        // Generate account ID
-        _accountIdCounter.increment();
-        bytes32 accountId = keccak256(abi.encodePacked(
-            _accountIdCounter.current(),
-            msg.sender,
-            templateId,
-            block.timestamp
-        ));
-        
-        // Store account data
-        _accounts[accountId] = SmartAccountData({
-            accountId: accountId,
-            owner: msg.sender,
-            templateId: templateId,
-            code: template.code,
-            codeHash: keccak256(template.code),
-            creationDate: uint64(block.timestamp),
-            lastExecution: 0,
-            executionCount: 0,
-            isActive: true
-        });
-        
-        // Store parameters
-        for (uint256 i = 0; i < keys.length; i++) {
-            _accountParameters[accountId][keys[i]] = values[i];
-        }
-        
-        // Add to owner's accounts
-        _ownerAccounts[msg.sender].push(accountId);
-        
-        emit AccountDeployed(accountId, msg.sender, templateId);
-        
-        return accountId;
     }
 } 

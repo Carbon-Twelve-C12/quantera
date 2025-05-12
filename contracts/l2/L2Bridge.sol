@@ -92,20 +92,19 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     ) external onlyRole(ADMIN_ROLE) {
         require(chains[chainId].chainId == 0, "Chain already exists");
         
-        chains[chainId] = L2ChainInfo({
-            chainId: chainId,
-            chainType: chainType,
-            name: name,
-            enabled: true,
-            bridgeAddress: bridgeAddress,
-            rollupAddress: rollupAddress,
-            verificationBlocks: verificationBlocks,
-            gasTokenSymbol: gasTokenSymbol,
-            nativeTokenPriceUsd: nativeTokenPriceUsd,
-            averageBlockTime: averageBlockTime,
-            blob_enabled: blobEnabled,
-            maxMessageSize: maxMessageSize
-        });
+        L2ChainInfo storage chain = chains[chainId];
+        chain.chainId = chainId;
+        chain.chainType = chainType;
+        chain.name = name;
+        chain.enabled = true;
+        chain.bridgeAddress = bridgeAddress;
+        chain.rollupAddress = rollupAddress;
+        chain.verificationBlocks = verificationBlocks;
+        chain.gasTokenSymbol = gasTokenSymbol;
+        chain.nativeTokenPriceUsd = nativeTokenPriceUsd;
+        chain.averageBlockTime = averageBlockTime;
+        chain.blob_enabled = blobEnabled;
+        chain.maxMessageSize = maxMessageSize;
         
         emit ChainAdded(chainId, name, chainType);
     }
@@ -280,16 +279,17 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
         bytes32 messageId,
         MessageStatus status,
         string calldata failureReason
-    ) external onlyRole(OPERATOR_ROLE) {
+    ) external onlyRole(RELAYER_ROLE) {
         require(messages[messageId].messageId == messageId, "Message does not exist");
         
         CrossChainMessage storage message = messages[messageId];
         message.status = status;
         
         if (status == MessageStatus.CONFIRMED) {
-            message.confirmationTimestamp = block.timestamp;
-            message.confirmationTransactionHash = bytes32(uint256(uint160(tx.origin)));
-        } else if (status == MessageStatus.FAILED) {
+            message.confirmationTimestamp = uint64(block.timestamp);
+            message.confirmationTransactionHash = blockhash(block.number - 1);
+            message.failureReason = "";
+        } else if (status == MessageStatus.FAILED || status == MessageStatus.REJECTED) {
             message.failureReason = failureReason;
         }
         
@@ -303,13 +303,26 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      */
     function retryMessage(bytes32 messageId) external nonReentrant returns (bool) {
         require(messages[messageId].messageId == messageId, "Message does not exist");
-        require(messages[messageId].status == MessageStatus.FAILED, "Message is not failed");
-        require(messages[messageId].sender == msg.sender || hasRole(OPERATOR_ROLE, msg.sender), "Not authorized");
+        require(
+            messages[messageId].status == MessageStatus.FAILED, 
+            "Can only retry failed messages"
+        );
         
         CrossChainMessage storage message = messages[messageId];
+        
+        // Only sender or admin can retry
+        require(
+            message.sender == msg.sender || hasRole(OPERATOR_ROLE, msg.sender),
+            "Not authorized to retry"
+        );
+        
+        // Reset status to pending
         message.status = MessageStatus.PENDING;
+        
+        // Clear failure info
         message.failureReason = "";
         
+        // Emit event
         emit MessageRetried(messageId, message.destinationChainId);
         
         return true;
@@ -358,30 +371,30 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      * @return Array of message IDs
      */
     function getPendingMessages() external view returns (bytes32[] memory) {
-        uint256 totalMessages = _messageIdCounter.current();
-        uint256 pendingCount = 0;
-        
         // First, count pending messages
-        for (uint256 i = 1; i <= totalMessages; i++) {
-            bytes32 messageId = keccak256(abi.encodePacked(block.chainid, i, 0)); // Approximate ID for checking
-            if (messages[messageId].status == MessageStatus.PENDING) {
-                pendingCount++;
+        uint256 count = 0;
+        for (uint256 i = 0; i < _messageIdCounter.current(); i++) {
+            bytes32 messageId = bytes32(i + 1);
+            if (messages[messageId].messageId == messageId && 
+                messages[messageId].status == MessageStatus.PENDING) {
+                count++;
             }
         }
         
-        bytes32[] memory pendingMessages = new bytes32[](pendingCount);
+        // Then create the result array
+        bytes32[] memory result = new bytes32[](count);
         uint256 index = 0;
         
-        // Then populate the array
-        for (uint256 i = 1; i <= totalMessages; i++) {
-            bytes32 messageId = keccak256(abi.encodePacked(block.chainid, i, 0)); // Approximate ID for checking
-            if (messages[messageId].status == MessageStatus.PENDING) {
-                pendingMessages[index] = messageId;
+        for (uint256 i = 0; i < _messageIdCounter.current(); i++) {
+            bytes32 messageId = bytes32(i + 1);
+            if (messages[messageId].messageId == messageId && 
+                messages[messageId].status == MessageStatus.PENDING) {
+                result[index] = messageId;
                 index++;
             }
         }
         
-        return pendingMessages;
+        return result;
     }
 
     /**
@@ -402,31 +415,14 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     function verifyMessage(bytes32 messageId, bytes calldata proof) external view returns (bool) {
         require(messages[messageId].messageId == messageId, "Message does not exist");
         
-        CrossChainMessage storage message = messages[messageId];
-        L2ChainInfo storage chain = chains[message.destinationChainId];
+        // This is a simplified verification for demonstration
+        // In a real implementation, we would verify proof against the rollup contract
         
-        // Simplified verification for demonstration
-        // In a real implementation, this would verify merkle proofs or other cryptographic evidence
-        if (chain.rollupAddress != address(0)) {
-            // For Optimistic Rollups, verify against the rollup contract
-            bytes32 messageHash = keccak256(abi.encodePacked(
-                message.messageId,
-                message.sourceChainId,
-                message.destinationChainId,
-                message.sender,
-                message.recipient,
-                message.data
-            ));
-            
-            // Verify signature in the proof
-            bytes32 ethSignedMessageHash = messageHash.toEthSignedMessageHash();
-            address signer = ethSignedMessageHash.recover(proof);
-            
-            return signer == chain.rollupAddress || hasRole(RELAYER_ROLE, signer);
-        }
+        bytes32 proofHash = keccak256(proof);
+        bytes32 messageHash = keccak256(abi.encode(messages[messageId]));
         
-        // Default case - simplified validation
-        return proof.length > 0;
+        // Very simple "verification" - in reality would use advanced cryptography
+        return proofHash == messageHash;
     }
 
     //--------------------------------------------------------------------------
@@ -440,68 +436,79 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      */
     function bridgeOrder(OrderBridgingRequest calldata request) 
         external 
-        nonReentrant 
-        whenNotPaused 
-        returns (OrderBridgingResult memory result) 
+        whenNotPaused
+        nonReentrant
+        returns (OrderBridgingResult memory) 
     {
+        // Validate the chain
         require(isChainSupported(request.destinationChainId), "Destination chain not supported");
-        require(request.user == msg.sender || hasRole(OPERATOR_ROLE, msg.sender), "Not authorized");
-        require(request.expiration > block.timestamp, "Order expired");
         
-        // Prepare order data for the message
-        bytes memory orderData = abi.encode(
-            request.order_id,
-            request.treasury_id,
-            request.user,
-            request.is_buy,
-            request.amount,
-            request.price,
-            request.expiration,
-            request.signature
-        );
+        // Check if the order has already been processed
+        require(messageIdByOrderId[request.order_id] == bytes32(0), "Order already bridged");
         
-        // Calculate fee based on destination chain and data size
-        L2ChainInfo storage chain = chains[request.destinationChainId];
+        // Validate the order
+        _validateOrder(request);
         
-        // Determine if we should use blob data (EIP-7691) based on size and chain support
-        bool useBlob = chain.blob_enabled && 
-                     orderData.length > 100_000 && 
-                     orderData.length <= chain.maxMessageSize;
+        // Create a new message ID
+        _messageIdCounter.increment();
+        bytes32 messageId = bytes32(_messageIdCounter.current());
         
-        // Create cross-chain message
-        bytes32 messageId = _createMessage(
-            request.destinationChainId,
-            chain.bridgeAddress,
-            orderData,
-            0
-        );
+        // Store the message
+        bytes memory orderData = abi.encode(request);
         
-        // Calculate estimated confirmation time
-        uint64 estimatedTime = chain.verificationBlocks * chain.averageBlockTime;
-        
-        // Link order ID to message ID
-        messageIdByOrderId[request.order_id] = messageId;
-        
-        // Store order in user orders
-        userOrders[request.user].push(request);
-        
-        // Increment order counter
-        _orderIdCounter.increment();
-        
-        // Create result
-        result = OrderBridgingResult({
-            message_id: messageId,
-            source_transaction_hash: bytes32(uint256(uint160(tx.origin))),
-            estimated_confirmation_time: estimatedTime,
-            bridging_fee: 0, // In a real implementation, this would be calculated based on gas prices
-            status: MessageStatus.PENDING
+        messages[messageId] = CrossChainMessage({
+            messageId: messageId,
+            sourceChainId: uint64(block.chainid),
+            destinationChainId: request.destinationChainId,
+            sender: msg.sender,
+            recipient: chains[request.destinationChainId].bridgeAddress,
+            amount: 0, // No value transfer in this case
+            data: orderData,
+            timestamp: uint64(block.timestamp),
+            nonce: _messageIdCounter.current(),
+            status: MessageStatus.PENDING,
+            transactionHash: blockhash(block.number - 1),
+            confirmationTimestamp: 0,
+            confirmationTransactionHash: bytes32(0),
+            failureReason: ""
         });
         
-        if (useBlob) {
+        // Update mappings
+        senderMessages[msg.sender].push(messageId);
+        chainMessages[request.destinationChainId].push(messageId);
+        messageIdByOrderId[request.order_id] = messageId;
+        userOrders[request.user].push(request);
+        
+        // Calculate fees based on data size and L2 gas costs
+        bool useBlob = calculateOptimalDataFormat(
+            request.destinationChainId, 
+            uint64(orderData.length)
+        );
+        
+        L2GasEstimation memory gasEstimation = _estimateGas(
+            request.destinationChainId, 
+            uint64(orderData.length),
+            useBlob
+        );
+        
+        // Use blob data if enabled and optimal
+        if (useBlob && chains[request.destinationChainId].blob_enabled) {
             emit BlobDataUsed(messageId, request.destinationChainId, orderData.length);
         }
         
+        // Emit event
         emit OrderBridged(request.order_id, messageId, request.destinationChainId);
+        emit MessageSent(messageId, request.destinationChainId, msg.sender);
+        
+        // Return result
+        OrderBridgingResult memory result = OrderBridgingResult({
+            message_id: messageId,
+            source_transaction_hash: messages[messageId].transactionHash,
+            estimated_confirmation_time: uint64(block.timestamp) + 
+                gasEstimation.estimated_time_seconds,
+            bridging_fee: gasEstimation.estimated_cost_wei,
+            status: MessageStatus.PENDING
+        });
         
         return result;
     }
@@ -534,69 +541,80 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      */
     function settleTrade(TradeSettlementRequest calldata request) 
         external 
-        nonReentrant 
-        whenNotPaused 
-        returns (TradeSettlementResult memory result) 
+        whenNotPaused
+        nonReentrant
+        returns (TradeSettlementResult memory) 
     {
+        // Validate the chain
         require(isChainSupported(request.destinationChainId), "Destination chain not supported");
-        require(msg.sender == request.buyer || msg.sender == request.seller || hasRole(OPERATOR_ROLE, msg.sender), "Not authorized");
         
-        // Prepare trade data for the message
-        bytes memory tradeData = abi.encode(
-            request.trade_id,
-            request.buy_order_id,
-            request.sell_order_id,
-            request.treasury_id,
-            request.buyer,
-            request.seller,
-            request.amount,
-            request.price,
-            request.settlement_timestamp
-        );
+        // Check if the trade has already been processed
+        require(messageIdByTradeId[request.trade_id] == bytes32(0), "Trade already settled");
         
-        // Calculate fee based on destination chain and data size
-        L2ChainInfo storage chain = chains[request.destinationChainId];
+        // Validate the trade
+        _validateTrade(request);
         
-        // Determine if we should use blob data (EIP-7691) based on size and chain support
-        bool useBlob = chain.blob_enabled && 
-                     tradeData.length > 100_000 && 
-                     tradeData.length <= chain.maxMessageSize;
+        // Create a new message ID
+        _messageIdCounter.increment();
+        bytes32 messageId = bytes32(_messageIdCounter.current());
         
-        // Create cross-chain message
-        bytes32 messageId = _createMessage(
-            request.destinationChainId,
-            chain.bridgeAddress,
-            tradeData,
-            0
-        );
+        // Store the message
+        bytes memory tradeData = abi.encode(request);
         
-        // Calculate estimated confirmation time
-        uint64 estimatedTime = chain.verificationBlocks * chain.averageBlockTime;
+        messages[messageId] = CrossChainMessage({
+            messageId: messageId,
+            sourceChainId: uint64(block.chainid),
+            destinationChainId: request.destinationChainId,
+            sender: msg.sender,
+            recipient: chains[request.destinationChainId].bridgeAddress,
+            amount: 0, // No value transfer in this case
+            data: tradeData,
+            timestamp: uint64(block.timestamp),
+            nonce: _messageIdCounter.current(),
+            status: MessageStatus.PENDING,
+            transactionHash: blockhash(block.number - 1),
+            confirmationTimestamp: 0,
+            confirmationTransactionHash: bytes32(0),
+            failureReason: ""
+        });
         
-        // Link trade ID to message ID
+        // Update mappings
+        senderMessages[msg.sender].push(messageId);
+        chainMessages[request.destinationChainId].push(messageId);
         messageIdByTradeId[request.trade_id] = messageId;
-        
-        // Store trade in user trades
         userTrades[request.buyer].push(request);
         userTrades[request.seller].push(request);
         
-        // Increment trade counter
-        _tradeIdCounter.increment();
+        // Calculate fees based on data size and L2 gas costs
+        bool useBlob = calculateOptimalDataFormat(
+            request.destinationChainId, 
+            uint64(tradeData.length)
+        );
         
-        // Create result
-        result = TradeSettlementResult({
-            message_id: messageId,
-            source_transaction_hash: bytes32(uint256(uint160(tx.origin))),
-            estimated_confirmation_time: estimatedTime,
-            settlement_fee: 0, // In a real implementation, this would be calculated based on gas prices
-            status: MessageStatus.PENDING
-        });
+        L2GasEstimation memory gasEstimation = _estimateGas(
+            request.destinationChainId, 
+            uint64(tradeData.length),
+            useBlob
+        );
         
-        if (useBlob) {
+        // Use blob data if enabled and optimal
+        if (useBlob && chains[request.destinationChainId].blob_enabled) {
             emit BlobDataUsed(messageId, request.destinationChainId, tradeData.length);
         }
         
+        // Emit event
         emit TradeSettled(request.trade_id, messageId, request.destinationChainId);
+        emit MessageSent(messageId, request.destinationChainId, msg.sender);
+        
+        // Return result
+        TradeSettlementResult memory result = TradeSettlementResult({
+            message_id: messageId,
+            source_transaction_hash: messages[messageId].transactionHash,
+            estimated_confirmation_time: uint64(block.timestamp) + 
+                gasEstimation.estimated_time_seconds,
+            settlement_fee: gasEstimation.estimated_cost_wei,
+            status: MessageStatus.PENDING
+        });
         
         return result;
     }
@@ -634,67 +652,7 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
         uint64 dataSize,
         bool useBlob
     ) external view returns (L2GasEstimation memory) {
-        require(isChainSupported(destinationChainId), "Destination chain not supported");
-        
-        L2ChainInfo storage chain = chains[destinationChainId];
-        
-        // Check if blob is supported on the chain
-        if (useBlob && !chain.blob_enabled) {
-            useBlob = false;
-        }
-        
-        // Base gas cost for transaction
-        uint256 gasLimit = 100_000;
-        
-        // Add gas for data
-        uint256 dataGas;
-        
-        if (useBlob) {
-            // Blob gas calculation based on EIP-7691
-            // Each blob can contain up to 128KB of data
-            uint256 blobCount = (dataSize + 131_071) / 131_072; // Ceiling division by 128KB
-            dataGas = blobCount * 120_000; // Approximate gas per blob
-        } else {
-            // Regular calldata gas cost (16 gas per non-zero byte, 4 gas per zero byte)
-            // We'll use an approximation of 14 gas per byte on average
-            dataGas = dataSize * 14;
-        }
-        
-        gasLimit += dataGas;
-        
-        // Gas prices in wei (10 gwei = 10 * 10^9 wei)
-        uint256 gasPrice = 10 * GWEI;
-        uint256 blobGasPrice = useBlob ? 5 * GWEI : 0;
-        
-        // Calculate total cost
-        uint256 totalCost = gasLimit * gasPrice;
-        uint256 blobCost = 0;
-        uint256 blobGasLimit = 0;
-        
-        if (useBlob) {
-            blobGasLimit = (dataSize + 131_071) / 131_072 * 120_000;
-            blobCost = blobGasLimit * blobGasPrice;
-            totalCost += blobCost;
-        }
-        
-        // Calculate USD cost
-        // nativeTokenPriceUsd is scaled by 1e18
-        // To prevent loss of precision, we scale up before division
-        uint256 usdCostScaled = (totalCost * chain.nativeTokenPriceUsd) / 1e18;
-        
-        // Return the estimation
-        return L2GasEstimation({
-            chainId: destinationChainId,
-            chainType: chain.chainType,
-            gasPriceWei: gasPrice,
-            gasLimit: gasLimit,
-            estimatedCostWei: totalCost,
-            estimatedCostUsd: usdCostScaled,
-            estimatedTimeSeconds: chain.verificationBlocks * chain.averageBlockTime,
-            blobGasPrice: useBlob ? blobGasPrice : 0,
-            blobGasLimit: blobGasLimit,
-            blobCostWei: blobCost
-        });
+        return _estimateGas(destinationChainId, dataSize, useBlob);
     }
 
     /**
@@ -706,32 +664,29 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     function calculateOptimalDataFormat(
         uint64 destinationChainId,
         uint64 dataSize
-    ) external view returns (bool) {
-        require(isChainSupported(destinationChainId), "Destination chain not supported");
+    ) public view returns (bool) {
+        require(isChainSupported(destinationChainId), "Chain not supported");
         
-        L2ChainInfo storage chain = chains[destinationChainId];
-        
-        // If blob is not supported or data is too small, use calldata
-        if (!chain.blob_enabled || dataSize <= 100_000) {
+        // If blobs are not enabled for this chain, always use calldata
+        if (!chains[destinationChainId].blob_enabled) {
             return false;
         }
         
-        // If data is too large for calldata but can fit in blob, use blob
-        if (dataSize > 100_000 && dataSize <= chain.maxMessageSize) {
-            return true;
-        }
+        // Get gas prices
+        uint256 gasPrice = 30 * GWEI; // Use a default or get from oracle
+        uint256 blobGasPrice = 90 * GWEI; // EIP-7691 blob gas price
         
-        // For intermediate sizes, calculate the cost of each approach
-        L2GasEstimation memory blobEstimation = this.estimateBridgingGas(destinationChainId, dataSize, true);
-        L2GasEstimation memory calldataEstimation = this.estimateBridgingGas(destinationChainId, dataSize, false);
+        // Calculate costs
+        uint256 calldataCost = dataSize * gasPrice * 16; // 16 gas per non-zero byte
+        uint256 blobCost = dataSize * blobGasPrice; // blob prices
         
-        // Use the cheaper option
-        return blobEstimation.estimatedCostWei < calldataEstimation.estimatedCostWei;
+        // Add fixed overhead for each option
+        calldataCost += 21000; // base transaction cost
+        blobCost += 21000 + 50000; // base + blob overhead
+        
+        // Use blob if it's cheaper and data is large enough
+        return (blobCost < calldataCost && dataSize > 2048);
     }
-
-    //--------------------------------------------------------------------------
-    // Utility Functions
-    //--------------------------------------------------------------------------
 
     /**
      * @dev Check if blob data is enabled for a chain
@@ -739,7 +694,7 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      * @return True if blob data is enabled
      */
     function isBlobEnabled(uint64 chainId) external view returns (bool) {
-        require(chains[chainId].chainId != 0, "Chain does not exist");
+        require(isChainSupported(chainId), "Chain not supported");
         return chains[chainId].blob_enabled;
     }
 
@@ -750,6 +705,10 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     function getCurrentChainId() external view returns (uint64) {
         return uint64(block.chainid);
     }
+
+    //--------------------------------------------------------------------------
+    // Admin Functions
+    //--------------------------------------------------------------------------
 
     /**
      * @dev Pause the contract
@@ -765,38 +724,96 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
         _unpause();
     }
 
+    //--------------------------------------------------------------------------
+    // Internal Functions
+    //--------------------------------------------------------------------------
+
     /**
-     * @dev Helper function for testing - exposes the private _createMessage function
+     * @dev Internal function to estimate gas costs
      */
-    function createMessageForTest(
+    function _estimateGas(
         uint64 destinationChainId,
-        address recipient,
-        bytes memory data,
-        uint256 amount
-    ) external whenNotPaused returns (bytes32) {
-        require(isChainSupported(destinationChainId), "Destination chain not supported");
+        uint64 dataSize,
+        bool useBlob
+    ) internal view returns (L2GasEstimation memory) {
+        require(isChainSupported(destinationChainId), "Chain not supported");
         
-        bytes32 messageId = _generateMessageId();
+        L2ChainInfo memory chain = chains[destinationChainId];
         
-        CrossChainMessage storage message = messages[messageId];
-        message.messageId = messageId;
-        message.sourceChainId = uint64(block.chainid);
-        message.destinationChainId = destinationChainId;
-        message.sender = msg.sender;
-        message.recipient = recipient;
-        message.amount = amount;
-        message.data = data;
-        message.timestamp = block.timestamp;
-        message.nonce = _messageIdCounter.current();
-        message.status = MessageStatus.PENDING;
-        message.transactionHash = bytes32(uint256(uint160(tx.origin)));
+        // Base gas prices (use defaults or get from oracle)
+        uint256 gasPrice = 30 * GWEI; // Regular gas price in wei
+        uint256 blobGasPrice = useBlob ? 90 * GWEI : 0; // EIP-7691 blob gas price
         
-        // Add message to sender and chain mappings
-        senderMessages[msg.sender].push(messageId);
-        chainMessages[destinationChainId].push(messageId);
+        // Calculate gas limits based on data size
+        uint256 gasLimit = 100000 + (dataSize * 16); // Base + data cost
+        uint256 blobGasLimit = useBlob ? dataSize : 0;
         
-        emit MessageSent(messageId, destinationChainId, msg.sender);
+        // Calculate total costs
+        uint256 regularGasCost = gasPrice * gasLimit;
+        uint256 blobGasCost = blobGasPrice * blobGasLimit;
+        uint256 totalCost = regularGasCost + blobGasCost;
         
-        return messageId;
+        // Calculate USD cost based on token price
+        uint256 costUsd = (totalCost * chain.nativeTokenPriceUsd) / 1e18;
+        
+        // Estimate confirmation time
+        uint64 estimatedTime = chain.verificationBlocks * chain.averageBlockTime;
+        
+        return L2GasEstimation({
+            chainId: chain.chainId,
+            chainType: chain.chainType,
+            gasPriceWei: gasPrice,
+            gasLimit: gasLimit,
+            estimatedCostWei: totalCost,
+            estimatedCostUsd: costUsd,
+            estimatedTimeSeconds: estimatedTime,
+            blobGasPrice: blobGasPrice,
+            blobGasLimit: blobGasLimit,
+            blobCostWei: blobGasCost
+        });
+    }
+
+    /**
+     * @dev Validate an order
+     */
+    function _validateOrder(OrderBridgingRequest calldata request) internal view {
+        // Verify that the order has not expired
+        require(request.expiration > block.timestamp, "Order expired");
+        
+        // Verify signature if needed (simplified - would be more complex in production)
+        if (request.signature.length > 0) {
+            bytes32 orderHash = keccak256(abi.encode(
+                request.order_id,
+                request.treasury_id,
+                request.user,
+                request.is_buy,
+                request.amount,
+                request.price,
+                request.expiration
+            ));
+            
+            bytes32 signedHash = orderHash.toEthSignedMessageHash();
+            address recoveredSigner = signedHash.recover(request.signature);
+            
+            require(recoveredSigner == request.user, "Invalid signature");
+        }
+        
+        // Additional validations as needed
+    }
+
+    /**
+     * @dev Validate a trade
+     */
+    function _validateTrade(TradeSettlementRequest calldata request) internal pure {
+        // Ensure buyer and seller are not the same
+        require(request.buyer != request.seller, "Buyer and seller cannot be the same");
+        
+        // Ensure amount is positive
+        require(request.amount > 0, "Amount must be positive");
+        
+        // Ensure price is positive
+        require(request.price > 0, "Price must be positive");
+        
+        // Additional validations as needed
     }
 } 
