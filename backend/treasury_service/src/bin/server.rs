@@ -75,7 +75,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ipfs_client = IpfsClient::new(&ipfs_url);
     
     // Create Treasury service
-    let treasury_service = Arc::new(TreasuryService::new(registry_client.clone(), ipfs_client).await);
+    let token_deployer = Box::new(MockTokenDeployer);
+    let compliance_checker = Box::new(MockComplianceChecker);
+    let treasury_service = Arc::new(TreasuryService::new(
+        registry_client.clone(),
+        ipfs_client,
+        token_deployer,
+        compliance_checker,
+    ).await);
     
     // Create verification provider
     let verification_provider = Arc::new(MockVerificationProvider);

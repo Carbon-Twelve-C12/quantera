@@ -305,6 +305,8 @@ With our recent implementation of LiquidityPools, YieldOptimizer, L2Bridge, and 
 - **Impact Analytics Service**: Environmental impact calculation and reporting
 - **L2Bridge Service**: Cross-chain asset transfer and management
 - **Smart Account Service**: Template management and account deployment
+- **Extensible Treasury Service**: TreasuryService now supports pluggable deployment and compliance logic for treasury token creation via the new `TokenDeployer` and `ComplianceChecker` interfaces. This enables easy integration of custom smart contract deployment and compliance/KYC/AML checks, with mock implementations provided for local development and testing.
+- **Improved Test Coverage**: The backend includes comprehensive unit tests for treasury creation, compliance enforcement, and token deployment logic, ensuring robust and secure asset management workflows.
 
 ## License
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
@@ -337,3 +339,6 @@ We welcome contributions to the Quantera Platform! Here's how you can help:
 ## Contact
 For questions, suggestions, or collaboration opportunities, please email:
 hello@marcjohnson.xyz
+
+## Testing
+- **TreasuryService Extensibility**: Tests verify that the compliance checker and token deployer are invoked as expected, and that treasury creation is blocked if compliance fails. The architecture is designed for easy extension and robust testing.

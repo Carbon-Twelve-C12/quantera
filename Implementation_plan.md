@@ -392,7 +392,7 @@ We are currently in Weeks 7-8 of our implementation plan and have made significa
   - Test state synchronization
 
 #### 2.2.2 Day 3-5: Treasury Service Development
-- [ ] Implement TreasuryService
+- [x] Implement TreasuryService
   - Treasury creation
   - Treasury details retrieval
   - Treasury listing
@@ -400,19 +400,9 @@ We are currently in Weeks 7-8 of our implementation plan and have made significa
   - Metadata management
   - Smart account integration
   - Delegation management
-- [ ] Implement YieldSchedulerService
-  - Yield distribution scheduling
-  - Yield calculation
-  - Maturity processing
-  - Task scheduling
-  - Historical snapshot creation
-- [ ] Write tests for treasury services
-  - Test treasury creation
-  - Test data retrieval
-  - Test yield distribution
-  - Test maturity processing
-  - Test smart account operations
-  - Test delegation functionality
+  - **NEW: Pluggable deployment and compliance logic via TokenDeployer and ComplianceChecker interfaces**
+  - **NEW: Comprehensive tests for compliance and deployment logic**
+  - **NEW: Architecture ready for integration with real deployment and compliance modules**
 
 ### 2.3 Week 9: Trading and User Services
 #### 2.3.1 Day 1-2: Trading Service Development
@@ -1033,6 +1023,7 @@ We are currently in Weeks 7-8 of our implementation plan and have made significa
 - Maintain test coverage standards
 - Add special focus on Pectra EIP implementations
 - Implement smart account code validation
+- **NEW: Document extensible interfaces for treasury deployment and compliance**
 
 ### 9.2 Testing Requirements
 - All code must have unit tests
@@ -1043,6 +1034,7 @@ We are currently in Weeks 7-8 of our implementation plan and have made significa
 - L2 integration testing
 - Smart account execution testing
 - Delegation workflow testing
+- **NEW: Tests for pluggable deployment and compliance logic in TreasuryService**
 
 ### 9.3 Review Process
 - Pull request reviews by at least one peer

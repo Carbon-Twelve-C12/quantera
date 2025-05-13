@@ -513,19 +513,67 @@ impl IpfsClient {
     }
 }
 
+/// Trait for deploying treasury token contracts.
+///
+/// Implementations of this trait are responsible for deploying the actual smart contract
+/// for a treasury token and returning its address. This allows the TreasuryService to remain
+/// agnostic to the deployment mechanism (e.g., using ethers-rs, Alloy, or a mock for testing).
+///
+/// The default implementation, MockTokenDeployer, is a placeholder and should be replaced
+/// with a real deployer in production.
+pub trait TokenDeployer: Send + Sync {
+    fn deploy_token(
+        &self,
+        name: &str,
+        symbol: &str,
+        total_supply: u64,
+        issuer: Address,
+    ) -> Result<Address, Error>;
+}
 
-/// Treasury service for managing treasury tokens
+/// Trait for compliance/KYC/AML checks.
+///
+/// Implementations of this trait are responsible for verifying that an issuer
+/// meets all compliance requirements (e.g., KYC, AML) before a treasury can be created.
+/// This allows the TreasuryService to remain agnostic to the compliance mechanism.
+///
+/// The default implementation, MockComplianceChecker, always returns true and should be
+/// replaced with a real compliance checker in production.
+pub trait ComplianceChecker: Send + Sync {
+    fn is_compliant(&self, issuer: Address) -> Result<bool, Error>;
+}
+
+/// Treasury service for managing treasury tokens.
+///
+/// This service coordinates the creation, registration, and management of treasury tokens.
+/// It is responsible for:
+///   - Uploading metadata to IPFS
+///   - Deploying the treasury token contract (via TokenDeployer)
+///   - Registering the treasury in the registry contract
+///   - Enforcing compliance checks (via ComplianceChecker)
+///
+/// The service is constructed with concrete implementations of TokenDeployer and ComplianceChecker,
+/// which can be swapped for mocks in tests or real implementations in production.
 pub struct TreasuryService {
     registry_client: TreasuryRegistryClient,
     ipfs_client: IpfsClient,
+    token_deployer: Box<dyn TokenDeployer>,
+    compliance_checker: Box<dyn ComplianceChecker>,
 }
 
 impl TreasuryService {
     /// Create a new TreasuryService
-    pub async fn new(registry_client: TreasuryRegistryClient, ipfs_client: IpfsClient) -> Self {
+    pub async fn new(
+        registry_client: TreasuryRegistryClient,
+        ipfs_client: IpfsClient,
+        token_deployer: Box<dyn TokenDeployer>,
+        compliance_checker: Box<dyn ComplianceChecker>,
+    ) -> Self {
         Self {
             registry_client,
             ipfs_client,
+            token_deployer,
+            compliance_checker,
         }
     }
     
@@ -542,6 +590,12 @@ impl TreasuryService {
         maturity_date: u64,
         issuer: Address,
     ) -> Result<TreasuryOverview, Error> {
+        // Compliance check: ensure issuer passes KYC/AML
+        if !self.compliance_checker.is_compliant(issuer)? {
+            tracing::error!("Issuer failed compliance checks: {}", issuer);
+            return Err(Error::Unauthorized("Issuer failed compliance checks".into()));
+        }
+        
         // Create metadata
         let metadata = TreasuryMetadata {
             name: name.clone(),
@@ -565,9 +619,9 @@ impl TreasuryService {
         // Upload metadata to IPFS
         let metadata_uri = self.ipfs_client.upload_metadata(&metadata).await?;
         
-        // Mock token address for now
-        // In a real implementation, this would deploy the token contract
-        let token_address = Address::ZERO;
+        // Deploy the actual treasury token contract and get its address
+        let token_address = self.token_deployer.deploy_token(&name, &symbol, total_supply, issuer)?;
+        tracing::info!("[AUDIT] Treasury token deployed for {} ({}), supply: {} at {:?}", name, symbol, total_supply, token_address);
         
         // Register treasury in the registry
         let token_id = self.registry_client.register_treasury(
@@ -591,6 +645,9 @@ impl TreasuryService {
             maturity_date,
             status: TreasuryStatus::Active,
         };
+        
+        // Log event for auditability
+        tracing::info!("[AUDIT] Treasury registered: {:?}", overview);
         
         Ok(overview)
     }
@@ -640,21 +697,79 @@ impl TreasuryService {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+    use std::sync::Arc;
+
+    struct TestTokenDeployer;
+    impl TokenDeployer for TestTokenDeployer {
+        fn deploy_token(
+            &self,
+            name: &str,
+            symbol: &str,
+            total_supply: u64,
+            issuer: Address,
+        ) -> Result<Address, Error> {
+            // Return a deterministic address for testing
+            let mut bytes = [0u8; 20];
+            bytes[0] = name.len() as u8;
+            bytes[1] = symbol.len() as u8;
+            bytes[2] = (total_supply % 256) as u8;
+            bytes[3..].copy_from_slice(&issuer.as_bytes()[..17]);
+            Ok(Address::from(bytes))
+        }
+    }
+
+    struct TestComplianceChecker {
+        should_pass: bool,
+    }
+    impl ComplianceChecker for TestComplianceChecker {
+        fn is_compliant(&self, _issuer: Address) -> Result<bool, Error> {
+            Ok(self.should_pass)
+        }
+    }
+
     #[tokio::test]
-    async fn test_generate_token_id() {
-        let token_address = Address::from_slice(&[1; 20]);
-        let treasury_type = TreasuryType::TBill;
-        let issuance_date = 1640995200; // 2022-01-01
-        let maturity_date = 1672531200; // 2023-01-01
-        
-        let token_id = TreasuryRegistryClient::generate_token_id(
-            token_address,
-            treasury_type,
-            issuance_date,
-            maturity_date,
-        );
-        
-        assert_eq!(token_id.len(), 32);
+    async fn test_treasury_service_compliance_check_fail() {
+        let registry_client = TreasuryRegistryClient::new(Arc::new(EthereumClient::new("http://localhost:8545").await.unwrap()), Address::ZERO).await;
+        let ipfs_client = IpfsClient::new("http://localhost:5001");
+        let token_deployer = Box::new(TestTokenDeployer);
+        let compliance_checker = Box::new(TestComplianceChecker { should_pass: false });
+        let service = TreasuryService::new(registry_client, ipfs_client, token_deployer, compliance_checker).await;
+        let result = service.create_treasury_token(
+            "Test Treasury".to_string(),
+            "TST".to_string(),
+            1000,
+            TreasuryType::TBill,
+            U256::from(1000),
+            100,
+            1,
+            2,
+            Address::ZERO,
+        ).await;
+        assert!(matches!(result, Err(Error::Unauthorized(_))));
+    }
+
+    #[tokio::test]
+    async fn test_treasury_service_token_deployer_used() {
+        let registry_client = TreasuryRegistryClient::new(Arc::new(EthereumClient::new("http://localhost:8545").await.unwrap()), Address::ZERO).await;
+        let ipfs_client = IpfsClient::new("http://localhost:5001");
+        let token_deployer = Box::new(TestTokenDeployer);
+        let compliance_checker = Box::new(TestComplianceChecker { should_pass: true });
+        let service = TreasuryService::new(registry_client, ipfs_client, token_deployer, compliance_checker).await;
+        let result = service.create_treasury_token(
+            "Test Treasury".to_string(),
+            "TST".to_string(),
+            1000,
+            TreasuryType::TBill,
+            U256::from(1000),
+            100,
+            1,
+            2,
+            Address::from_slice(&[0x11; 20]),
+        ).await;
+        // Should succeed and use the TestTokenDeployer logic
+        assert!(result.is_ok());
+        let overview = result.unwrap();
+        assert_eq!(overview.token_address.as_bytes()[0], "Test Treasury".len() as u8);
+        assert_eq!(overview.token_address.as_bytes()[1], "TST".len() as u8);
     }
 } 

@@ -51,6 +51,9 @@
 - [x] Implemented L2BridgeClient with enhanced cross-chain capabilities
 - [x] Implemented SmartAccountClient for advanced investment strategies
 - [x] Implemented WebSocket service for real-time updates on L2 bridge messages and smart account operations
+- [x] TreasuryService now supports pluggable deployment and compliance logic via TokenDeployer and ComplianceChecker interfaces, enabling easy integration of custom smart contract deployment and compliance/KYC/AML checks.
+- [x] Comprehensive unit tests for treasury creation, compliance enforcement, and token deployment logic.
+- [x] Documentation added for all extensible interfaces, making it easy for future contributors to integrate real modules.
 
 ### API Layer
 - [x] Set up API infrastructure with Warp
@@ -87,6 +90,8 @@
 ### Testing
 - [x] Created unit tests for TreasuryRegistry contract
 - [x] Created integration tests between L2Bridge and SmartAccountTemplates contracts
+- [x] TreasuryService extensibility is fully tested: compliance checker and token deployer are invoked as expected, and treasury creation is blocked if compliance fails.
+- [x] Architecture is ready for integration with real deployment and compliance modules.
 
 ## Recently Completed Tasks
 

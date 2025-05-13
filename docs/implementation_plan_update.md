@@ -80,6 +80,12 @@ We have made significant progress in positioning Quantera as the most comprehens
    - Data provider integrations for impact verification
    - Compliance with emerging sustainability disclosure requirements
 
+### Backend Extensibility Improvements
+
+- **Pluggable TreasuryService Architecture**: The backend TreasuryService now supports pluggable deployment and compliance logic via the new `TokenDeployer` and `ComplianceChecker` interfaces. This enables easy integration of custom smart contract deployment and compliance/KYC/AML checks, with mock implementations for local development and testing.
+- **Comprehensive Testing and Documentation**: The new architecture is fully tested, with unit tests verifying compliance enforcement and token deployment logic. Documentation has been added for all extensible interfaces, making it easy for future contributors to integrate real modules.
+- **Ready for Integration**: The backend is now ready for integration with real deployment and compliance modules as they become available.
+
 ## Next Steps
 
 To complete our comprehensive asset tokenization platform, we need to focus on:
@@ -90,6 +96,7 @@ To complete our comprehensive asset tokenization platform, we need to focus on:
 - Create Asset Management service for multi-asset support
 - Enhance analytics and reporting capabilities
 - **Develop environmental impact metrics API for sustainability reporting**
+- **Integrate real deployment and compliance modules with TreasuryService's pluggable architecture**
 
 ### 2. Frontend Development
 

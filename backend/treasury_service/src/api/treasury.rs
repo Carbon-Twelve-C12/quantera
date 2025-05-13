@@ -147,35 +147,59 @@ async fn create_treasury_handler(
     services: Arc<ApiServices>,
 ) -> Result<impl Reply, Rejection> {
     info!("Creating new treasury: {}", request.name);
-    
+
     // Parse treasury type
     let treasury_type = match request.treasury_type.to_lowercase().as_str() {
         "tbill" => TreasuryType::TBill,
         "tnote" => TreasuryType::TNote,
         "tbond" => TreasuryType::TBond,
         _ => {
+            error!("Invalid treasury type: {}", request.treasury_type);
             return Err(warp::reject::custom(ApiError(
                 ServiceError::InvalidParameter("Invalid treasury type".into())
             )));
         }
     };
-    
+
     // Parse face value
     let face_value = parse_decimal_string(&request.face_value)
         .map_err(|e| warp::reject::custom(ApiError(e)))?;
-    
+
     // Parse total supply
     let total_supply = request.total_supply.parse::<u64>()
         .map_err(|_| warp::reject::custom(ApiError(
             ServiceError::InvalidParameter("Invalid total supply".into())
         )))?;
-    
+
+    // TODO: Replace with real issuer address from auth context
+    let issuer_address = Address::ZERO;
+
+    // Issuer validation: ensure issuer is approved
+    let is_approved = services.treasury_service
+        .is_approved_issuer(issuer_address)
+        .await
+        .map_err(|e| {
+            error!("Issuer validation failed: {}", e);
+            warp::reject::custom(ApiError(ServiceError::Unauthorized("Issuer validation failed".into())))
+        })?;
+    if !is_approved {
+        error!("Unauthorized issuer: {}", issuer_address);
+        return Err(warp::reject::custom(ApiError(ServiceError::Unauthorized("Issuer is not approved".into()))));
+    }
+
+    // Compliance check: ensure issuer passes KYC/AML (placeholder)
+    let is_compliant = true; // TODO: Integrate with compliance module
+    if !is_compliant {
+        error!("Issuer failed compliance checks: {}", issuer_address);
+        return Err(warp::reject::custom(ApiError(ServiceError::Unauthorized("Issuer failed compliance checks".into()))));
+    }
+
     // Get current timestamp for issuance date
     let issuance_date = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs();
-    
+
     // Create treasury
     let overview = services.treasury_service.create_treasury_token(
         request.name,
@@ -186,9 +210,15 @@ async fn create_treasury_handler(
         request.yield_rate,
         issuance_date,
         request.maturity_date,
-        Address::ZERO, // Mock issuer address
-    ).await.map_err(|e| warp::reject::custom(ApiError(e)))?;
-    
+        issuer_address,
+    ).await.map_err(|e| {
+        error!("Failed to create treasury: {}", e);
+        warp::reject::custom(ApiError(e))
+    })?;
+
+    info!("Treasury created: {:?}", overview);
+    // TODO: Emit event to audit log or event bus
+
     Ok(warp::reply::json(&overview))
 }
 
