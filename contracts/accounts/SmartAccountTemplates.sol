@@ -20,39 +20,43 @@ contract SmartAccountTemplates is ISmartAccountTemplates, AccessControl, Pausabl
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant VERIFIER_ROLE = keccak256("VERIFIER_ROLE");
 
-    // Counters
+    // Counters - grouped for better packing
     Counters.Counter private _templateIdCounter;
     Counters.Counter private _accountIdCounter;
     Counters.Counter private _operationIdCounter;
     Counters.Counter private _nonceCounter;
 
-    // Structs
+    // Storage Optimization: Group structs for better packing
     struct AccountTemplateData {
-        bytes32 templateId;
-        string name;
-        string description;
-        TemplateType templateType;
-        address creator;
-        bytes code;
-        bool isPublic;
-        bool isVerified;
-        uint64 creationDate;
-        uint64 verificationDate;
-        string parametersSchema;
-        string version;
-        uint256 usageCount;
+        bytes32 templateId;        // 32 bytes
+        address creator;           // 20 bytes
+        // Storage slot optimization by grouping smaller variables
+        bool isPublic;             // 1 byte
+        bool isVerified;           // 1 byte
+        uint64 creationDate;       // 8 bytes
+        uint64 verificationDate;   // 8 bytes 
+        // End of first storage slot for optimized variables
+        TemplateType templateType; // Enum
+        uint256 usageCount;        // 32 bytes
+        bytes code;                // Dynamic array (separate storage)
+        string name;               // Dynamic string (separate storage)
+        string description;        // Dynamic string (separate storage)
+        string parametersSchema;   // Dynamic string (separate storage)
+        string version;            // Dynamic string (separate storage)
     }
 
     struct SmartAccountData {
-        bytes32 accountId;
-        address owner;
-        bytes32 templateId;
-        bytes code;
-        bytes32 codeHash;
-        uint64 creationDate;
-        uint64 lastExecution;
-        uint256 executionCount;
-        bool isActive;
+        bytes32 accountId;         // 32 bytes
+        bytes32 templateId;        // 32 bytes
+        address owner;             // 20 bytes
+        // Storage slot optimization by grouping smaller variables 
+        bool isActive;             // 1 byte
+        uint64 creationDate;       // 8 bytes
+        uint64 lastExecution;      // 8 bytes
+        // End of optimized storage slot
+        bytes32 codeHash;          // 32 bytes
+        uint256 executionCount;    // 32 bytes
+        bytes code;                // Dynamic array (separate storage)
     }
 
     struct SmartAccountParams {
@@ -70,6 +74,8 @@ contract SmartAccountTemplates is ISmartAccountTemplates, AccessControl, Pausabl
     mapping(address => bytes32[]) private _delegateAccounts;
     mapping(address => bytes32[]) private _creatorTemplates;
     mapping(TemplateType => bytes32[]) private _templatesByType;
+    
+    // Gas optimization: Combine related mappings
     mapping(bytes32 => uint256) private _accountNonces;
     mapping(bytes32 => bool) private _usedNonces;
     

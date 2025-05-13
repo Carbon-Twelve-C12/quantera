@@ -289,6 +289,83 @@ With our continued implementation of LiquidityPools, YieldOptimizer, L2Bridge, a
    cargo test
    ```
 
+## CI/CD Setup
+
+The project includes comprehensive CI/CD pipelines using GitHub Actions to ensure code quality and testing at each step of development.
+
+### CI Workflows
+
+1. **Smart Contract Testing**
+   - Automated testing for all smart contracts
+   - Coverage reporting for contract tests
+   - Gas optimization checks
+   - Contract size verification
+   - Security scanning using Slither and Mythril
+   - L2 integration tests with local testnet
+   - Pectra EIP compatibility checks
+
+2. **Frontend Testing**
+   - TypeScript type checking
+   - Linting and code style verification
+   - Unit tests with Jest
+   - Component testing with React Testing Library
+   - End-to-end testing with Playwright
+   - Accessibility testing for WCAG compliance
+   - Build verification
+
+3. **Backend Testing**
+   - Rust code formatting checks with rustfmt
+   - Static analysis with Clippy
+   - Security vulnerability scanning with cargo-audit
+   - Unit and integration tests
+   - Test coverage reporting with grcov
+   - Build verification
+   - Database integration tests with PostgreSQL
+
+### GitHub Workflow Files
+
+- `.github/workflows/contract-testing.yml`: Smart contract test pipeline
+- `.github/workflows/frontend-testing.yml`: Frontend test pipeline
+- `.github/workflows/backend-testing.yml`: Backend test pipeline
+
+### Pull Request Process
+
+The repository includes a pull request template (`.github/PULL_REQUEST_TEMPLATE.md`) that:
+- Requires description of changes
+- Includes type of change classification
+- Links to implementation plan tasks
+- Provides a checklist for code quality
+- Requires information about testing
+- Prompts for security considerations
+
+### Running CI Locally
+
+To run CI checks locally before pushing:
+
+1. Smart contract tests:
+   ```
+   npx hardhat test
+   npx hardhat coverage
+   npx hardhat size-contracts
+   ```
+
+2. Frontend tests:
+   ```
+   cd frontend
+   npm run typecheck
+   npm run lint
+   npm test
+   npm run build
+   ```
+
+3. Backend tests:
+   ```
+   cd backend
+   cargo fmt --all -- --check
+   cargo clippy -- -D warnings
+   cargo test --all
+   ```
+
 ## Enhanced Architecture
 - **Asset Factory**: Modular system for creating and managing tokenized assets
 - **Treasury Registry**: Central registry for all tokenized assets

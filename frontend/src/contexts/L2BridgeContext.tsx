@@ -1,165 +1,219 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { useWallet } from './WalletContext';
-import { MessageStatus, OrderDetails, GasEstimation, ChainInfo } from '../api/l2bridge.types';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { useWallet } from '../contexts/WalletContext';
+import { useWebSocket, SubscriptionTopic } from './WebSocketContext';
+import { useL2BridgeMessages } from '../hooks/useL2BridgeMessages';
+
+// Define types for L2Bridge context
+export interface ChainInfo {
+  chainId: number;
+  name: string;
+  enabled: boolean;
+  bridgeAddress: string;
+  blobEnabled: boolean;
+}
+
+export interface OrderDetails {
+  orderId: string;
+  treasuryId: string;
+  userAddress: string;
+  isBuy: boolean;
+  amount: string;
+  price: string;
+}
+
+export interface MessageStatus {
+  messageId: string;
+  status: 'PENDING' | 'CONFIRMED' | 'FAILED' | 'REJECTED';
+}
+
+export interface GasEstimation {
+  useBlob: boolean;
+  blobGasLimit: string;
+  callDataGasLimit: string;
+  estimatedCompressedSize: string;
+}
+
+export interface Transaction {
+  id: string;
+  type: string;
+  status: string;
+  timestamp: number;
+  chainId: number;
+  error?: string;
+}
 
 // L2Bridge context type
 interface L2BridgeContextType {
-  // Bridge state
+  chains: ChainInfo[];
+  selectedChain: ChainInfo | null;
+  setSelectedChain: (chain: ChainInfo) => void;
   isBridging: boolean;
   orders: OrderDetails[];
-  supportedChains: ChainInfo[];
-  
-  // Methods
-  bridgeOrder: (toChainId: number, recipient: string, amount: string) => Promise<string>;
-  getOrderStatus: (orderId: string) => MessageStatus;
-  estimateGas: (toChainId: number, amount: string) => Promise<GasEstimation>;
-  refreshOrders: () => Promise<void>;
-  
-  // Additional methods needed by L2BridgeWidget
-  getSupportedChains: () => Promise<ChainInfo[]>;
-  estimateBridgingGas: (chainId: number, dataSize: number, useBlob: boolean) => Promise<any>;
+  bridgeOrder: (order: OrderDetails) => Promise<void>;
+  estimateBridgingGas: (dataSize: number, dataType: number) => Promise<GasEstimation>;
   getOrdersByUser: (userAddress: string) => Promise<string[]>;
   getMessageDetails: (messageId: string) => Promise<any>;
+  getSupportedChains: () => Promise<ChainInfo[]>;
+  transactions: Transaction[];
+  isWebSocketConnected: boolean;
+  messagesLoading: boolean;
+  messagesError: string | null;
 }
 
-// Create context with default values
+// Create context
 const L2BridgeContext = createContext<L2BridgeContextType>({
+  chains: [],
+  selectedChain: null,
+  setSelectedChain: () => {},
   isBridging: false,
   orders: [],
-  supportedChains: [],
-  
-  bridgeOrder: async () => '',
-  getOrderStatus: () => MessageStatus.PENDING,
-  estimateGas: async () => ({ 
-    gasAmount: '0',
-    gasCost: '0',
-    gasPrice: '0',
-    estimatedTimeSeconds: 0
+  bridgeOrder: async () => {},
+  estimateBridgingGas: async () => ({
+    useBlob: false,
+    blobGasLimit: "0",
+    callDataGasLimit: "0",
+    estimatedCompressedSize: "0"
   }),
-  refreshOrders: async () => {},
-  
-  // Additional methods needed by L2BridgeWidget
-  getSupportedChains: async () => [],
-  estimateBridgingGas: async () => {},
   getOrdersByUser: async () => [],
-  getMessageDetails: async () => {}
+  getMessageDetails: async () => {},
+  getSupportedChains: async () => [],
+  transactions: [],
+  isWebSocketConnected: false,
+  messagesLoading: true,
+  messagesError: null
 });
 
-// Hook to use L2Bridge context
-export const useL2Bridge = () => useContext(L2BridgeContext);
-
-// Mock implementation of the L2Bridge provider
-export const L2BridgeProvider: React.FC<{children: ReactNode}> = ({ children }) => {
-  const { connected } = useWallet();
+export const L2BridgeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [chains, setChains] = useState<ChainInfo[]>([
+    { chainId: 10, name: 'Optimism', enabled: true, bridgeAddress: '0x...', blobEnabled: true },
+    { chainId: 42161, name: 'Arbitrum', enabled: true, bridgeAddress: '0x...', blobEnabled: false },
+    { chainId: 137, name: 'Polygon', enabled: true, bridgeAddress: '0x...', blobEnabled: true }
+  ]);
+  const [selectedChain, setSelectedChain] = useState<ChainInfo | null>(chains[0]);
   const [isBridging, setIsBridging] = useState(false);
   const [orders, setOrders] = useState<OrderDetails[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   
-  // Supported chains (mock data)
-  const supportedChains: ChainInfo[] = [
-    {
-      chainId: 1,
-      name: 'Ethereum',
-      rpcUrl: 'https://mainnet.infura.io/v3/your-key',
-      explorerUrl: 'https://etherscan.io',
-      nativeCurrency: {
-        name: 'Ether',
-        symbol: 'ETH',
-        decimals: 18
-      }
-    },
-    {
-      chainId: 42161,
-      name: 'Arbitrum',
-      rpcUrl: 'https://arb1.arbitrum.io/rpc',
-      explorerUrl: 'https://arbiscan.io',
-      nativeCurrency: {
-        name: 'Ether',
-        symbol: 'ETH',
-        decimals: 18
-      }
-    }
-  ];
-
-  // Mock bridge order function
-  const bridgeOrder = async (toChainId: number, recipient: string, amount: string): Promise<string> => {
-    if (!connected) throw new Error('Wallet not connected');
-    
+  const { address } = useWallet();
+  const { isConnected: isWebSocketConnected } = useWebSocket();
+  const { messages, loading: messagesLoading, error: messagesError } = useL2BridgeMessages(
+    selectedChain?.chainId, 
+    address || undefined
+  );
+  
+  // Get supported chains
+  const getSupportedChains = async (): Promise<ChainInfo[]> => {
+    // In a real implementation, this would call an API
+    // For now, just return the local state
+    return chains.filter(chain => chain.enabled);
+  };
+  
+  // Bridge an order to L2
+  const bridgeOrder = async (order: OrderDetails) => {
     setIsBridging(true);
     try {
-      // Simulate some async operation
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const newOrder: OrderDetails = {
-        orderId: `order-${Date.now()}`,
-        fromChainId: 1, // Assuming from Ethereum
-        toChainId,
-        amount,
-        tokenAddress: '0x0000000000000000000000000000000000000000', // ETH
-        recipient,
-        timestamp: Math.floor(Date.now() / 1000),
-        status: MessageStatus.PENDING,
-        txHash: `0x${Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`
-      };
-      
-      setOrders(prev => [...prev, newOrder]);
-      return newOrder.orderId;
-    } finally {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      console.log('Bridging order:', order);
+      setIsBridging(false);
+    } catch (error) {
+      console.error('Error bridging order:', error);
       setIsBridging(false);
     }
   };
-
-  // Mock get order status
-  const getOrderStatus = (orderId: string): MessageStatus => {
-    const order = orders.find(o => o.orderId === orderId);
-    return order?.status || MessageStatus.PENDING;
-  };
-
-  // Mock gas estimation
-  const estimateGas = async (toChainId: number, amount: string): Promise<GasEstimation> => {
-    // Simulate some async operation
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+  
+  // Estimate gas for bridging operation
+  const estimateBridgingGas = async (dataSize: number, dataType: number): Promise<GasEstimation> => {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
     return {
-      gasAmount: '200000',
-      gasCost: '0.005',
-      gasPrice: '25',
-      estimatedTimeSeconds: 120
+      useBlob: dataSize > 100000,
+      blobGasLimit: "500000",
+      callDataGasLimit: "1000000",
+      estimatedCompressedSize: (dataSize * 0.7).toString()
+    };
+  };
+  
+  // Get orders by user
+  const getOrdersByUser = async (userAddress: string): Promise<string[]> => {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return ['order1', 'order2', 'order3'];
+  };
+  
+  // Get message details
+  const getMessageDetails = async (messageId: string): Promise<any> => {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return {
+      messageId,
+      status: 'PENDING',
+      timestamp: Date.now(),
+      source: 'Ethereum',
+      destination: selectedChain?.name || 'Unknown'
     };
   };
 
-  // Mock refresh orders
-  const refreshOrders = async (): Promise<void> => {
-    // Simulate fetching updated orders
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Update some order statuses randomly
-    setOrders(prev => 
-      prev.map(order => ({
-        ...order,
-        status: Math.random() > 0.5 ? MessageStatus.CONFIRMED : order.status
-      }))
-    );
-  };
-
-  return (
-    <L2BridgeContext.Provider value={{
-      isBridging,
-      orders,
-      supportedChains,
-      bridgeOrder,
-      getOrderStatus,
-      estimateGas,
-      refreshOrders,
+  // Update transactions from WebSocket messages
+  useEffect(() => {
+    if (messages.length > 0) {
+      // Map messages to transactions format
+      const messageTransactions = messages.map(message => ({
+        id: message.messageId,
+        type: 'bridge',
+        status: message.status.toLowerCase(),
+        timestamp: message.timestamp,
+        chainId: message.destinationChainId,
+        error: message.failureReason || undefined
+      }));
       
-      // Additional methods needed by L2BridgeWidget
-      getSupportedChains: async () => supportedChains,
-      estimateBridgingGas: async () => {},
-      getOrdersByUser: async () => [],
-      getMessageDetails: async () => {}
-    }}>
+      // Update transactions state with real-time data
+      setTransactions(prevTransactions => {
+        // Create a map of existing transactions for easy lookup
+        const existingTransactionsMap = new Map(
+          prevTransactions.map(tx => [tx.id, tx] as [string, Transaction])
+        );
+        
+        // Update existing transactions with new data
+        messageTransactions.forEach(tx => {
+          const existing = existingTransactionsMap.get(tx.id);
+          existingTransactionsMap.set(tx.id, {
+            ...(existing || {}),
+            ...tx
+          } as Transaction);
+        });
+        
+        // Convert map back to array and sort by timestamp (newest first)
+        return Array.from(existingTransactionsMap.values())
+          .sort((a, b) => b.timestamp - a.timestamp);
+      });
+    }
+  }, [messages]);
+  
+  const contextValue: L2BridgeContextType = {
+    chains,
+    selectedChain,
+    setSelectedChain,
+    isBridging,
+    orders,
+    bridgeOrder,
+    estimateBridgingGas,
+    getOrdersByUser,
+    getMessageDetails,
+    getSupportedChains,
+    transactions,
+    isWebSocketConnected,
+    messagesLoading,
+    messagesError
+  };
+  
+  return (
+    <L2BridgeContext.Provider value={contextValue}>
       {children}
     </L2BridgeContext.Provider>
   );
 };
+
+export const useL2Bridge = () => useContext(L2BridgeContext);
 
 export default L2BridgeContext; 

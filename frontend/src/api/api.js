@@ -43,6 +43,16 @@ const mockApi = {
       return { data: mockPortfolioImpact() };
     }
     
+    if (url.startsWith('/api/users/') && url.includes('/smart-account')) {
+      // Return mock smart accounts for user
+      return { data: mockSmartAccounts() };
+    }
+    
+    if (url === '/api/smart-account/templates') {
+      // Return mock smart account templates
+      return { data: mockSmartAccountTemplates() };
+    }
+    
     throw new Error(`No mock response for ${url}`);
   },
   
@@ -59,6 +69,41 @@ const mockApi = {
     
     if (url === '/yield/strategies/impact') {
       return { data: mockStrategyImpact(data.strategy_id) };
+    }
+    
+    if (url.includes('/smart-account')) {
+      // Mock create smart account response
+      return { data: { success: true, accountId: `0x${Math.random().toString(16).slice(2)}` } };
+    }
+    
+    throw new Error(`No mock response for ${url}`);
+  },
+  
+  delete: async (url) => {
+    console.log(`Mocking DELETE request to ${url}`);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Mock responses based on URL
+    if (url.includes('/smart-account/')) {
+      // Mock delete/revoke smart account
+      return { data: { success: true } };
+    }
+    
+    throw new Error(`No mock response for ${url}`);
+  },
+  
+  put: async (url, data) => {
+    console.log(`Mocking PUT request to ${url}`, data);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Mock responses based on URL
+    if (url.includes('/smart-account/') && url.includes('/status')) {
+      // Mock update smart account status
+      return { data: { success: true, status: data.status } };
     }
     
     throw new Error(`No mock response for ${url}`);
@@ -362,6 +407,275 @@ function mockPortfolioImpact() {
     verification_date: 1672531200, // Jan 1, 2023
     third_party_verifier: "Verra"
   };
+}
+
+// Helper function to generate mock smart accounts
+function mockSmartAccounts() {
+  return [
+    {
+      id: '0x7f3a40e642c7d16c0c2fc74c6626c223206629a3',
+      owner: '0x8a23eb5a4ce5adc96fcec01e8f5c2be77bc35f33',
+      name: 'Yield Reinvestment Account',
+      createdAt: Math.floor(Date.now() / 1000) - 2592000, // 30 days ago
+      templateId: '0x0000000000000000000000000000000000000001',
+      status: 'ACTIVE',
+      delegates: [
+        '0x9b23eb5a4ce5adc96fcec01e8f5c2be77bc35f44', 
+        '0xa123eb5a4ce5adc96fcec01e8f5c2be77bc35f55'
+      ],
+      balance: '2.45'
+    },
+    {
+      id: '0x9f3a40e642c7d16c0c2fc74c6626c223206629b4',
+      owner: '0x8a23eb5a4ce5adc96fcec01e8f5c2be77bc35f33',
+      name: 'Portfolio Rebalancer',
+      createdAt: Math.floor(Date.now() / 1000) - 1296000, // 15 days ago
+      templateId: '0x0000000000000000000000000000000000000003',
+      status: 'PAUSED',
+      delegates: [],
+      balance: '0.75'
+    },
+  ];
+}
+
+// Helper function to generate mock smart account templates
+function mockSmartAccountTemplates() {
+  return [
+    {
+      id: '0x0000000000000000000000000000000000000001',
+      name: 'Yield Reinvestment',
+      description: 'Automatically reinvests yield from treasury tokens based on configurable thresholds and strategies.',
+      code: `// Yield Reinvestment Smart Account Template
+// Automatically reinvests yield based on thresholds
+
+contract YieldReinvestment {
+    address public owner;
+    address public treasuryToken;
+    uint256 public reinvestThreshold;
+    bool public isActive;
+    
+    constructor(address _owner, address _treasuryToken, uint256 _reinvestThreshold) {
+        owner = _owner;
+        treasuryToken = _treasuryToken;
+        reinvestThreshold = _reinvestThreshold;
+        isActive = true;
+    }
+    
+    function execute() external {
+        // Check if yield is above threshold
+        // Reinvest if conditions are met
+    }
+}`,
+      parameters: [
+        {
+          name: 'treasuryToken',
+          type: 'address',
+          description: 'Address of the treasury token to monitor',
+          defaultValue: '0x0000000000000000000000000000000000000000'
+        },
+        {
+          name: 'reinvestThreshold',
+          type: 'uint256',
+          description: 'Minimum yield amount to trigger reinvestment (in wei)',
+          defaultValue: '1000000000000000000'
+        }
+      ]
+    },
+    {
+      id: '0x0000000000000000000000000000000000000002',
+      name: 'Automated Trading',
+      description: 'Executes trades based on predefined rules and market conditions.',
+      code: `// Automated Trading Smart Account Template
+// Executes trades based on predefined rules
+
+contract AutomatedTrading {
+    address public owner;
+    address public tokenAddress;
+    uint256 public buyThreshold;
+    uint256 public sellThreshold;
+    bool public isActive;
+    
+    constructor(address _owner, address _tokenAddress, uint256 _buyThreshold, uint256 _sellThreshold) {
+        owner = _owner;
+        tokenAddress = _tokenAddress;
+        buyThreshold = _buyThreshold;
+        sellThreshold = _sellThreshold;
+        isActive = true;
+    }
+    
+    function execute() external {
+        // Check market conditions
+        // Execute trades if conditions are met
+    }
+}`,
+      parameters: [
+        {
+          name: 'tokenAddress',
+          type: 'address',
+          description: 'Address of the token to trade',
+          defaultValue: '0x0000000000000000000000000000000000000000'
+        },
+        {
+          name: 'buyThreshold',
+          type: 'uint256',
+          description: 'Price threshold to trigger buy orders (in wei)',
+          defaultValue: '900000000000000000'
+        },
+        {
+          name: 'sellThreshold',
+          type: 'uint256',
+          description: 'Price threshold to trigger sell orders (in wei)',
+          defaultValue: '1100000000000000000'
+        }
+      ]
+    },
+    {
+      id: '0x0000000000000000000000000000000000000003',
+      name: 'Portfolio Rebalancing',
+      description: 'Automatically rebalances portfolio to maintain target allocations across assets.',
+      code: `// Portfolio Rebalancing Smart Account Template
+// Maintains target allocations across assets
+
+contract PortfolioRebalancer {
+    address public owner;
+    address[] public assets;
+    uint256[] public targetAllocations;
+    uint256 public rebalanceThreshold;
+    bool public isActive;
+    
+    constructor(address _owner, address[] memory _assets, uint256[] memory _allocations, uint256 _threshold) {
+        owner = _owner;
+        assets = _assets;
+        targetAllocations = _allocations;
+        rebalanceThreshold = _threshold;
+        isActive = true;
+    }
+    
+    function execute() external {
+        // Check current allocations
+        // Rebalance if deviation exceeds threshold
+    }
+}`,
+      parameters: [
+        {
+          name: 'assets',
+          type: 'address',
+          description: 'Comma-separated list of asset addresses',
+          defaultValue: '0x0000000000000000000000000000000000000000,0x0000000000000000000000000000000000000001'
+        },
+        {
+          name: 'targetAllocations',
+          type: 'uint256',
+          description: 'Comma-separated list of allocation percentages (must sum to 100)',
+          defaultValue: '60,40'
+        },
+        {
+          name: 'rebalanceThreshold',
+          type: 'uint256',
+          description: 'Percentage deviation to trigger rebalancing',
+          defaultValue: '5'
+        }
+      ]
+    },
+    {
+      id: '0x0000000000000000000000000000000000000004',
+      name: 'Conditional Transfer',
+      description: 'Transfers funds when specific conditions are met, such as time-based or event-based triggers.',
+      code: `// Conditional Transfer Smart Account Template
+// Transfers funds when conditions are met
+
+contract ConditionalTransfer {
+    address public owner;
+    address public recipient;
+    uint256 public transferAmount;
+    uint256 public unlockTime;
+    bool public isActive;
+    
+    constructor(address _owner, address _recipient, uint256 _amount, uint256 _unlockTime) {
+        owner = _owner;
+        recipient = _recipient;
+        transferAmount = _amount;
+        unlockTime = _unlockTime;
+        isActive = true;
+    }
+    
+    function execute() external {
+        // Check conditions
+        // Transfer funds if conditions are met
+    }
+}`,
+      parameters: [
+        {
+          name: 'recipient',
+          type: 'address',
+          description: 'Address to receive the transfer',
+          defaultValue: '0x0000000000000000000000000000000000000000'
+        },
+        {
+          name: 'transferAmount',
+          type: 'uint256',
+          description: 'Amount to transfer (in wei)',
+          defaultValue: '1000000000000000000'
+        },
+        {
+          name: 'unlockTime',
+          type: 'uint256',
+          description: 'UNIX timestamp when transfer becomes available',
+          defaultValue: '1704067200'
+        }
+      ]
+    },
+    {
+      id: '0x0000000000000000000000000000000000000005',
+      name: 'Delegation Rules',
+      description: 'Creates rules for delegation of account management with specific permissions and limits.',
+      code: `// Delegation Rules Smart Account Template
+// Manages delegated permissions and limits
+
+contract DelegationRules {
+    address public owner;
+    mapping(address => bool) public delegates;
+    mapping(address => uint256) public spendingLimits;
+    mapping(address => uint256) public expirations;
+    bool public isActive;
+    
+    constructor(address _owner, address[] memory _delegates, uint256[] memory _limits, uint256[] memory _expirations) {
+        owner = _owner;
+        for (uint i = 0; i < _delegates.length; i++) {
+            delegates[_delegates[i]] = true;
+            spendingLimits[_delegates[i]] = _limits[i];
+            expirations[_delegates[i]] = _expirations[i];
+        }
+        isActive = true;
+    }
+    
+    function execute(address delegate, bytes memory data) external {
+        // Check delegation permissions
+        // Execute if delegate has permission
+    }
+}`,
+      parameters: [
+        {
+          name: 'delegates',
+          type: 'address',
+          description: 'Comma-separated list of delegate addresses',
+          defaultValue: '0x0000000000000000000000000000000000000000,0x0000000000000000000000000000000000000001'
+        },
+        {
+          name: 'spendingLimits',
+          type: 'uint256',
+          description: 'Comma-separated list of spending limits (in wei)',
+          defaultValue: '1000000000000000000,500000000000000000'
+        },
+        {
+          name: 'expirations',
+          type: 'uint256',
+          description: 'Comma-separated list of expiration timestamps',
+          defaultValue: '1704067200,1704067200'
+        }
+      ]
+    }
+  ];
 }
 
 // Use the mock API for now

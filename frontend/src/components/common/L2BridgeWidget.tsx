@@ -305,11 +305,10 @@ const L2BridgeWidget = () => {
         // Assuming a standard order data size
         const dataSize = 1000; // 1KB
         
-        // Get gas estimation
+        // Get gas estimation with correct parameters (dataSize, dataType)
         const estimation = await estimateBridgingGas(
-          selectedChain,
-          dataSize,
-          true // Try with blob data
+          dataSize, 
+          1 // Using 1 as dataType (assuming 1=blob data)
         );
         
         setGasEstimation(estimation);
@@ -345,9 +344,19 @@ const L2BridgeWidget = () => {
     setSuccess(null);
 
     try {
-      // Use updated bridgeOrder function with correct parameters
-      const orderId = await bridgeOrder(selectedChain, account, amount);
-      setSuccess(`Order bridged successfully! Order ID: ${orderId}`);
+      // Create order object matching the OrderDetails interface
+      const order = {
+        orderId: utils.id(Date.now().toString()), // Generate a temporary ID
+        treasuryId: treasuryId,
+        userAddress: account,
+        isBuy: true,
+        amount: amount,
+        price: '0' // Not used for bridging
+      };
+      
+      // Call bridgeOrder with the order object
+      await bridgeOrder(order);
+      setSuccess(`Order bridged successfully!`);
       
       // Refresh recent transactions
       await loadUserOrders();

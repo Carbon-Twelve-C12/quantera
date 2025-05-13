@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 
 // Define wallet context state interface
 interface WalletContextState {
@@ -21,11 +21,6 @@ const WalletContext = createContext<WalletContextState>({
   connect: async () => {},
   disconnect: () => {},
 });
-
-// Provider component interface
-interface WalletProviderProps {
-  children: ReactNode;
-}
 
 // Hook to use wallet context
 export const useWallet = () => useContext(WalletContext);

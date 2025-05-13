@@ -1,0 +1,119 @@
+name: Smart Contract Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'contracts/**'
+      - 'tests/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'contracts/**'
+      - 'tests/**'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Contract Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Compile contracts
+        run: npx hardhat compile
+      
+      - name: Run tests
+        run: npx hardhat test
+      
+      - name: Generate coverage report
+        run: npx hardhat coverage
+      
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage/
+      
+      - name: Check contract size
+        run: npx hardhat size-contracts
+      
+      - name: Run gas estimation
+        run: npx hardhat test-gas
+      
+      - name: Run security checks with Slither
+        uses: crytic/slither-action@v0.3.0
+        with:
+          target: "contracts/"
+          slither-args: "--exclude-dependencies"
+          ignore-compile: true
+      
+      - name: Run security checks with Mythril
+        run: |
+          pip install mythril
+          myth analyze contracts/**/*.sol --solc-json mythril.config.json
+
+  l2-integration:
+    name: L2 Integration Tests
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Start local L2 testnet
+        run: npx hardhat node --fork https://optimism-goerli.infura.io/v3/${{ secrets.INFURA_API_KEY }} &
+      
+      - name: Deploy contracts to local L2
+        run: npx hardhat run scripts/deploy-l2-test.js --network localhost
+      
+      - name: Run L2 integration tests
+        run: npx hardhat test tests/contracts/integration/l2Bridge.test.js --network localhost
+
+  pectra-features:
+    name: Pectra EIP Compatibility Tests
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Test EIP-7691 (Blob Data) compatibility
+        run: npx hardhat test tests/contracts/pectra/eip7691.test.js
+      
+      - name: Test EIP-7702 (Smart Account) compatibility
+        run: npx hardhat test tests/contracts/pectra/eip7702.test.js
+      
+      - name: Test EIP-2537 (BLS Signature) compatibility
+        run: npx hardhat test tests/contracts/pectra/eip2537.test.js 

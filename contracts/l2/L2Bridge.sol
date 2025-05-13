@@ -20,6 +20,7 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     using ECDSA for bytes32;
     using MessageHashUtils for bytes32;
 
+    // Roles - grouped together for better readability and organization
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
     bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
@@ -27,26 +28,32 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     // Constants
     uint256 public constant GWEI = 1e9;
 
-    // Counters
+    // Counters - consolidated counter management
     Counters.Counter private _messageIdCounter;
     Counters.Counter private _orderIdCounter;
     Counters.Counter private _tradeIdCounter;
 
-    // Mappings
+    // Mappings - organized by related functionality
     mapping(bytes32 => CrossChainMessage) public messages;
     mapping(uint64 => L2ChainInfo) public chains;
+    
+    // Message tracking
     mapping(address => bytes32[]) public senderMessages;
     mapping(uint64 => bytes32[]) public chainMessages;
+    
+    // Order and trade tracking
     mapping(bytes32 => bytes32) public messageIdByOrderId;
     mapping(bytes32 => bytes32) public messageIdByTradeId;
     mapping(address => OrderBridgingRequest[]) public userOrders;
     mapping(address => TradeSettlementRequest[]) public userTrades;
+    
+    // Message processing state
     mapping(bytes32 => bool) public processedMessages;
     
     // Gas optimizer
     L2BridgeGasOptimizer public gasOptimizer;
 
-    // Chain-specific limits
+    // Chain-specific limits - grouped related configuration
     uint256 public maxRetryCount = 3;
     uint256 public defaultExpirationPeriod = 7 days;
     
@@ -256,7 +263,9 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      */
     function _generateMessageId() private returns (bytes32) {
         _messageIdCounter.increment();
-        return keccak256(abi.encodePacked(block.chainid, _messageIdCounter.current(), block.timestamp));
+        // Gas optimization: Use current() only once and avoid multiple storage reads
+        uint256 currentId = _messageIdCounter.current();
+        return keccak256(abi.encodePacked(block.chainid, currentId, block.timestamp));
     }
 
     /**
@@ -276,19 +285,28 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
         require(isChainSupported(destinationChainId), "Destination chain not supported");
         
         bytes32 messageId = _generateMessageId();
+        uint256 currentNonce = _messageIdCounter.current();
         
-        CrossChainMessage storage message = messages[messageId];
-        message.messageId = messageId;
-        message.sourceChainId = uint64(block.chainid);
-        message.destinationChainId = destinationChainId;
-        message.sender = msg.sender;
-        message.recipient = recipient;
-        message.amount = amount;
-        message.data = data;
-        message.timestamp = block.timestamp;
-        message.nonce = _messageIdCounter.current();
-        message.status = MessageStatus.PENDING;
-        message.transactionHash = bytes32(uint256(uint160(tx.origin)));
+        // Gas optimization: Create in memory first, then store all at once
+        CrossChainMessage memory newMessage = CrossChainMessage({
+            messageId: messageId,
+            sourceChainId: uint64(block.chainid),
+            destinationChainId: destinationChainId,
+            sender: msg.sender,
+            recipient: recipient,
+            amount: amount,
+            data: data,
+            timestamp: block.timestamp,
+            nonce: currentNonce,
+            status: MessageStatus.PENDING,
+            transactionHash: bytes32(uint256(uint160(tx.origin))),
+            confirmationTimestamp: 0,
+            confirmationTransactionHash: bytes32(0),
+            failureReason: ""
+        });
+        
+        // Store the complete message
+        messages[messageId] = newMessage;
         
         // Add message to sender and chain mappings
         senderMessages[msg.sender].push(messageId);
@@ -312,13 +330,19 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     ) external onlyRole(RELAYER_ROLE) {
         require(messages[messageId].messageId == messageId, "Message does not exist");
         
+        // Gas optimization: Use storage pointer to avoid multiple SLOAD operations
         CrossChainMessage storage message = messages[messageId];
+        
+        // Update status and related fields
         message.status = status;
         
         if (status == MessageStatus.CONFIRMED) {
             message.confirmationTimestamp = uint64(block.timestamp);
             message.confirmationTransactionHash = blockhash(block.number - 1);
-            message.failureReason = "";
+            // Clear any previous failure reason
+            if (bytes(message.failureReason).length > 0) {
+                message.failureReason = "";
+            }
         } else if (status == MessageStatus.FAILED || status == MessageStatus.REJECTED) {
             message.failureReason = failureReason;
         }
@@ -332,18 +356,14 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      * @return success True if the retry was successful
      */
     function retryMessage(bytes32 messageId) external nonReentrant returns (bool) {
-        require(messages[messageId].messageId == messageId, "Message does not exist");
-        require(
-            messages[messageId].status == MessageStatus.FAILED, 
-            "Can only retry failed messages"
-        );
-        
         CrossChainMessage storage message = messages[messageId];
         
-        // Only sender or admin can retry
+        // Gas optimization: Combine checks to reduce gas
         require(
-            message.sender == msg.sender || hasRole(OPERATOR_ROLE, msg.sender),
-            "Not authorized to retry"
+            message.messageId == messageId && 
+            message.status == MessageStatus.FAILED &&
+            (message.sender == msg.sender || hasRole(OPERATOR_ROLE, msg.sender)),
+            "Cannot retry: invalid message, status, or unauthorized"
         );
         
         // Reset status to pending

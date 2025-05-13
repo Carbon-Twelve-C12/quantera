@@ -1,0 +1,38 @@
+{
+  "remappings": [
+    "@openzeppelin/=node_modules/@openzeppelin/",
+    "hardhat/=node_modules/hardhat/"
+  ],
+  "optimizer": {
+    "enabled": true,
+    "runs": 200
+  },
+  "solc": {
+    "version": "0.8.17"
+  },
+  "settings": {
+    "analysis": {
+      "modules": [
+        "print",
+        "human-summary"
+      ],
+      "transaction-count": 3,
+      "execution-timeout": 600,
+      "loop-bound": 3,
+      "depth": 32,
+      "solver-timeout": 200000,
+      "max-transaction-size": 50000
+    },
+    "contracts": {
+      "SmartAccountTemplates.sol": {
+        "address": "0x0000000000000000000000000000000000000001"
+      },
+      "L2Bridge.sol": {
+        "address": "0x0000000000000000000000000000000000000002"
+      },
+      "L2BridgeGasOptimizer.sol": {
+        "address": "0x0000000000000000000000000000000000000003"
+      }
+    }
+  }
+} 
