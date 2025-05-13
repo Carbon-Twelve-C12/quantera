@@ -70,6 +70,25 @@ The complete API documentation is available in the `docs/api` directory, which i
 - Liquidity pools endpoints for liquidity management
 - Yield optimizer endpoints for yield strategy management
 
+## OpenAPI Documentation
+
+The backend API is documented using the OpenAPI (Swagger) specification. The spec file is located at `docs/openapi.yaml` and covers all treasury, compliance, and asset management endpoints, including request/response schemas and error cases. This spec is used to generate the frontend TypeScript API client for seamless integration.
+
+### Updating the API Spec
+- Edit `docs/openapi.yaml` to add or update endpoint documentation.
+- Ensure all new endpoints, request/response types, and error cases are described.
+
+### Generating the TypeScript Client
+- Use `openapi-generator` or `swagger-codegen` to generate the client:
+  ```
+  openapi-generator-cli generate -i docs/openapi.yaml -g typescript-axios -o frontend/src/api/generated
+  ```
+- Import and use the generated client in your React components and hooks.
+
+### Best Practices
+- Keep the OpenAPI spec up to date with backend changes.
+- Use the spec to drive both backend and frontend development for type safety and consistency.
+
 ## Troubleshooting
 
 ### Invalid Contract Address Format

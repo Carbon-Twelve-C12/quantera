@@ -65,7 +65,7 @@ const HomePage = () => {
                 </div>
                 <Card.Title>Security & Compliance</Card.Title>
                 <Card.Text>
-                  Fully compliant with regulatory requirements and backed by the safety of U.S. Treasuries.
+                  All assets follow appropriate regulatory frameworks for their respective asset classes.
                 </Card.Text>
               </Card.Body>
             </Card>

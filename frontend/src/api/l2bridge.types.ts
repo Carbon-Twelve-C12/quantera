@@ -1,156 +1,112 @@
 /**
- * L2Bridge API TypeScript types
+ * L2Bridge Types
+ * These types are used for the L2Bridge functionality
  */
 
-import { BigNumber } from 'ethers';
+// Use string type for large numbers
+type BigNumberish = string;
 
 /**
  * MessageStatus enum
  */
 export enum MessageStatus {
-  PENDING = 0,
-  CONFIRMED = 1,
-  FAILED = 2,
-  EXPIRED = 3
+  PENDING = "PENDING",
+  PROCESSING = "PROCESSING",
+  CONFIRMED = "CONFIRMED",
+  FAILED = "FAILED"
 }
 
 /**
- * Chain information
+ * Details of a currency used in a chain
+ */
+export interface Currency {
+  name: string;
+  symbol: string;
+  decimals: number;
+}
+
+/**
+ * Information about a blockchain network
  */
 export interface ChainInfo {
   chainId: number;
-  chainType: number;
   name: string;
-  bridgeAddress: string;
-  rollupAddress: string;
-  verificationBlocks: number;
-  gasTokenSymbol: string;
-  nativeTokenPriceUsd: BigNumber;
-  averageBlockTime: number;
-  blob_enabled: boolean;
-  maxMessageSize: number;
+  rpcUrl: string;
+  explorerUrl: string;
+  nativeCurrency: Currency;
+  blob_enabled?: boolean; // Whether the chain supports EIP-7691 blob data
 }
 
 /**
- * Order details for bridging
- */
-export interface OrderDetails {
-  order_id: string;
-  treasury_id: string;
-  user: string;
-  is_buy: boolean;
-  amount: BigNumber;
-  price: BigNumber;
-  expiration: number;
-  signature: string;
-  destinationChainId: number;
-}
-
-/**
- * Cross-chain message
- */
-export interface CrossChainMessage {
-  messageId: string;
-  sender: string;
-  sourceChainId: number;
-  destinationChainId: number;
-  related_id: string; // Order ID or other related ID
-  data: string;
-  timestamp: number;
-  status: MessageStatus;
-  statusMessage: string;
-  useBlob: boolean;
-}
-
-/**
- * Gas estimation result
+ * Gas estimation for a bridge transaction
  */
 export interface GasEstimation {
-  useBlob: boolean;
-  blobGasLimit: number;
-  callDataGasLimit: number;
-  estimatedGasCost: number;
-  estimatedUsdCost: number;
+  gasAmount: string;
+  gasCost: string;
+  gasPrice: string;
+  estimatedTimeSeconds: number;
+  estimatedUsdCost?: number;
+  useBlob?: boolean;
+  blobGasLimit?: string;
+  callDataGasLimit?: string;
 }
 
 /**
- * L2Bridge event types
+ * Details of an order being bridged
  */
-export enum L2BridgeEventType {
-  ORDER_BRIDGED = 'OrderBridged',
-  MESSAGE_STATUS_UPDATED = 'MessageStatusUpdated',
-  CHAIN_ADDED = 'ChainAdded',
-  CHAIN_UPDATED = 'ChainUpdated'
-}
-
-/**
- * Order bridged event
- */
-export interface OrderBridgedEvent {
-  type: L2BridgeEventType.ORDER_BRIDGED;
+export interface OrderDetails {
   orderId: string;
-  messageId: string;
-  destinationChainId: number;
-  sender: string;
+  fromChainId: number;
+  toChainId: number;
+  amount: string;
+  tokenAddress: string;
+  recipient: string;
   timestamp: number;
+  status: MessageStatus;
+  txHash: string;
+  messageId?: string;
 }
 
 /**
- * Message status updated event
+ * Response from the bridge message status API
  */
-export interface MessageStatusUpdatedEvent {
-  type: L2BridgeEventType.MESSAGE_STATUS_UPDATED;
+export interface MessageStatusResponse {
   messageId: string;
   status: MessageStatus;
-  statusMessage: string;
+  fromChainId: number;
+  toChainId: number;
   timestamp: number;
+  txHash: string;
 }
 
 /**
- * Chain added event
+ * Request to estimate gas for a bridge transaction
  */
-export interface ChainAddedEvent {
-  type: L2BridgeEventType.CHAIN_ADDED;
-  chainId: number;
-  name: string;
-  bridgeAddress: string;
-  timestamp: number;
+export interface GasEstimateRequest {
+  fromChainId: number;
+  toChainId: number;
+  dataSize: number;
+  useBlob: boolean;
 }
 
 /**
- * Chain updated event
+ * Request to bridge an order to another chain
  */
-export interface ChainUpdatedEvent {
-  type: L2BridgeEventType.CHAIN_UPDATED;
-  chainId: number;
-  name: string;
-  bridgeAddress: string;
-  timestamp: number;
+export interface BridgeOrderRequest {
+  fromChainId: number;
+  toChainId: number;
+  recipient: string;
+  amount: string;
+  tokenAddress?: string; // Optional, defaults to native token
+  treasuryId?: string; // Optional treasury ID for treasury tokens
 }
 
 /**
- * Union type for all L2Bridge events
+ * Response from the order bridging API
  */
-export type L2BridgeEvent = 
-  | OrderBridgedEvent
-  | MessageStatusUpdatedEvent
-  | ChainAddedEvent
-  | ChainUpdatedEvent;
-
-/**
- * WebSocket subscription topics
- */
-export enum SubscriptionTopic {
-  ALL_MESSAGES = 'l2_messages',
-  SPECIFIC_MESSAGE = 'l2_message:', // Append messageId
-  CHAIN = 'l2_chain:', // Append chainId
-  USER = 'user:' // Append userAddress
-}
-
-/**
- * WebSocket subscription request
- */
-export interface SubscriptionRequest {
-  topic: string;
-  auth_token?: string;
+export interface BridgeOrderResponse {
+  orderId: string;
+  messageId: string;
+  txHash: string;
+  status: MessageStatus;
 } 

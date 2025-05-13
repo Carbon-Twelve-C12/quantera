@@ -1,0 +1,175 @@
+openapi: 3.0.3
+info:
+  title: Quantera Treasury API
+  version: 1.0.0
+  description: |
+    API for managing tokenized treasuries, including creation, listing, compliance, and yield information. Treasury creation enforces compliance checks and uses pluggable deployment logic.
+servers:
+  - url: http://localhost:3030
+paths:
+  /treasuries:
+    get:
+      summary: List treasuries
+      description: List all treasuries with optional filters.
+      parameters:
+        - in: query
+          name: treasury_type
+          schema:
+            type: string
+            enum: [tbill, tnote, tbond]
+          description: Filter by treasury type
+        - in: query
+          name: min_yield
+          schema:
+            type: integer
+          description: Minimum yield (basis points)
+        - in: query
+          name: max_maturity
+          schema:
+            type: integer
+          description: Maximum maturity date (unix timestamp)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: Page size
+        - in: query
+          name: offset
+          schema:
+            type: integer
+          description: Offset for pagination
+      responses:
+        '200':
+          description: List of treasuries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TreasuryOverview'
+    post:
+      summary: Create a new treasury
+      description: |
+        Create a new treasury token. Requires authentication. Enforces compliance checks (KYC/AML) and uses pluggable deployment logic. Returns the created treasury overview.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTreasuryRequest'
+      responses:
+        '200':
+          description: Treasury created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreasuryOverview'
+        '401':
+          description: Unauthorized or compliance check failed
+        '400':
+          description: Invalid input
+  /treasuries/{id}:
+    get:
+      summary: Get treasury details
+      description: Get details for a specific treasury by ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Treasury ID (hex string)
+      responses:
+        '200':
+          description: Treasury details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreasuryOverview'
+        '404':
+          description: Treasury not found
+  /treasuries/{id}/yield:
+    get:
+      summary: Get treasury yield information
+      description: Get yield information for a specific treasury by ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Treasury ID (hex string)
+      responses:
+        '200':
+          description: Yield information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  treasury_id:
+                    type: string
+                  yield_rate:
+                    type: integer
+                  annual_yield_percentage:
+                    type: number
+                  maturity_date:
+                    type: integer
+                  issuance_date:
+                    type: integer
+                  time_to_maturity:
+                    type: integer
+        '404':
+          description: Treasury not found
+components:
+  schemas:
+    CreateTreasuryRequest:
+      type: object
+      required:
+        - name
+        - symbol
+        - description
+        - treasury_type
+        - total_supply
+        - face_value
+        - yield_rate
+        - maturity_date
+      properties:
+        name:
+          type: string
+        symbol:
+          type: string
+        description:
+          type: string
+        treasury_type:
+          type: string
+          enum: [tbill, tnote, tbond]
+        total_supply:
+          type: string
+        face_value:
+          type: string
+        yield_rate:
+          type: integer
+        maturity_date:
+          type: integer
+    TreasuryOverview:
+      type: object
+      properties:
+        token_id:
+          type: string
+        token_address:
+          type: string
+        name:
+          type: string
+        symbol:
+          type: string
+        treasury_type:
+          type: string
+        current_price:
+          type: string
+        yield_rate:
+          type: integer
+        maturity_date:
+          type: integer
+        status:
+          type: string 

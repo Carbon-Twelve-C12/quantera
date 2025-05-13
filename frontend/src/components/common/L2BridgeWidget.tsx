@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
 import { 
   Box, 
   Button, 
@@ -24,7 +23,34 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { useWallet } from '../../contexts/WalletContext';
 import { useL2Bridge } from '../../contexts/L2BridgeContext';
 import { MessageStatus } from '../../api/l2bridge.types';
-import { formatEther, parseEther } from 'ethers/lib/utils';
+
+// Utility functions to replace ethers
+const formatEther = (value: string): string => {
+  // Simple implementation to format wei to ether
+  const num = parseFloat(value);
+  return (num / 1e18).toFixed(6);
+};
+
+const parseEther = (value: string): string => {
+  // Simple implementation to parse ether to wei
+  const num = parseFloat(value);
+  return (num * 1e18).toString();
+};
+
+const utils = {
+  commify: (value: string | number): string => {
+    // Add commas to number
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  },
+  id: (value: string): string => {
+    // Simple hash function for demo
+    return `id-${Math.floor(Math.random() * 1000000)}`;
+  },
+  formatBytes32String: (value: string): string => {
+    // Pad string to 32 bytes
+    return value.padEnd(64, '0');
+  }
+};
 
 // Message status badges with appropriate colors
 const StatusBadge = ({ status }: { status: MessageStatus }) => {
@@ -36,8 +62,8 @@ const StatusBadge = ({ status }: { status: MessageStatus }) => {
         return 'success';
       case MessageStatus.FAILED:
         return 'error';
-      case MessageStatus.EXPIRED:
-        return 'default';
+      case MessageStatus.PROCESSING:
+        return 'info';
       default:
         return 'default';
     }
@@ -51,8 +77,8 @@ const StatusBadge = ({ status }: { status: MessageStatus }) => {
         return 'Confirmed';
       case MessageStatus.FAILED:
         return 'Failed';
-      case MessageStatus.EXPIRED:
-        return 'Expired';
+      case MessageStatus.PROCESSING:
+        return 'Processing';
       default:
         return 'Unknown';
     }
@@ -130,8 +156,8 @@ const GasEstimation = ({ estimation }: { estimation: any }) => {
             <Typography variant="body2">Gas Limit:</Typography>
             <Typography variant="body2" fontWeight="bold">
               {estimation.useBlob 
-                ? `${ethers.utils.commify(estimation.blobGasLimit)} (blob)` 
-                : ethers.utils.commify(estimation.callDataGasLimit)}
+                ? `${utils.commify(estimation.blobGasLimit)} (blob)` 
+                : utils.commify(estimation.callDataGasLimit)}
             </Typography>
           </Stack>
         </Stack>
@@ -177,7 +203,7 @@ const RecentTransactions = ({
                   </Box>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <Typography variant="body2">
-                      {ethers.utils.formatEther(tx.amount)} ETH
+                      {formatEther(tx.amount)} ETH
                     </Typography>
                     <StatusBadge status={tx.status} />
                   </Stack>
@@ -193,7 +219,7 @@ const RecentTransactions = ({
 
 // Main L2BridgeWidget component
 const L2BridgeWidget = () => {
-  const { account, provider, chainId } = useWallet();
+  const { address: account, provider, chainId } = useWallet();
   const { 
     getSupportedChains, 
     estimateBridgingGas, 
@@ -251,7 +277,7 @@ const L2BridgeWidget = () => {
       );
 
       // Sort by timestamp (newest first)
-      orders.sort((a, b) => b.timestamp - a.timestamp);
+      orders.sort((a: any, b: any) => b.timestamp - a.timestamp);
       
       setRecentTransactions(orders.slice(0, 5)); // Only show 5 most recent
     } catch (error) {
@@ -319,38 +345,12 @@ const L2BridgeWidget = () => {
     setSuccess(null);
 
     try {
-      // Create order details
-      const order = {
-        order_id: ethers.utils.id(`${account}-${Date.now()}`), // Generate unique order ID
-        treasury_id: ethers.utils.formatBytes32String(treasuryId),
-        user: account,
-        is_buy: true,
-        amount: parseEther(amount),
-        price: parseEther('0'), // Set price based on your requirements
-        expiration: Math.floor(Date.now() / 1000) + 86400, // 24 hours from now
-        signature: '0x', // You may need to implement signature generation
-        destinationChainId: selectedChain
-      };
-
-      // Bridge the order
-      const tx = await bridgeOrder(order);
+      // Use updated bridgeOrder function with correct parameters
+      const orderId = await bridgeOrder(selectedChain, account, amount);
+      setSuccess(`Order bridged successfully! Order ID: ${orderId}`);
       
-      // Wait for the transaction
-      const receipt = await tx.wait();
-      
-      // Find the OrderBridged event
-      const event = receipt.events?.find(
-        (e) => e.event === 'OrderBridged'
-      );
-      
-      if (event) {
-        setSuccess(`Order bridged successfully! Message ID: ${event.args.messageId}`);
-        
-        // Refresh recent transactions
-        await loadUserOrders();
-      } else {
-        setError('Transaction completed but no OrderBridged event found.');
-      }
+      // Refresh recent transactions
+      await loadUserOrders();
     } catch (error: any) {
       console.error('Bridge error:', error);
       setError(`Failed to bridge: ${error.message || 'Unknown error'}`);

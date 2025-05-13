@@ -1,0 +1,13 @@
+.gitignore
+.npmignore
+.openapi-generator-ignore
+api.ts
+base.ts
+common.ts
+configuration.ts
+docs/CreateTreasuryRequest.md
+docs/DefaultApi.md
+docs/TreasuriesIdYieldGet200Response.md
+docs/TreasuryOverview.md
+git_push.sh
+index.ts
