@@ -4,7 +4,7 @@
  */
 
 // Use string type for large numbers
-type BigNumberish = string;
+export type BigNumberish = string;
 
 /**
  * MessageStatus enum
@@ -41,14 +41,14 @@ export interface ChainInfo {
  * Gas estimation for a bridge transaction
  */
 export interface GasEstimation {
-  gasAmount: string;
-  gasCost: string;
-  gasPrice: string;
+  gasAmount: BigNumberish;
+  gasCost: BigNumberish;
+  gasPrice: BigNumberish;
   estimatedTimeSeconds: number;
-  estimatedUsdCost?: number;
-  useBlob?: boolean;
-  blobGasLimit?: string;
-  callDataGasLimit?: string;
+  estimatedUsdCost: number;
+  useBlob: boolean;
+  blobGasLimit: BigNumberish;
+  callDataGasLimit: BigNumberish;
 }
 
 /**
@@ -58,13 +58,14 @@ export interface OrderDetails {
   orderId: string;
   fromChainId: number;
   toChainId: number;
-  amount: string;
-  tokenAddress: string;
+  amount: BigNumberish;
+  tokenAddress?: string;
   recipient: string;
   timestamp: number;
   status: MessageStatus;
-  txHash: string;
+  txHash?: string;
   messageId?: string;
+  treasuryId?: string;
 }
 
 /**
@@ -77,6 +78,8 @@ export interface MessageStatusResponse {
   toChainId: number;
   timestamp: number;
   txHash: string;
+  destinationChainId: number;
+  failureReason?: string;
 }
 
 /**
@@ -96,7 +99,7 @@ export interface BridgeOrderRequest {
   fromChainId: number;
   toChainId: number;
   recipient: string;
-  amount: string;
+  amount: BigNumberish;
   tokenAddress?: string; // Optional, defaults to native token
   treasuryId?: string; // Optional treasury ID for treasury tokens
 }
@@ -109,4 +112,84 @@ export interface BridgeOrderResponse {
   messageId: string;
   txHash: string;
   status: MessageStatus;
+}
+
+/**
+ * Bridge message details
+ */
+export interface BridgeMessage {
+  messageId: string;
+  fromChainId: number;
+  toChainId: number;
+  sender: string;
+  recipient: string;
+  amount: BigNumberish;
+  data: string;
+  timestamp: number;
+  status: MessageStatus;
+  txHash: string;
+  failureReason?: string;
+  gasUsed?: BigNumberish;
+}
+
+/**
+ * Bridge transaction data
+ */
+export interface BridgeTransaction {
+  id: string;
+  type: 'deposit' | 'withdraw' | 'bridge';
+  status: 'pending' | 'processing' | 'confirmed' | 'failed';
+  timestamp: number;
+  chainId: number;
+  amount: BigNumberish;
+  tokenAddress?: string;
+  messageId?: string;
+  error?: string;
+}
+
+/**
+ * Bridge WebSocket event types
+ */
+export enum BridgeEventType {
+  MESSAGE_STATUS_UPDATE = 'L2MessageStatusUpdate',
+  NEW_MESSAGE = 'L2NewMessage',
+  GAS_PRICE_UPDATE = 'L2GasPriceUpdate'
+}
+
+/**
+ * Bridge WebSocket event
+ */
+export interface BridgeEvent {
+  type: BridgeEventType;
+  payload: MessageStatusResponse | BridgeMessage | { chainId: number; gasPrice: BigNumberish };
+}
+
+/**
+ * Bridge API endpoints
+ */
+export enum BridgeEndpoints {
+  CHAINS = '/api/l2/chains',
+  ESTIMATE_GAS = '/api/l2/estimate-gas',
+  BRIDGE_ORDER = '/api/l2/bridge',
+  MESSAGE_STATUS = '/api/l2/message',
+  USER_ORDERS = '/api/l2/user',
+  TRANSACTIONS = '/api/l2/transactions'
+}
+
+/**
+ * Blob data format
+ */
+export interface BlobData {
+  data: Uint8Array;
+  commitment: string;
+  proof: string;
+}
+
+/**
+ * L2Bridge subscription topics
+ */
+export enum L2BridgeSubscriptionTopic {
+  L2_MESSAGES = 'l2_messages',
+  L2_CHAIN = 'l2_chain',
+  L2_MESSAGE = 'l2_message'
 } 

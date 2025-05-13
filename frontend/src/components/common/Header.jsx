@@ -35,6 +35,7 @@ import {
   ForestOutlined,
   BarChart,
   Code as CodeIcon,
+  Pool as PoolIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWallet } from '../../contexts/WalletContext';
@@ -87,6 +88,7 @@ const Header = () => {
   
   const smartAccountNavigationItems = [
     { label: 'Smart Account', path: '/smart-account', icon: <CodeIcon /> },
+    { label: 'Liquidity Pools', path: '/liquidity', icon: <PoolIcon /> },
   ];
 
   const userMenuItems = [

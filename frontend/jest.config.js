@@ -1,13 +1,23 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   moduleNameMapper: {
-    '\\.(css|less|scss|sass)$': '<rootDir>/__mocks__/styleMock.js',
-    '\\.(jpg|jpeg|png|gif|svg)$': '<rootDir>/__mocks__/fileMock.js',
+    // Handle CSS imports (with CSS modules)
+    '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
+    
+    // Handle CSS imports (without CSS modules)
+    '^.+\\.(css|sass|scss)$': '<rootDir>/__mocks__/styleMock.js',
+    
+    // Handle image imports
+    '^.+\\.(jpg|jpeg|png|gif|webp|svg)$': '<rootDir>/__mocks__/fileMock.js',
+    
+    // Handle module aliases
+    '^@/components/(.*)$': '<rootDir>/src/components/$1',
+    '^@/pages/(.*)$': '<rootDir>/src/pages/$1',
+    '^@/contexts/(.*)$': '<rootDir>/src/contexts/$1',
+    '^@/hooks/(.*)$': '<rootDir>/src/hooks/$1'
   },
-  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
-  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
       tsconfig: 'tsconfig.json',
@@ -16,12 +26,21 @@ module.exports = {
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
-    '!**/node_modules/**',
+    '!src/index.tsx',
+    '!src/reportWebVitals.ts'
   ],
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70
+    }
+  },
+  testMatch: ['**/?(*.)+(spec|test).(ts|tsx)'],
   globals: {
     'ts-jest': {
-      isolatedModules: true,
-    },
-  },
-  testMatch: ['**/__tests__/**/*.ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
+      isolatedModules: true
+    }
+  }
 }; 

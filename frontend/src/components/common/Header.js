@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { FaWallet, FaSun, FaMoon } from 'react-icons/fa';
+import { FaWallet, FaSun, FaMoon, FaWater } from 'react-icons/fa';
 import { useTheme } from '../../contexts/ThemeContext';
 import { 
   AppBar,
@@ -14,10 +14,15 @@ import {
   Drawer,
   List,
   ListItem,
-  ListItemText
+  ListItemText,
+  ListItemIcon
 } from '@mui/material';
 import { useTheme as useMuiTheme } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
+import PoolIcon from '@mui/icons-material/Pool';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
@@ -30,9 +35,10 @@ const Header = () => {
   };
 
   const navItems = [
-    { title: 'Home', path: '/' },
-    { title: 'Marketplace', path: '/marketplace' },
-    { title: 'Portfolio', path: '/portfolio' }
+    { title: 'Marketplace', path: '/marketplace', icon: <StorefrontIcon /> },
+    { title: 'Portfolio', path: '/portfolio', icon: <AccountBalanceWalletIcon /> },
+    { title: 'Liquidity', path: '/liquidity', icon: <PoolIcon /> },
+    { title: 'Yield', path: '/yield', icon: <TrendingUpIcon /> }
   ];
 
   const drawer = (
@@ -50,6 +56,7 @@ const Header = () => {
               fontWeight: 'bold'
             }
           }}>
+            {item.icon && <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>}
             <ListItemText primary={item.title} />
           </ListItem>
         ))}
@@ -124,13 +131,15 @@ const Header = () => {
                   to={item.path}
                   sx={{
                     color: 'var(--navbar-text)',
-                    display: 'block',
+                    display: 'flex',
+                    alignItems: 'center',
                     mx: 1,
                     '&.active': {
                       color: muiTheme.palette.primary.light,
                       fontWeight: 'bold'
                     }
                   }}
+                  startIcon={item.icon}
                 >
                   {item.title}
                 </Button>

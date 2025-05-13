@@ -78,6 +78,10 @@ Quantera/
   - Transaction history tracking with status indicators
   - Gas estimation display with blob data support indication
   - Chain selection with network capabilities display
+  - YieldStrategyPage with comprehensive strategy browsing and filtering
+  - Strategy application workflow with asset selection and parameter customization
+  - Environmental impact calculation for sustainable finance instruments
+  - Custom CompatGrid component for Material UI v7 compatibility
 - **Environmental Asset Integration**:
   - Updated asset class enum from "CARBON_CREDIT" to "ENVIRONMENTAL_ASSET" for broader inclusivity
   - Support for biodiversity credits, renewable energy certificates, and water rights
@@ -89,7 +93,6 @@ Quantera/
 - **Type System Implementation**: Creating missing TypeScript interfaces and fixing import errors
 - **WalletContext Integration**: Building a comprehensive wallet integration system
 - **Liquidity Pools Integration**: Frontend interface for concentrated liquidity provision
-- **Yield Optimizer Integration**: Strategy marketplace UI and implementation
 - **Environmental Impact Dashboard**: Real-time tracking and visualization of impact metrics
 - **Certification Standard Integration**: Direct connections to environmental asset verification frameworks
 
@@ -100,7 +103,7 @@ Quantera/
 - Implement WebSocket support for real-time updates
 - Enhance analytics and reporting capabilities
 - Develop environmental impact metrics API
-- Complete implementation of frontend interfaces for liquidity pools and yield strategies
+- Complete implementation of frontend interfaces for liquidity pools
 - Implement Asset Creation wizard
 - Build Portfolio management dashboard
 - Design Analytics visualization components
@@ -180,7 +183,7 @@ The platform exposes the following API endpoints:
 - **Portfolio**: View holdings, yield information, and performance
 - **Asset Factory**: Create and customize new asset tokens
 - **Liquidity**: Manage liquidity positions across assets
-- **Yield Optimizer**: Browse and apply yield strategies
+- **Yield Strategy Marketplace**: Browse, filter, and apply yield strategies with environmental impact calculation
 - **Smart Accounts**: Configure automated investment strategies
 - **Environmental Impact**: View and track sustainability metrics
 - **Impact Dashboard**: Visualize environmental impact of investments
@@ -188,7 +191,7 @@ The platform exposes the following API endpoints:
 ### Advanced Components
 - **Asset Template Explorer**: Browse templates for different asset classes
 - **Liquidity Pool Visualizer**: Interactive view of pool positions
-- **Yield Strategy Selector**: Compare and select strategies
+- **Yield Strategy Marketplace**: Browse, filter, and apply yield strategies with environmental impact calculation
 - **Cross-Chain Navigator**: Seamlessly switch between blockchain networks
 - **Risk Assessment Dashboard**: Analyze portfolio risk metrics
 - **Environmental Asset Marketplace**: Specialized interface for sustainable investments
@@ -428,4 +431,53 @@ For questions, suggestions, or collaboration opportunities, please email:
 hello@marcjohnson.xyz
 
 ## Testing
+
+We have implemented a comprehensive testing strategy for the Quantera Platform:
+
+### Unit Testing
+- **Frontend Components**: Jest and React Testing Library for component testing
+- **React Hooks**: Specialized testing for custom hooks
+- **API Integration**: Mock testing for API endpoints
+- **Context Providers**: Full context testing with mock data
+
+### End-to-End Testing
+- **Playwright Framework**: Multi-browser testing (Chrome, Firefox, Safari)
+- **Mobile Simulation**: Testing responsive design on various device sizes
+- **User Flows**: Complete user journey testing
+
+### Accessibility Testing
+- **WCAG Compliance**: Tests against WCAG 2.1 AA standards
+- **Generated Reports**: HTML reports with detailed accessibility information
+- **Continuous Integration**: A11y tests integrated into CI/CD pipeline
+
+### Running Tests
+```bash
+# Unit tests
+npm test
+
+# Unit tests with coverage
+npm run test:coverage
+
+# TypeScript type checking
+npm run typecheck
+
+# ESLint code quality checks
+npm run lint
+
+# End-to-end tests
+npm run test:e2e
+
+# Accessibility tests
+npm run test:a11y
+```
+
+### Continuous Integration
+All tests are automatically run on pull requests and merges to main branch via GitHub Actions workflows. Our CI/CD pipeline includes:
+
+1. **Smart Contract Testing**: Security and functionality verification
+2. **Frontend Testing**: Unit tests, e2e tests, and accessibility checks 
+3. **Backend Testing**: API endpoint validation and integration tests
+
+Our goal is maintaining >95% test coverage across the codebase to ensure reliability, security, and maintainability.
+
 - **TreasuryService Extensibility**: Tests verify that the compliance checker and token deployer are invoked as expected, and that treasury creation is blocked if compliance fails. The architecture is designed for easy extension and robust testing.

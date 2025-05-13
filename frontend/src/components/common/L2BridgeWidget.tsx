@@ -23,6 +23,11 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { useWallet } from '../../contexts/WalletContext';
 import { useL2Bridge } from '../../contexts/L2BridgeContext';
 import { MessageStatus } from '../../api/l2bridge.types';
+import type { 
+  GasEstimation, 
+  OrderDetails, 
+  BridgeTransaction 
+} from '../../api/l2bridge.types';
 
 // Utility functions to replace ethers
 const formatEther = (value: string): string => {

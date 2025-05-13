@@ -1,0 +1,56 @@
+import axios from 'axios';
+import { YieldStrategy, ApplyStrategyParams, ApplyStrategyResult, YieldImpactResults } from '../contexts/YieldStrategyContext';
+
+// Create base axios instance
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'https://api.quantera.io/v1',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add response typing information
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+export interface StrategiesResponse {
+  strategies: YieldStrategy[];
+}
+
+export interface UserStrategiesResponse {
+  strategies: ApplyStrategyResult[];
+}
+
+// Add request interceptor for auth
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for error handling
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    // Handle errors (e.g., refresh token, etc.)
+    if (error.response?.status === 401) {
+      // Redirect to login or refresh token
+      localStorage.removeItem('token');
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api; 
