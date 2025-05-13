@@ -12,6 +12,7 @@ import {
   Select,
   MenuItem,
   Divider,
+  useTheme
 } from '@mui/material';
 import { PictureAsPdf, Share } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,9 +21,10 @@ import ImpactDashboard from '../components/common/ImpactDashboard';
 const ImpactDashboardPage = () => {
   const { currentUser } = useAuth();
   const [timeframe, setTimeframe] = useState('all');
+  const theme = useTheme();
   
   // In a real implementation, we would use the actual user address
-  // For this demo, we're using a placeholder
+  // For this demo, we're always using a placeholder to ensure data loads
   const userAddress = currentUser?.address || '0x1234567890123456789012345678901234567890';
   
   const handleTimeframeChange = (event) => {
@@ -41,7 +43,7 @@ const ImpactDashboardPage = () => {
 
   return (
     <Container maxWidth="lg">
-      <Box mb={4}>
+      <Box mb={3}>
         <Typography variant="h4" gutterBottom>
           Environmental Impact Dashboard
         </Typography>
@@ -50,7 +52,7 @@ const ImpactDashboardPage = () => {
         </Typography>
       </Box>
       
-      <Grid container spacing={3} alignItems="center" mb={4}>
+      <Grid container spacing={3} alignItems="center" mb={3}>
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth size="small">
             <InputLabel>Timeframe</InputLabel>
@@ -88,7 +90,7 @@ const ImpactDashboardPage = () => {
       
       <ImpactDashboard userAddress={userAddress} />
       
-      <Card sx={{ mt: 4 }}>
+      <Card sx={{ mt: 4, backgroundColor: theme => theme.palette.background.paper }}>
         <CardContent>
           <Typography variant="h5" gutterBottom>
             Impact Reporting & Certifications

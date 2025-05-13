@@ -38,6 +38,11 @@ const mockApi = {
       return { data: { assets: mockEnvironmentalAssets() } };
     }
     
+    if (url.startsWith('/environmental/impact/portfolio/')) {
+      // This is the missing endpoint that's causing the error
+      return { data: mockPortfolioImpact() };
+    }
+    
     throw new Error(`No mock response for ${url}`);
   },
   
@@ -337,6 +342,25 @@ function mockStrategyImpact(strategyId) {
       carbon_negative: true,
       retirement_percentage: '20',
     }
+  };
+}
+
+// Helper function to generate mock portfolio impact data
+function mockPortfolioImpact() {
+  return {
+    carbon_offset_tons: 350.0,
+    land_area_protected_hectares: 75.0,
+    renewable_energy_mwh: 120.0,
+    water_protected_liters: 500000.0,
+    sdg_alignment: {
+      "6": 0.7,  // Clean Water and Sanitation
+      "7": 0.8,  // Affordable and Clean Energy
+      "13": 0.9, // Climate Action
+      "14": 0.6, // Life Below Water
+      "15": 0.85 // Life on Land
+    },
+    verification_date: 1672531200, // Jan 1, 2023
+    third_party_verifier: "Verra"
   };
 }
 
