@@ -1,249 +1,121 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ethers } from 'ethers';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Define interface for Web3Provider
-interface Web3Provider extends ethers.BrowserProvider {
-  getSigner(): Promise<ethers.JsonRpcSigner>;
-}
-
-// Define Ethereum Window interface
-interface EthereumWindow extends Window {
-  ethereum?: {
-    request: (args: { method: string; params?: any[] }) => Promise<any>;
-    on: (event: string, listener: (...args: any[]) => void) => void;
-    removeListener: (event: string, listener: (...args: any[]) => void) => void;
-    isMetaMask?: boolean;
-  };
-}
-
-// Wallet state interface
-export interface WalletState {
-  connected: boolean;
+// Define wallet context state interface
+interface WalletContextState {
   address: string | null;
-  provider: Web3Provider | null;
-  signer: ethers.JsonRpcSigner | null;
-  chainId: number | null;
-  balance: string | null;
-  connecting: boolean;
-  error: string | null;
-}
-
-// Wallet context interface
-export interface WalletContextType extends WalletState {
+  connected: boolean;
+  balance: string;
+  network: string;
+  tradingVolume: number;
   connect: () => Promise<void>;
   disconnect: () => void;
-  switchChain: (chainId: number) => Promise<boolean>;
-  refreshBalance: () => Promise<void>;
+  switchNetwork: (networkId: string) => Promise<void>;
 }
 
-// Default context values
-const defaultContext: WalletContextType = {
-  connected: false,
+// Create the context
+const WalletContext = createContext<WalletContextState>({
   address: null,
-  provider: null,
-  signer: null,
-  chainId: null,
-  balance: null,
-  connecting: false,
-  error: null,
+  connected: false,
+  balance: '0',
+  network: 'mainnet',
+  tradingVolume: 0,
   connect: async () => {},
   disconnect: () => {},
-  switchChain: async () => false,
-  refreshBalance: async () => {},
-};
-
-// Create context
-const WalletContext = createContext<WalletContextType>(defaultContext);
-
-// Props interface
-interface WalletProviderProps {
-  children: ReactNode;
-}
+  switchNetwork: async () => {}
+});
 
 // Provider component
-export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
-  const [state, setState] = useState<WalletState>({
-    connected: false,
-    address: null,
-    provider: null,
-    signer: null,
-    chainId: null,
-    balance: null,
-    connecting: false,
-    error: null,
-  });
+export const WalletProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
+  const [address, setAddress] = useState<string | null>(null);
+  const [connected, setConnected] = useState(false);
+  const [balance, setBalance] = useState('0');
+  const [network, setNetwork] = useState('mainnet');
+  const [tradingVolume, setTradingVolume] = useState(0);
 
-  // Initialize from local storage if available
+  // Initialize from local storage
   useEffect(() => {
-    const storedAddress = localStorage.getItem('walletAddress');
-    if (storedAddress) {
-      connect().catch(console.error);
+    const savedAddress = localStorage.getItem('wallet_address');
+    const savedConnected = localStorage.getItem('wallet_connected') === 'true';
+    
+    if (savedConnected && savedAddress) {
+      setAddress(savedAddress);
+      setConnected(true);
+      setBalance('1250.75');
+      setNetwork('mainnet');
+      setTradingVolume(120000);
     }
   }, []);
-
-  // Refresh user balance
-  const refreshBalance = async () => {
-    if (state.provider && state.address) {
-      try {
-        const balance = await state.provider.getBalance(state.address);
-        setState(prev => ({
-          ...prev,
-          balance: ethers.formatEther(balance),
-        }));
-      } catch (error) {
-        console.error('Error getting balance:', error);
-      }
-    }
-  };
-
-  // Setup chain change listener
-  useEffect(() => {
-    const handleChainChanged = (chainId: string) => {
-      console.log('Chain changed to:', chainId);
-      window.location.reload();
-    };
-
-    const ethereum = (window as EthereumWindow).ethereum;
-    if (ethereum) {
-      ethereum.on('chainChanged', handleChainChanged);
-    }
-
-    return () => {
-      if (ethereum) {
-        ethereum.removeListener('chainChanged', handleChainChanged);
-      }
-    };
-  }, []);
-
-  // Setup account change listener
-  useEffect(() => {
-    const handleAccountsChanged = (accounts: string[]) => {
-      console.log('Accounts changed:', accounts);
-      if (accounts.length === 0) {
-        // User disconnected their wallet
-        disconnect();
-      } else if (accounts[0] !== state.address) {
-        // User switched accounts
-        connect().catch(console.error);
-      }
-    };
-
-    const ethereum = (window as EthereumWindow).ethereum;
-    if (ethereum) {
-      ethereum.on('accountsChanged', handleAccountsChanged);
-    }
-
-    return () => {
-      if (ethereum) {
-        ethereum.removeListener('accountsChanged', handleAccountsChanged);
-      }
-    };
-  }, [state.address]);
 
   // Connect wallet
   const connect = async () => {
     try {
-      setState(prev => ({ ...prev, connecting: true, error: null }));
-      const ethereum = (window as EthereumWindow).ethereum;
-
-      if (!ethereum) {
-        throw new Error('No crypto wallet found. Please install MetaMask.');
-      }
-
-      // Request accounts
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-      const address = accounts[0];
-
-      // Create ethers provider
-      const provider = new ethers.BrowserProvider(ethereum) as Web3Provider;
-      const signer = await provider.getSigner();
-
-      // Get network
-      const network = await provider.getNetwork();
-      const chainId = Number(network.chainId);
-
-      // Get balance
-      const balance = await provider.getBalance(address);
-
-      setState({
-        connected: true,
-        address,
-        provider,
-        signer,
-        chainId,
-        balance: ethers.formatEther(balance),
-        connecting: false,
-        error: null,
-      });
-
-      // Save to local storage
-      localStorage.setItem('walletAddress', address);
-    } catch (error: any) {
+      const mockAddress = '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
+      
+      setAddress(mockAddress);
+      setConnected(true);
+      setBalance('1250.75');
+      setNetwork('mainnet');
+      setTradingVolume(120000);
+      
+      localStorage.setItem('wallet_address', mockAddress);
+      localStorage.setItem('wallet_connected', 'true');
+      
+      console.log('Wallet connected:', mockAddress);
+    } catch (error) {
       console.error('Connection error:', error);
-      setState(prev => ({
-        ...prev,
-        connected: false,
-        connecting: false,
-        error: error.message || 'Failed to connect wallet',
-      }));
+      setConnected(false);
+      setAddress(null);
+      setBalance('0');
+      setNetwork('mainnet');
+      setTradingVolume(0);
     }
   };
 
   // Disconnect wallet
   const disconnect = () => {
-    localStorage.removeItem('walletAddress');
-    setState({
-      connected: false,
-      address: null,
-      provider: null,
-      signer: null,
-      chainId: null,
-      balance: null,
-      connecting: false,
-      error: null,
-    });
+    setAddress(null);
+    setConnected(false);
+    setBalance('0');
+    setNetwork('mainnet');
+    setTradingVolume(0);
+    
+    localStorage.removeItem('wallet_address');
+    localStorage.removeItem('wallet_connected');
+    
+    console.log('Wallet disconnected');
   };
 
   // Switch network
-  const switchChain = async (chainId: number): Promise<boolean> => {
-    const ethereum = (window as EthereumWindow).ethereum;
-    if (!ethereum) return false;
-
+  const switchNetwork = async (networkId: string) => {
     try {
-      await ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${chainId.toString(16)}` }],
-      });
-      return true;
-    } catch (error: any) {
-      // This error code indicates that the chain has not been added to MetaMask
-      if (error.code === 4902) {
-        // Add the network
-        try {
-          // You would typically define chain parameters here
-          return false;
-        } catch (addError) {
-          console.error('Error adding chain:', addError);
-          return false;
-        }
-      }
-      console.error('Error switching chain:', error);
-      return false;
+      console.log(`Switching to network: ${networkId}`);
+      setNetwork(networkId);
+    } catch (error) {
+      console.error('Error switching network:', error);
     }
   };
 
-  const value = {
-    ...state,
+  const contextValue: WalletContextState = {
+    address,
+    connected,
+    balance,
+    network,
+    tradingVolume,
     connect,
     disconnect,
-    switchChain,
-    refreshBalance,
+    switchNetwork
   };
 
-  return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
+  return (
+    <WalletContext.Provider value={contextValue}>
+      {children}
+    </WalletContext.Provider>
+  );
 };
 
-// Hook to use wallet context
+// Custom hook to use the wallet context
 export const useWallet = () => useContext(WalletContext);
 
+// Export both the context and the interfaces
+export type { WalletContextState };
 export default WalletContext; 

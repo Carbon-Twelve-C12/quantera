@@ -3,144 +3,193 @@ import { useParams, Link } from 'react-router-dom';
 import { treasuries as MOCK_TREASURIES } from '../data/mockTreasuriesData.js';
 import { environmentalAssets as MOCK_ENVIRONMENTAL_ASSETS } from '../data/mockEnvironmentalAssetsData.js';
 import { TreasuryDetail, EnvironmentalAsset } from '../data/assetInterfaces';
+import { useTheme } from '../contexts/ThemeContext';
+import { useWallet } from '../contexts/WalletContext';
+import { Modal, Button, Form } from 'react-bootstrap';
 
 // Combined type for asset details
 type AssetDetail = TreasuryDetail | EnvironmentalAsset;
 
-// Add these styles at the top of the file for SDG alignment and other environmental data
-// At the beginning of the component body
-const styles = {
-  sdgGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-    gap: '20px',
-    marginTop: '20px'
-  },
-  sdgItem: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    padding: '15px',
-    borderRadius: '8px',
-    backgroundColor: '#f5f5f5',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-  },
-  sdgIcon: {
-    width: '60px',
-    height: '60px',
-    marginRight: '15px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  sdgIconImg: {
-    maxWidth: '100%',
-    borderRadius: '4px'
-  },
-  sdgInfo: {
-    flex: '1',
-  },
-  sdgNumber: {
-    fontWeight: 'bold',
-    fontSize: '14px',
-    color: '#555'
-  },
-  sdgName: {
-    fontWeight: 'bold',
-    fontSize: '16px',
-    margin: '5px 0',
-    color: '#333'
-  },
-  scoreBar: {
-    height: '8px',
-    backgroundColor: '#e1e1e1',
-    borderRadius: '4px',
-    overflow: 'hidden',
-    marginTop: '8px',
-    width: '100%'
-  },
-  scoreFill: (percentage: number) => ({
-    height: '100%',
-    backgroundColor: percentage > 80 ? '#4caf50' : percentage > 50 ? '#ff9800' : '#f44336',
-    width: `${percentage}%`
-  }),
-  scorePercentage: {
-    fontSize: '14px',
-    marginTop: '5px',
-    textAlign: 'right' as const,
-    fontWeight: 'bold'
-  },
-  coBenefits: {
-    marginTop: '20px'
-  },
-  benefitsList: {
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: '10px',
-    listStyle: 'none',
-    padding: 0,
-    margin: '15px 0'
-  },
-  benefitItem: {
-    padding: '8px 12px',
-    backgroundColor: '#e8f5e9',
-    borderRadius: '20px',
-    fontSize: '14px',
-    fontWeight: 'bold',
-    color: '#2e7d32',
-    display: 'inline-block'
-  },
-  riskItem: {
-    marginBottom: '15px',
-    padding: '15px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-  },
-  riskHigh: {
-    backgroundColor: '#ffebee',
-    borderLeft: '4px solid #f44336'
-  },
-  riskMedium: {
-    backgroundColor: '#fff8e1',
-    borderLeft: '4px solid #ff9800'
-  },
-  riskLow: {
-    backgroundColor: '#e8f5e9',
-    borderLeft: '4px solid #4caf50'
-  },
-  riskHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '8px'
-  },
-  riskName: {
-    margin: 0,
-    fontSize: '16px',
-    fontWeight: 'bold'
-  },
-  riskSeverity: {
-    padding: '4px 8px',
-    borderRadius: '4px',
-    fontSize: '12px',
-    fontWeight: 'bold',
-    color: 'white',
-    backgroundColor: '#757575'
-  },
-  riskSeverityHigh: {
-    backgroundColor: '#f44336'
-  },
-  riskSeverityMedium: {
-    backgroundColor: '#ff9800'
-  },
-  riskSeverityLow: {
-    backgroundColor: '#4caf50'
-  },
-  riskDescription: {
-    margin: 0,
-    fontSize: '14px',
-    lineHeight: '1.5'
-  }
+// Transaction fee tiers
+const TRANSACTION_FEE_TIERS = {
+  standard: 0.005, // 0.5%
+  silver: 0.003,   // 0.3%
+  gold: 0.002,     // 0.2%
+  platinum: 0.001  // 0.1%
 };
+
+// User trading volume tiers (in USD)
+const VOLUME_TIERS = {
+  standard: 0,
+  silver: 100000,    // $100k
+  gold: 1000000,     // $1M
+  platinum: 10000000 // $10M
+};
+
+// Purchase modal props
+interface PurchaseModalProps {
+  show: boolean;
+  onHide: () => void;
+  asset: AssetDetail;
+  onPurchase: (quantity: number) => void;
+  userTier: keyof typeof TRANSACTION_FEE_TIERS;
+}
+
+// Purchase modal component
+const PurchaseModal: React.FC<PurchaseModalProps> = ({ 
+  show, 
+  onHide, 
+  asset, 
+  onPurchase,
+  userTier
+}) => {
+  const [quantity, setQuantity] = useState<number>(1);
+  const [agreedToTerms, setAgreedToTerms] = useState<boolean>(false);
+  const { theme } = useTheme();
+  
+  // Get asset name based on type
+  const getAssetName = () => {
+    if ('name' in asset) {
+      return asset.name;
+    }
+    return asset.project_name;
+  };
+  
+  // Get asset price
+  const getAssetPrice = () => {
+    if ('current_price' in asset) {
+      return parseFloat(asset.current_price);
+    }
+    return parseFloat(asset.price_per_unit);
+  };
+  
+  // Calculate subtotal
+  const calculateSubtotal = () => {
+    return getAssetPrice() * quantity;
+  };
+  
+  // Calculate transaction fee
+  const calculateTransactionFee = () => {
+    return calculateSubtotal() * TRANSACTION_FEE_TIERS[userTier];
+  };
+  
+  // Calculate total
+  const calculateTotal = () => {
+    return calculateSubtotal() + calculateTransactionFee();
+  };
+  
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+  
+  return (
+    <Modal 
+      show={show} 
+      onHide={onHide}
+      centered
+      contentClassName={theme === 'dark' ? 'bg-dark text-light' : ''}
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>Purchase Asset</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <h5>{getAssetName()}</h5>
+        <p className="mb-4">Complete your purchase of this tokenized asset.</p>
+        
+        <Form>
+          <Form.Group className="mb-3">
+            <Form.Label>Quantity</Form.Label>
+            <Form.Control
+              type="number"
+              min="1"
+              value={quantity}
+              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+              className={theme === 'dark' ? 'bg-dark text-light border-secondary' : ''}
+            />
+          </Form.Group>
+          
+          <div className="cost-breakdown p-3 mb-4 border rounded">
+            <h6 className="mb-3">Cost Breakdown</h6>
+            
+            <div className="d-flex justify-content-between mb-2">
+              <span>Asset Price:</span>
+              <span>{formatCurrency(getAssetPrice())}</span>
+            </div>
+            
+            <div className="d-flex justify-content-between mb-2">
+              <span>Quantity:</span>
+              <span>{quantity}</span>
+            </div>
+            
+            <div className="d-flex justify-content-between mb-2">
+              <span>Subtotal:</span>
+              <span>{formatCurrency(calculateSubtotal())}</span>
+            </div>
+            
+            <div className="d-flex justify-content-between mb-2">
+              <div>
+                <span>Transaction Fee ({(TRANSACTION_FEE_TIERS[userTier] * 100).toFixed(2)}%):</span>
+                <span className="ms-2 badge bg-info">{userTier.toUpperCase()} TIER</span>
+              </div>
+              <span>{formatCurrency(calculateTransactionFee())}</span>
+            </div>
+            
+            <hr />
+            
+            <div className="d-flex justify-content-between fw-bold">
+              <span>Total:</span>
+              <span>{formatCurrency(calculateTotal())}</span>
+            </div>
+          </div>
+          
+          <Form.Group className="mb-3">
+            <Form.Check
+              type="checkbox"
+              id="agree-terms"
+              label="I agree to the terms and conditions of this purchase"
+              checked={agreedToTerms}
+              onChange={(e) => setAgreedToTerms(e.target.checked)}
+              className={theme === 'dark' ? 'text-light' : ''}
+            />
+          </Form.Group>
+        </Form>
+        
+        <div className="alert alert-info">
+          <small>
+            <strong>Note:</strong> Transaction fees help maintain the Quantera platform and provide 
+            liquidity services. Higher trading volumes qualify for reduced fee tiers.
+          </small>
+        </div>
+        
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={onHide}>
+          Cancel
+        </Button>
+        <Button 
+          variant="primary" 
+          onClick={() => onPurchase(quantity)}
+          disabled={!agreedToTerms || quantity < 1}
+        >
+          Complete Purchase
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+};
+
+// Type guards for safe property access
+const hasProperty = <T extends object, K extends string>(obj: T, prop: K): obj is T & Record<K, unknown> => {
+  return prop in obj;
+};
+
+// Type assertion functions to handle mock data
+const asTreasuryDetail = (data: any): TreasuryDetail => data as TreasuryDetail;
+const asEnvironmentalAsset = (data: any): EnvironmentalAsset => data as EnvironmentalAsset;
 
 const AssetDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -148,82 +197,108 @@ const AssetDetailPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [debug, setDebug] = useState<string>('');
-
-  // Fetch asset details
+  const { theme } = useTheme();
+  const { address, connected } = useWallet();
+  
+  // Purchase modal state
+  const [showPurchaseModal, setShowPurchaseModal] = useState<boolean>(false);
+  const [purchaseSuccess, setPurchaseSuccess] = useState<boolean>(false);
+  
+  // Use explicit typing for tradingVolume with default value
+  const tradingVolume = 120000; // Sample trading volume for demo purposes
+  
+  // Determine user's tier based on trading volume
+  const getUserTier = (): keyof typeof TRANSACTION_FEE_TIERS => {
+    if (tradingVolume >= VOLUME_TIERS.platinum) return 'platinum';
+    if (tradingVolume >= VOLUME_TIERS.gold) return 'gold';
+    if (tradingVolume >= VOLUME_TIERS.silver) return 'silver';
+    return 'standard';
+  };
+  
+  // Handle purchase
+  const handlePurchase = (quantity: number) => {
+    // In a real implementation, this would call a service to execute the purchase
+    console.log(`Purchasing ${quantity} of asset ${id}`);
+    setShowPurchaseModal(false);
+    setPurchaseSuccess(true);
+    
+    // Reset success message after a delay
+    setTimeout(() => {
+      setPurchaseSuccess(false);
+    }, 5000);
+  };
+  
   useEffect(() => {
-    if (!id) return;
-
-    // Add debugging information
-    let debugInfo = `Looking for asset with ID: ${id}\n`;
-    debugInfo += `Treasury assets available: ${MOCK_TREASURIES.length}\n`;
-    debugInfo += `Available treasury IDs: ${MOCK_TREASURIES.map(t => t.token_id).join(', ')}\n`;
-    debugInfo += `Environmental assets available: ${MOCK_ENVIRONMENTAL_ASSETS.length}\n`;
-    debugInfo += `Available environmental IDs: ${MOCK_ENVIRONMENTAL_ASSETS.map(e => e.asset_id).join(', ')}\n`;
-
-    // Look in treasury data first
-    const treasuryAsset = MOCK_TREASURIES.find(t => t.token_id === id);
-    if (treasuryAsset) {
-      debugInfo += `Found treasury asset: ${treasuryAsset.name}`;
-      setDebug(debugInfo);
-      // Use type assertion to help TypeScript understand
-      setAsset(treasuryAsset as TreasuryDetail);
-      setLoading(false);
-      return;
-    }
-
-    // Then look in environmental assets
-    const environmentalAsset = MOCK_ENVIRONMENTAL_ASSETS.find(e => e.asset_id === id);
-    if (environmentalAsset) {
-      debugInfo += `Found environmental asset: ${environmentalAsset.project_name}`;
-      setDebug(debugInfo);
-      // Use double type assertion to help TypeScript understand
-      setAsset(environmentalAsset as unknown as EnvironmentalAsset);
-      setLoading(false);
-      return;
-    }
-
-    // If not found
-    debugInfo += `No asset found with ID: ${id}`;
-    setDebug(debugInfo);
-    setLoading(false);
+    const loadAsset = async () => {
+      setLoading(true);
+      try {
+        // First try to find it in treasuries
+        const treasury = MOCK_TREASURIES.find(t => t.token_id === id);
+        if (treasury) {
+          setAsset(asTreasuryDetail(treasury));
+          setLoading(false);
+          return;
+        }
+        
+        // Then try environmental assets
+        const envAsset = MOCK_ENVIRONMENTAL_ASSETS.find(a => a.asset_id === id);
+        if (envAsset) {
+          setAsset(asEnvironmentalAsset(envAsset));
+          setLoading(false);
+          return;
+        }
+        
+        // If we get here, asset not found
+        setAsset(null);
+        setDebug(`Asset not found with ID: ${id}.\nChecked treasuries (${MOCK_TREASURIES.length}) and environmental assets (${MOCK_ENVIRONMENTAL_ASSETS.length})`);
+      } catch (error) {
+        console.error('Error loading asset:', error);
+        setDebug(`Error loading asset: ${error}`);
+        setAsset(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadAsset();
   }, [id]);
-
-  // Format date from timestamp
+  
+  // Format date
   const formatDate = (timestamp?: number) => {
     if (!timestamp) return 'N/A';
     return new Date(timestamp * 1000).toLocaleDateString();
   };
-
+  
   // Format yield rate
   const formatYield = (yieldRate?: number) => {
     if (yieldRate === undefined) return 'N/A';
     return `${(yieldRate / 100).toFixed(2)}%`;
   };
-
+  
   // Determine if this is a TreasuryDetail
   const isTreasury = (asset: AssetDetail): asset is TreasuryDetail => {
     return 'treasury_type' in asset;
   };
-
+  
   // Determine if this is an EnvironmentalAsset
   const isEnvironmental = (asset: AssetDetail): asset is EnvironmentalAsset => {
     return 'asset_type' in asset && 'project_name' in asset;
   };
-
+  
   // Handle tab change
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
   };
-
+  
   // Format total supply
   const formatTotalSupply = (supply: string) => {
     return supply.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
-
+  
   if (loading) {
     return <div className="loading">Loading asset details...</div>;
   }
-
+  
   if (!asset) {
     return (
       <div className="not-found">
@@ -243,960 +318,603 @@ const AssetDetailPage: React.FC = () => {
       </div>
     );
   }
-
-  // Additional checks for safely accessing optional properties in the component
-
-  // Update the renderSdgAlignment function
-  const renderSdgAlignment = () => {
-    if (isEnvironmental(asset) && asset.impact_metrics.sdg_alignment) {
-      return (
-        <div style={styles.sdgGrid}>
-          {Object.entries(asset.impact_metrics.sdg_alignment).map(([sdgNumber, alignmentScore]) => {
-            // Map SDG numbers to their names
-            const sdgNames: Record<string, string> = {
-              "1": "No Poverty",
-              "2": "Zero Hunger",
-              "3": "Good Health and Well-being",
-              "4": "Quality Education",
-              "5": "Gender Equality",
-              "6": "Clean Water and Sanitation",
-              "7": "Affordable and Clean Energy",
-              "8": "Decent Work and Economic Growth",
-              "9": "Industry, Innovation and Infrastructure",
-              "10": "Reduced Inequalities",
-              "11": "Sustainable Cities and Communities",
-              "12": "Responsible Consumption and Production",
-              "13": "Climate Action",
-              "14": "Life Below Water",
-              "15": "Life on Land",
-              "16": "Peace, Justice and Strong Institutions",
-              "17": "Partnerships for the Goals"
-            };
-            
-            const percentage = alignmentScore * 100;
-            
-            return (
-              <div key={sdgNumber} style={styles.sdgItem}>
-                <div style={styles.sdgIcon}>
-                  <img 
-                    src={`/images/sdg/sdg-${sdgNumber}.png`} 
-                    alt={`SDG ${sdgNumber}`} 
-                    style={styles.sdgIconImg}
-                    onError={(e) => {
-                      e.currentTarget.src = "/images/asset-placeholder.jpg";
-                    }}
-                  />
-                </div>
-                <div style={styles.sdgInfo}>
-                  <div style={styles.sdgNumber}>Goal {sdgNumber}</div>
-                  <div style={styles.sdgName}>{sdgNames[sdgNumber] || `SDG ${sdgNumber}`}</div>
-                  <div style={styles.scoreBar}>
-                    <div style={styles.scoreFill(percentage)}></div>
-                  </div>
-                  <div style={styles.scorePercentage}>{Math.round(percentage)}%</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      );
-    }
-    return null;
-  };
-
+  
   return (
-    <div className="asset-detail-page">
-      <div className="asset-detail-header">
+    <div className={`asset-detail ${theme === 'dark' ? 'dark-theme' : ''}`}>
+      {/* Asset header */}
+      <div className="asset-header">
         <div className="asset-header-content">
-          <div className="asset-type-badge">
-            {isTreasury(asset) 
-              ? (asset.treasury_type === 'tbill' 
-                ? 'Treasury Bill' 
-                : asset.treasury_type === 'tnote' 
-                  ? 'Treasury Note' 
-                  : 'Treasury Bond')
-              : asset.asset_type}
-          </div>
-          <h1 className="asset-title">
+          <h1>
             {isTreasury(asset) ? asset.name : asset.project_name}
+            <span className="asset-type-badge">
+              {isTreasury(asset) ? asset.treasury_type : asset.asset_type}
+            </span>
           </h1>
-          <div className="asset-subtitle">
-            {isTreasury(asset) ? (
-              <span className="symbol">{asset.symbol}</span>
-            ) : (
-              <span className="location">{asset.project_location}</span>
+          
+          <div className="asset-meta">
+            {isTreasury(asset) && (
+              <>
+                <div className="meta-item">
+                  <span className="meta-label">Symbol:</span>
+                  <span className="meta-value">{asset.symbol}</span>
+                </div>
+                <div className="meta-item">
+                  <span className="meta-label">Yield:</span>
+                  <span className="meta-value yield">{formatYield(asset.yield_rate)}</span>
+                </div>
+                <div className="meta-item">
+                  <span className="meta-label">Maturity:</span>
+                  <span className="meta-value">{formatDate(asset.maturity_date)}</span>
+                </div>
+              </>
             )}
+            
+            {isEnvironmental(asset) && (
+              <>
+                <div className="meta-item">
+                  <span className="meta-label">Project:</span>
+                  <span className="meta-value">{asset.project_name}</span>
+                </div>
+                <div className="meta-item">
+                  <span className="meta-label">Location:</span>
+                  <span className="meta-value">{asset.project_location}</span>
+                </div>
+                <div className="meta-item">
+                  <span className="meta-label">Standard:</span>
+                  <span className="meta-value">{asset.standard}</span>
+                </div>
+              </>
+            )}
+            
+            <div className="meta-item price">
+              <span className="meta-label">Price:</span>
+              <span className="meta-value">
+                ${isTreasury(asset) ? asset.current_price : asset.price_per_unit}
+              </span>
+            </div>
           </div>
         </div>
-        <div className="asset-header-image">
-          <img 
-            src={isTreasury(asset) 
-              ? `/images/treasury-${asset.treasury_type}.jpg` 
-              : asset.image_url
-            } 
-            alt={isTreasury(asset) ? asset.name : asset.project_name}
-            className="asset-image"
-            onError={(e) => {
-              e.currentTarget.src = "/images/asset-placeholder.jpg";
-            }}
-          />
-        </div>
+        
+        {hasProperty(asset, 'image_url') && asset.image_url && (
+          <div className="asset-image-container">
+            <img src={asset.image_url} alt={isTreasury(asset) ? asset.name : asset.project_name} className="asset-image" />
+          </div>
+        )}
       </div>
-
-      <div className="asset-quick-stats">
-        <div className="stat-card">
-          <div className="stat-label">Price</div>
-          <div className="stat-value">
-            ${isTreasury(asset) ? asset.current_price : asset.price_per_unit}
+      
+      {/* Purchase success message */}
+      {purchaseSuccess && (
+        <div className="purchase-success">
+          <div className="success-message">
+            <span className="success-icon">✓</span>
+            <span className="success-text">Purchase completed successfully!</span>
           </div>
-          {isEnvironmental(asset) && asset.change_24h && (
-            <div className={`stat-change ${asset.change_24h.startsWith('+') ? 'positive' : 'negative'}`}>
-              {asset.change_24h}
+        </div>
+      )}
+      
+      {/* Asset tabs */}
+      <div className="asset-tabs">
+        <div className="tab-headers">
+          <button 
+            className={`tab-header ${activeTab === 'overview' ? 'active' : ''}`}
+            onClick={() => handleTabChange('overview')}
+          >
+            Overview
+          </button>
+          <button 
+            className={`tab-header ${activeTab === 'details' ? 'active' : ''}`}
+            onClick={() => handleTabChange('details')}
+          >
+            Details
+          </button>
+          <button 
+            className={`tab-header ${activeTab === 'documents' ? 'active' : ''}`}
+            onClick={() => handleTabChange('documents')}
+          >
+            Documents
+          </button>
+          {isEnvironmental(asset) && (
+            <button 
+              className={`tab-header ${activeTab === 'impact' ? 'active' : ''}`}
+              onClick={() => handleTabChange('impact')}
+            >
+              Impact
+            </button>
+          )}
+          <button 
+            className={`tab-header ${activeTab === 'performance' ? 'active' : ''}`}
+            onClick={() => handleTabChange('performance')}
+          >
+            Performance
+          </button>
+        </div>
+        
+        <div className="tab-content">
+          {/* Overview Tab */}
+          {activeTab === 'overview' && (
+            <div className="overview-tab">
+              <div className="description-section">
+                <h2>Description</h2>
+                <p>{asset.description}</p>
+              </div>
+              
+              {isTreasury(asset) && (
+                <div className="treasury-info">
+                  <h3>Issuer Information</h3>
+                  <p className="issuer-description">{asset.issuer_description}</p>
+                  
+                  <div className="info-grid">
+                    <div className="info-item">
+                      <div className="info-label">Issuer</div>
+                      <div className="info-value">{asset.issuer}</div>
+                    </div>
+                    
+                    <div className="info-item">
+                      <div className="info-label">Auction Date</div>
+                      <div className="info-value">{formatDate(asset.auction_date)}</div>
+                    </div>
+                    
+                    <div className="info-item">
+                      <div className="info-label">Settlement Date</div>
+                      <div className="info-value">{formatDate(asset.settlement_date)}</div>
+                    </div>
+                    
+                    <div className="info-item">
+                      <div className="info-label">Face Value</div>
+                      <div className="info-value">${asset.face_value}</div>
+                    </div>
+                    
+                    <div className="info-item">
+                      <div className="info-label">Minimum Bid</div>
+                      <div className="info-value">${asset.minimum_bid}</div>
+                    </div>
+                    
+                    <div className="info-item">
+                      <div className="info-label">Issuance Size</div>
+                      <div className="info-value">
+                        ${parseInt(asset.issuance_size).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {isEnvironmental(asset) && (
+                <div className="project-info">
+                  <h3>Project Information</h3>
+                  <p className="project-description">{hasProperty(asset, 'project_description') ? asset.project_description : asset.description}</p>
+                  
+                  <div className="info-grid">
+                    <div className="info-item">
+                      <div className="info-label">Project Developer</div>
+                      <div className="info-value">{asset.project_developer}</div>
+                    </div>
+                    
+                    <div className="info-item">
+                      <div className="info-label">Methodology</div>
+                      <div className="info-value">{asset.methodology}</div>
+                    </div>
+                    
+                    <div className="info-item">
+                      <div className="info-label">Registry</div>
+                      <div className="info-value">
+                        <a href={asset.registry_link} target="_blank" rel="noopener noreferrer">
+                          View on Registry
+                        </a>
+                      </div>
+                    </div>
+                    
+                    <div className="info-item">
+                      <div className="info-label">Issuance Date</div>
+                      <div className="info-value">{formatDate(asset.issuance_date)}</div>
+                    </div>
+                    
+                    <div className="info-item">
+                      <div className="info-label">Expiration</div>
+                      <div className="info-value">{formatDate(asset.expiration_date)}</div>
+                    </div>
+                    
+                    <div className="info-item">
+                      <div className="info-label">Available Supply</div>
+                      <div className="info-value">
+                        {parseInt(asset.available_supply).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {hasProperty(asset, 'co_benefits') && asset.co_benefits && (
+                    <div className="co-benefits">
+                      <h4>Co-Benefits</h4>
+                      <ul className="benefits-list">
+                        {asset.co_benefits.map((benefit, index) => (
+                          <li key={index} className="benefit-item">{benefit}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Details Tab */}
+          {activeTab === 'details' && (
+            <div className="details-tab">
+              {isTreasury(asset) && (
+                <div className="details-section">
+                  <h3>Treasury Details</h3>
+                  
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <div className="detail-label">Token ID</div>
+                      <div className="detail-value">{asset.token_id}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Token Address</div>
+                      <div className="detail-value address">{asset.token_address}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Treasury Type</div>
+                      <div className="detail-value">{asset.treasury_type}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Total Supply</div>
+                      <div className="detail-value">
+                        {parseInt(asset.total_supply).toLocaleString()}
+                      </div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Yield Rate</div>
+                      <div className="detail-value">{formatYield(asset.yield_rate)}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Custody Fee</div>
+                      <div className="detail-value">{asset.custody_fee}% per annum</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Liquidity Rating</div>
+                      <div className="detail-value">{asset.liquidity_rating}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Risk Rating</div>
+                      <div className="detail-value">{asset.risk_rating}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {isEnvironmental(asset) && (
+                <div className="details-section">
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <div className="detail-label">Asset ID</div>
+                      <div className="detail-value">{asset.asset_id}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Asset Type</div>
+                      <div className="detail-value">{asset.asset_type}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Project ID</div>
+                      <div className="detail-value">{asset.project_id}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Registry</div>
+                      <div className="detail-value">
+                        <a href={asset.registry_link} target="_blank" rel="noopener noreferrer">
+                          View on Registry
+                        </a>
+                      </div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Issuance Date</div>
+                      <div className="detail-value">{formatDate(asset.issuance_date)}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Expiration Date</div>
+                      <div className="detail-value">{formatDate(asset.expiration_date)}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Total Supply</div>
+                      <div className="detail-value">
+                        {parseInt(asset.total_supply).toLocaleString()}
+                      </div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Available Supply</div>
+                      <div className="detail-value">{parseInt(asset.available_supply).toLocaleString()}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="security-details">
+                    <h3>Security Details</h3>
+                    <div className="detail-grid">
+                      <div className="detail-item">
+                        <div className="detail-label">Token Standard</div>
+                        <div className="detail-value">{asset.security_details.token_standard}</div>
+                      </div>
+                      
+                      <div className="detail-item">
+                        <div className="detail-label">Contract Address</div>
+                        <div className="detail-value address">{asset.security_details.contract_address}</div>
+                      </div>
+                      
+                      <div className="detail-item">
+                        <div className="detail-label">Blockchain</div>
+                        <div className="detail-value">{asset.security_details.blockchain}</div>
+                      </div>
+                      
+                      <div className="detail-item">
+                        <div className="detail-label">Token ID</div>
+                        <div className="detail-value">{asset.security_details.token_id}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Documents Tab */}
+          {activeTab === 'documents' && (
+            <div className="documents-tab">
+              <h3>Documentation & Resources</h3>
+              
+              {isTreasury(asset) && asset.documents && (
+                <div className="documents-list">
+                  {asset.documents.map((doc, index) => (
+                    <a 
+                      key={index}
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="document-item"
+                    >
+                      <div className="document-icon">
+                        {doc.type === 'PDF' && <span className="pdf-icon">PDF</span>}
+                        {doc.type === 'DOC' && <span className="doc-icon">DOC</span>}
+                        {doc.type === 'TXT' && <span className="txt-icon">TXT</span>}
+                      </div>
+                      <div className="document-info">
+                        <div className="document-name">{doc.name}</div>
+                        <div className="document-meta">
+                          <span className="document-type">{doc.type}</span>
+                          <span className="document-size">{doc.size_kb} KB</span>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              )}
+              
+              {isEnvironmental(asset) && asset.certification_documents && (
+                <div className="documents-list">
+                  {asset.certification_documents.map((doc, index) => (
+                    <a 
+                      key={index}
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="document-item"
+                    >
+                      <div className="document-icon">
+                        <span className="pdf-icon">PDF</span>
+                      </div>
+                      <div className="document-info">
+                        <div className="document-name">{doc.name}</div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Impact Tab (only for environmental assets) */}
+          {activeTab === 'impact' && isEnvironmental(asset) && (
+            <div className="impact-tab">
+              <h3>Environmental Impact</h3>
+              
+              <div className="impact-metrics">
+                {(Array.isArray(asset.impact_metrics) ? asset.impact_metrics : []).map((metric: any, index: number) => (
+                  <div key={index} className="metric-card">
+                    <div className="metric-icon">
+                      {/* Placeholder for an icon */}
+                      <span className="icon">🌍</span>
+                    </div>
+                    <div className="metric-content">
+                      <div className="metric-value">{metric.value}</div>
+                      <div className="metric-label">{metric.label}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {isEnvironmental(asset) && hasProperty(asset, 'sdg_alignment') && asset.sdg_alignment && (
+                <div className="sdg-alignment">
+                  <h4>Sustainable Development Goals</h4>
+                  <div className="sdg-icons">
+                    {asset.sdg_alignment.map((sdg: number, index: number) => (
+                      <div key={index} className="sdg-icon-wrapper" title={`SDG ${sdg}: ${getSdgName(sdg)}`}>
+                        <img 
+                          src={`/images/sdg/sdg-${sdg}.png`} 
+                          alt={`SDG ${sdg}`}
+                          className="sdg-icon"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {isEnvironmental(asset) && hasProperty(asset, 'project_updates') && asset.project_updates && (
+                <div className="project-updates">
+                  <h4>Project Updates</h4>
+                  
+                  {asset.project_updates.map((update: any, index: number) => (
+                    <div key={index} className="update-item">
+                      <div className="update-content">
+                        <div>
+                          <h3 className="update-title">{update.title}</h3>
+                          <div>
+                            {formatDate(update.date)}
+                          </div>
+                        </div>
+                        <p className="update-text">{update.content}</p>
+                        <div className="update-author">- {update.author}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Performance Tab */}
+          {activeTab === 'performance' && (
+            <div className="performance-tab">
+              <h3>Performance Analysis</h3>
+              
+              {isTreasury(asset) && (
+                <div className="price-history">
+                  <h4>Price History</h4>
+                  {/* Placeholder for chart */}
+                  <div className="chart-placeholder">
+                    Historical price chart would be displayed here
+                  </div>
+                  
+                  <h4>Recent Trades</h4>
+                  <div className="recent-trades">
+                    <table className="trades-table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Type</th>
+                          <th>Quantity</th>
+                          <th>Price</th>
+                          <th>Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {asset.recent_trades.map((trade, index) => (
+                          <tr key={index} className={`trade-${trade.type.toLowerCase()}`}>
+                            <td>{formatDate(trade.date)}</td>
+                            <td className={`trade-type ${trade.type.toLowerCase()}`}>
+                              {trade.type}
+                            </td>
+                            <td>{parseInt(trade.quantity).toLocaleString()}</td>
+                            <td>${trade.price}</td>
+                            <td>
+                              ${(parseFloat(trade.quantity) * parseFloat(trade.price)).toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                              })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+              
+              {isEnvironmental(asset) && (
+                <div className="price-history">
+                  <h4>Price History</h4>
+                  {/* Placeholder for chart */}
+                  <div className="chart-placeholder">
+                    Historical price chart would be displayed here
+                  </div>
+                  
+                  <h4>Market Statistics</h4>
+                  <div className="market-stats">
+                    <div className="stat-item">
+                      <div className="stat-label">24h Volume</div>
+                      <div className="stat-value">${asset.volume_24h}</div>
+                    </div>
+                    <div className="stat-item">
+                      <div className="stat-label">24h Change</div>
+                      <div className={`stat-value ${asset.change_24h && parseFloat(asset.change_24h) >= 0 ? 'positive' : 'negative'}`}>
+                        {asset.change_24h && (parseFloat(asset.change_24h) >= 0 ? '+' : '')}{asset.change_24h}%
+                      </div>
+                    </div>
+                    <div className="stat-item">
+                      <div className="stat-label">Market Cap</div>
+                      <div className="stat-value">
+                        ${(parseFloat(asset.price_per_unit) * parseInt(asset.total_supply)).toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="stat-item">
+                      <div className="stat-label">All-Time High</div>
+                      <div className="stat-value">${hasProperty(asset, 'all_time_high') ? asset.all_time_high : 'N/A'}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
-
-        {isTreasury(asset) && (
-          <div className="stat-card">
-            <div className="stat-label">Yield</div>
-            <div className="stat-value yield">{formatYield(asset.yield_rate)}</div>
-          </div>
-        )}
-
-        {isTreasury(asset) && (
-          <div className="stat-card">
-            <div className="stat-label">Maturity Date</div>
-            <div className="stat-value">{formatDate(asset.maturity_date)}</div>
-          </div>
-        )}
-
-        {isTreasury(asset) && (
-          <div className="stat-card">
-            <div className="stat-label">Status</div>
-            <div className={`stat-value status-${asset.status?.toLowerCase()}`}>{asset.status}</div>
-          </div>
-        )}
-
-        {isEnvironmental(asset) && (
-          <div className="stat-card">
-            <div className="stat-label">Standard</div>
-            <div className="stat-value">{asset.standard}</div>
-          </div>
-        )}
-
-        {isEnvironmental(asset) && (
-          <div className="stat-card">
-            <div className="stat-label">Verified</div>
-            <div className="stat-value">{formatDate(asset.verification_date)}</div>
-          </div>
-        )}
-
-        <div className="stat-card">
-          <div className="stat-label">Total Supply</div>
-          <div className="stat-value">
-            {formatTotalSupply(isTreasury(asset) ? asset.total_supply : asset.total_supply)}
-          </div>
-        </div>
-      </div>
-
-      <div className="asset-detail-tabs">
-        <div 
-          className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
-          onClick={() => handleTabChange('overview')}
-        >
-          Overview
-        </div>
-        
-        <div 
-          className={`tab ${activeTab === 'details' ? 'active' : ''}`}
-          onClick={() => handleTabChange('details')}
-        >
-          Details
-        </div>
-        
-        <div 
-          className={`tab ${activeTab === 'documents' ? 'active' : ''}`}
-          onClick={() => handleTabChange('documents')}
-        >
-          Documents
-        </div>
-        
-        {isEnvironmental(asset) && (
-          <div 
-            className={`tab ${activeTab === 'impact' ? 'active' : ''}`}
-            onClick={() => handleTabChange('impact')}
-          >
-            Impact Metrics
-          </div>
-        )}
-        
-        {isTreasury(asset) && (
-          <div 
-            className={`tab ${activeTab === 'trades' ? 'active' : ''}`}
-            onClick={() => handleTabChange('trades')}
-          >
-            Recent Trades
-          </div>
-        )}
-        
-        {isEnvironmental(asset) && asset.project_updates && asset.project_updates.length > 0 && (
-          <div 
-            className={`tab ${activeTab === 'updates' ? 'active' : ''}`}
-            onClick={() => handleTabChange('updates')}
-          >
-            Project Updates
-          </div>
-        )}
-      </div>
-
-      <div className="asset-detail-content">
-        {/* Overview Tab */}
-        {activeTab === 'overview' && (
-          <div className="tab-content">
-            <h2 className="section-title">Overview</h2>
-            
-            <div className="description-section">
-              <p className="asset-description">
-                {isTreasury(asset) ? asset.description : asset.description}
-              </p>
-              
-              {isEnvironmental(asset) && asset.long_description && (
-                <div className="long-description">
-                  {asset.long_description.split('\n\n').map((paragraph, index) => (
-                    <p key={index}>{paragraph}</p>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            {isTreasury(asset) && (
-              <div className="treasury-info">
-                <h3>Issuer Information</h3>
-                <p className="issuer-description">{asset.issuer_description}</p>
-                
-                <div className="info-grid">
-                  <div className="info-item">
-                    <div className="info-label">Issuer</div>
-                    <div className="info-value">{asset.issuer}</div>
-                  </div>
-                  
-                  <div className="info-item">
-                    <div className="info-label">Auction Date</div>
-                    <div className="info-value">{formatDate(asset.auction_date)}</div>
-                  </div>
-                  
-                  <div className="info-item">
-                    <div className="info-label">Settlement Date</div>
-                    <div className="info-value">{formatDate(asset.settlement_date)}</div>
-                  </div>
-                  
-                  <div className="info-item">
-                    <div className="info-label">Face Value</div>
-                    <div className="info-value">${asset.face_value}</div>
-                  </div>
-                  
-                  <div className="info-item">
-                    <div className="info-label">Minimum Bid</div>
-                    <div className="info-value">${asset.minimum_bid}</div>
-                  </div>
-                  
-                  <div className="info-item">
-                    <div className="info-label">Issuance Size</div>
-                    <div className="info-value">
-                      ${parseInt(asset.issuance_size).toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {isEnvironmental(asset) && (
-              <div className="project-info">
-                <h3>Project Information</h3>
-                
-                <div className="info-grid">
-                  <div className="info-item">
-                    <div className="info-label">Developer</div>
-                    <div className="info-value">{asset.project_developer}</div>
-                  </div>
-                  
-                  <div className="info-item">
-                    <div className="info-label">Location</div>
-                    <div className="info-value">{asset.project_location}</div>
-                  </div>
-                  
-                  <div className="info-item">
-                    <div className="info-label">Country</div>
-                    <div className="info-value">{asset.country}</div>
-                  </div>
-                  
-                  <div className="info-item">
-                    <div className="info-label">Methodology</div>
-                    <div className="info-value">{asset.methodology}</div>
-                  </div>
-                  
-                  <div className="info-item">
-                    <div className="info-label">Vintage Year</div>
-                    <div className="info-value">{asset.vintage_year}</div>
-                  </div>
-                  
-                  <div className="info-item">
-                    <div className="info-label">Verifier</div>
-                    <div className="info-value">{asset.impact_metrics.third_party_verifier}</div>
-                  </div>
-                </div>
-                
-                {asset.methodology_details && (
-                  <div className="methodology-details">
-                    <h4>Methodology Details</h4>
-                    <p>{asset.methodology_details}</p>
-                  </div>
-                )}
-                
-                {asset.co_benefits && asset.co_benefits.length > 0 && (
-                  <div style={styles.coBenefits}>
-                    <h4>Co-Benefits</h4>
-                    <ul style={styles.benefitsList}>
-                      {asset.co_benefits.map((benefit, index) => (
-                        <li key={index} style={styles.benefitItem}>{benefit}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* Details Tab */}
-        {activeTab === 'details' && (
-          <div className="tab-content">
-            <h2 className="section-title">Asset Details</h2>
-            
-            {isTreasury(asset) && (
-              <div className="details-section">
-                <div className="detail-grid">
-                  <div className="detail-item">
-                    <div className="detail-label">Token ID</div>
-                    <div className="detail-value">{asset.token_id}</div>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <div className="detail-label">Token Address</div>
-                    <div className="detail-value address">{asset.token_address}</div>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <div className="detail-label">Treasury Type</div>
-                    <div className="detail-value">{asset.treasury_type}</div>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <div className="detail-label">Total Supply</div>
-                    <div className="detail-value">
-                      {parseInt(asset.total_supply).toLocaleString()}
-                    </div>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <div className="detail-label">Yield Rate</div>
-                    <div className="detail-value">{formatYield(asset.yield_rate)}</div>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <div className="detail-label">Custody Fee</div>
-                    <div className="detail-value">{asset.custody_fee}% per annum</div>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <div className="detail-label">Liquidity Rating</div>
-                    <div className="detail-value">{asset.liquidity_rating}</div>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <div className="detail-label">Risk Rating</div>
-                    <div className="detail-value">{asset.risk_rating}</div>
-                  </div>
-                </div>
-                
-                <div className="price-history">
-                  <h3>Price History</h3>
-                  <table className="price-table">
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Price</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {asset.historical_prices.map((price, index) => (
-                        <tr key={index}>
-                          <td>{formatDate(price.date)}</td>
-                          <td>${price.price}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-            
-            {isEnvironmental(asset) && (
-              <div className="details-section">
-                <div className="detail-grid">
-                  <div className="detail-item">
-                    <div className="detail-label">Asset ID</div>
-                    <div className="detail-value">{asset.asset_id}</div>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <div className="detail-label">Asset Type</div>
-                    <div className="detail-value">{asset.asset_type}</div>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <div className="detail-label">Project ID</div>
-                    <div className="detail-value">{asset.project_id}</div>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <div className="detail-label">Registry</div>
-                    <div className="detail-value">
-                      <a href={asset.registry_link} target="_blank" rel="noopener noreferrer">
-                        View on Registry
-                      </a>
-                    </div>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <div className="detail-label">Issuance Date</div>
-                    <div className="detail-value">{formatDate(asset.issuance_date)}</div>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <div className="detail-label">Expiration Date</div>
-                    <div className="detail-value">{formatDate(asset.expiration_date)}</div>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <div className="detail-label">Total Supply</div>
-                    <div className="detail-value">
-                      {parseInt(asset.total_supply).toLocaleString()}
-                    </div>
-                  </div>
-                  
-                  <div className="detail-item">
-                    <div className="detail-label">Available Supply</div>
-                    <div className="detail-value">{parseInt(asset.available_supply).toLocaleString()}</div>
-                  </div>
-                </div>
-                
-                <div className="security-details">
-                  <h3>Security Details</h3>
-                  <div className="detail-grid">
-                    <div className="detail-item">
-                      <div className="detail-label">Token Standard</div>
-                      <div className="detail-value">{asset.security_details.token_standard}</div>
-                    </div>
-                    
-                    <div className="detail-item">
-                      <div className="detail-label">Contract Address</div>
-                      <div className="detail-value address">{asset.security_details.contract_address}</div>
-                    </div>
-                    
-                    <div className="detail-item">
-                      <div className="detail-label">Blockchain</div>
-                      <div className="detail-value">{asset.security_details.blockchain}</div>
-                    </div>
-                    
-                    <div className="detail-item">
-                      <div className="detail-label">Token ID</div>
-                      <div className="detail-value">{asset.security_details.token_id}</div>
-                    </div>
-                  </div>
-                </div>
-                
-                {asset.risks && asset.risks.length > 0 && (
-                  <div className="risk-assessment">
-                    <h3>Risk Assessment</h3>
-                    <div className="risks-list">
-                      {asset.risks.map((risk, index) => {
-                        const severityClass = risk.severity.toLowerCase();
-                        return (
-                          <div 
-                            key={index} 
-                            style={{
-                              ...styles.riskItem,
-                              ...(severityClass === 'high' ? styles.riskHigh : 
-                                 severityClass === 'medium' ? styles.riskMedium : 
-                                 styles.riskLow)
-                            }}
-                          >
-                            <div style={styles.riskHeader}>
-                              <h4 style={styles.riskName}>{risk.name}</h4>
-                              <span style={{
-                                ...styles.riskSeverity,
-                                ...(severityClass === 'high' ? styles.riskSeverityHigh : 
-                                   severityClass === 'medium' ? styles.riskSeverityMedium : 
-                                   styles.riskSeverityLow)
-                              }}>
-                                {risk.severity}
-                              </span>
-                            </div>
-                            <p style={styles.riskDescription}>{risk.description}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* Documents Tab */}
-        {activeTab === 'documents' && (
-          <div className="tab-content">
-            <h2 className="section-title">Documents</h2>
-            
-            <div className="documents-list" style={{ marginTop: '20px' }}>
-              {(isEnvironmental(asset) 
-                ? (asset.certification_documents || []) 
-                : asset.documents
-              ).map((doc, index) => {
-                // Determine document icon based on type
-                const getDocIcon = (type: string | undefined) => {
-                  switch(type?.toLowerCase()) {
-                    case 'pdf': return '📄';
-                    case 'xlsx': 
-                    case 'xls': return '📊';
-                    case 'doc':
-                    case 'docx': return '📝';
-                    case 'ppt':
-                    case 'pptx': return '📑';
-                    default: return '📄';
-                  }
-                };
-                
-                return (
-                  <a 
-                    key={index} 
-                    href={doc.url} 
-                    className="document-item" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '15px',
-                      backgroundColor: '#f5f5f5',
-                      borderRadius: '8px',
-                      marginBottom: '10px',
-                      textDecoration: 'none',
-                      color: '#333',
-                      transition: 'transform 0.2s, box-shadow 0.2s'
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  >
-                    <div className="document-icon" style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '4px',
-                      backgroundColor: '#e3f2fd',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      marginRight: '15px',
-                      fontSize: '20px'
-                    }}>
-                      {getDocIcon(doc.type)}
-                    </div>
-                    <div className="document-info" style={{ flex: 1 }}>
-                      <div className="document-name" style={{ fontWeight: 'bold', marginBottom: '5px' }}>{doc.name}</div>
-                      <div style={{ display: 'flex', gap: '15px' }}>
-                        {doc.size_kb && <div className="document-size" style={{ fontSize: '14px', color: '#666' }}>{doc.size_kb} KB</div>}
-                        <div className="document-type" style={{ fontSize: '14px', color: '#666' }}>{doc.type || 'PDF'}</div>
-                      </div>
-                    </div>
-                    <div style={{
-                      backgroundColor: '#1976d2',
-                      color: 'white',
-                      padding: '5px 10px',
-                      borderRadius: '4px',
-                      fontSize: '12px'
-                    }}>
-                      View
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
-            
-            {/* Additional resources section */}
-            {isEnvironmental(asset) && (
-              <div style={{ marginTop: '40px' }}>
-                <h3 style={{ marginBottom: '15px', fontSize: '20px', color: '#333' }}>Additional Resources</h3>
-                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-                  <a 
-                    href="#methodology" 
-                    style={{
-                      padding: '10px 15px',
-                      backgroundColor: '#f5f5f5',
-                      borderRadius: '6px',
-                      textDecoration: 'none',
-                      color: '#1976d2',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    <span style={{ fontSize: '20px' }}>📚</span>
-                    <span>Methodology Reference</span>
-                  </a>
-                  
-                  <a 
-                    href="#impact" 
-                    style={{
-                      padding: '10px 15px',
-                      backgroundColor: '#f5f5f5',
-                      borderRadius: '6px',
-                      textDecoration: 'none',
-                      color: '#1976d2',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    <span style={{ fontSize: '20px' }}>📊</span>
-                    <span>Impact Report</span>
-                  </a>
-                  
-                  <a 
-                    href={asset.registry_link || '#'} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    style={{
-                      padding: '10px 15px',
-                      backgroundColor: '#f5f5f5',
-                      borderRadius: '6px',
-                      textDecoration: 'none',
-                      color: '#1976d2',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    <span style={{ fontSize: '20px' }}>🔗</span>
-                    <span>Registry Listing</span>
-                  </a>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* Impact Metrics Tab (for environmental assets) */}
-        {activeTab === 'impact' && isEnvironmental(asset) && (
-          <div className="tab-content">
-            <h2 className="section-title">Impact Metrics</h2>
-            
-            <div className="metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px', marginBottom: '30px' }}>
-              <div className="metric-card" style={{ padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                <div className="metric-icon carbon-icon" style={{ backgroundColor: '#e3f2fd', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '15px' }}>
-                  <span style={{ fontSize: '24px' }}>🌿</span>
-                </div>
-                <div className="metric-value" style={{ fontSize: '28px', fontWeight: 'bold', color: '#2e7d32' }}>{asset.impact_metrics.carbon_offset_tons.toLocaleString()}</div>
-                <div className="metric-label" style={{ fontSize: '14px', color: '#555' }}>Tons of CO₂ Offset</div>
-              </div>
-              
-              <div className="metric-card" style={{ padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                <div className="metric-icon land-icon" style={{ backgroundColor: '#e8f5e9', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '15px' }}>
-                  <span style={{ fontSize: '24px' }}>🌳</span>
-                </div>
-                <div className="metric-value" style={{ fontSize: '28px', fontWeight: 'bold', color: '#2e7d32' }}>{asset.impact_metrics.land_area_protected_hectares.toLocaleString()}</div>
-                <div className="metric-label" style={{ fontSize: '14px', color: '#555' }}>Hectares Protected</div>
-              </div>
-              
-              {asset.impact_metrics.renewable_energy_mwh > 0 && (
-                <div className="metric-card" style={{ padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                  <div className="metric-icon energy-icon" style={{ backgroundColor: '#fff8e1', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '15px' }}>
-                    <span style={{ fontSize: '24px' }}>⚡</span>
-                  </div>
-                  <div className="metric-value" style={{ fontSize: '28px', fontWeight: 'bold', color: '#ff9800' }}>{asset.impact_metrics.renewable_energy_mwh.toLocaleString()}</div>
-                  <div className="metric-label" style={{ fontSize: '14px', color: '#555' }}>MWh of Renewable Energy</div>
-                </div>
-              )}
-              
-              {asset.impact_metrics.water_protected_liters > 0 && (
-                <div className="metric-card" style={{ padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                  <div className="metric-icon water-icon" style={{ backgroundColor: '#e3f2fd', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '15px' }}>
-                    <span style={{ fontSize: '24px' }}>💧</span>
-                  </div>
-                  <div className="metric-value" style={{ fontSize: '28px', fontWeight: 'bold', color: '#1976d2' }}>
-                    {(asset.impact_metrics.water_protected_liters / 1000000).toLocaleString()}
-                  </div>
-                  <div className="metric-label" style={{ fontSize: '14px', color: '#555' }}>Million Liters of Water Protected</div>
-                </div>
-              )}
-              
-              {asset.impact_metrics.biodiversity_species_protected && (
-                <div className="metric-card" style={{ padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                  <div className="metric-icon species-icon" style={{ backgroundColor: '#f3e5f5', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '15px' }}>
-                    <span style={{ fontSize: '24px' }}>🦋</span>
-                  </div>
-                  <div className="metric-value" style={{ fontSize: '28px', fontWeight: 'bold', color: '#9c27b0' }}>{asset.impact_metrics.biodiversity_species_protected}</div>
-                  <div className="metric-label" style={{ fontSize: '14px', color: '#555' }}>Species Protected</div>
-                </div>
-              )}
-              
-              {asset.impact_metrics.jobs_created && (
-                <div className="metric-card" style={{ padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                  <div className="metric-icon jobs-icon" style={{ backgroundColor: '#ede7f6', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '15px' }}>
-                    <span style={{ fontSize: '24px' }}>👥</span>
-                  </div>
-                  <div className="metric-value" style={{ fontSize: '28px', fontWeight: 'bold', color: '#673ab7' }}>{asset.impact_metrics.jobs_created}</div>
-                  <div className="metric-label" style={{ fontSize: '14px', color: '#555' }}>Jobs Created</div>
-                </div>
-              )}
-            </div>
-            
-            <div className="sdg-alignment" style={{ marginBottom: '40px' }}>
-              <h3 style={{ marginBottom: '20px', fontSize: '22px', color: '#333' }}>UN Sustainable Development Goals Alignment</h3>
-              {renderSdgAlignment()}
-            </div>
-            
-            {asset.project_developer && (
-              <div className="project-developer" style={{ marginBottom: '30px' }}>
-                <h3 style={{ marginBottom: '15px', fontSize: '20px', color: '#333' }}>Project Developer</h3>
-                <p style={{ fontSize: '16px', lineHeight: '1.6' }}><strong>{asset.project_developer}</strong> - {asset.project_location}, {asset.country}</p>
-              </div>
-            )}
-            
-            {asset.methodology && (
-              <div className="methodology" style={{ marginBottom: '30px' }}>
-                <h3 style={{ marginBottom: '15px', fontSize: '20px', color: '#333' }}>Methodology</h3>
-                <p style={{ fontSize: '16px', lineHeight: '1.6' }}><strong>{asset.methodology}</strong></p>
-                {asset.methodology_details && (
-                  <p style={{ fontSize: '16px', lineHeight: '1.6', marginTop: '10px' }}>{asset.methodology_details}</p>
-                )}
-              </div>
-            )}
-            
-            {asset.registry_link && (
-              <div className="registry" style={{ marginBottom: '30px' }}>
-                <h3 style={{ marginBottom: '15px', fontSize: '20px', color: '#333' }}>Registry Information</h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                  <div style={{ fontSize: '16px' }}><strong>Standard:</strong> {asset.standard}</div>
-                  <div style={{ fontSize: '16px' }}><strong>Project ID:</strong> {asset.project_id}</div>
-                  <div>
-                    <a 
-                      href={asset.registry_link} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      style={{
-                        padding: '8px 12px',
-                        backgroundColor: '#1976d2',
-                        color: 'white',
-                        borderRadius: '4px',
-                        textDecoration: 'none',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                        fontSize: '14px'
-                      }}
-                    >
-                      View on Registry
-                    </a>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {asset.co_benefits && asset.co_benefits.length > 0 && (
-              <div className="co-benefits" style={{ marginBottom: '30px' }}>
-                <h3 style={{ marginBottom: '15px', fontSize: '20px', color: '#333' }}>Co-Benefits</h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                  {asset.co_benefits.map((benefit, index) => (
-                    <div 
-                      key={index} 
-                      style={{
-                        padding: '8px 12px',
-                        backgroundColor: '#e8f5e9',
-                        color: '#2e7d32',
-                        borderRadius: '20px',
-                        fontSize: '14px',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      {benefit}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {asset.risks && asset.risks.length > 0 && (
-              <div className="risk-assessment" style={{ marginBottom: '30px' }}>
-                <h3 style={{ marginBottom: '15px', fontSize: '20px', color: '#333' }}>Risk Assessment</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  {asset.risks.map((risk, index) => {
-                    const severityColor = 
-                      risk.severity === 'High' ? '#f44336' : 
-                      risk.severity === 'Medium' ? '#ff9800' : 
-                      '#4caf50';
-                    
-                    const severityBg = 
-                      risk.severity === 'High' ? '#ffebee' : 
-                      risk.severity === 'Medium' ? '#fff8e1' : 
-                      '#e8f5e9';
-                    
-                    return (
-                      <div 
-                        key={index} 
-                        style={{
-                          padding: '15px',
-                          backgroundColor: severityBg,
-                          borderLeft: `4px solid ${severityColor}`,
-                          borderRadius: '4px'
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                          <h4 style={{ margin: 0, fontSize: '18px' }}>{risk.name}</h4>
-                          <span 
-                            style={{
-                              padding: '4px 8px',
-                              backgroundColor: severityColor,
-                              color: 'white',
-                              borderRadius: '4px',
-                              fontSize: '12px',
-                              fontWeight: 'bold'
-                            }}
-                          >
-                            {risk.severity}
-                          </span>
-                        </div>
-                        <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5' }}>{risk.description}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* Recent Trades Tab (for treasury assets) */}
-        {activeTab === 'trades' && isTreasury(asset) && (
-          <div className="tab-content">
-            <h2 className="section-title">Recent Trades</h2>
-            
-            <table className="trades-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Type</th>
-                  <th>Quantity</th>
-                  <th>Price</th>
-                  <th>Total Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {asset.recent_trades.map((trade, index) => (
-                  <tr key={index} className={trade.type.toLowerCase()}>
-                    <td>{formatDate(trade.date)}</td>
-                    <td className={`trade-type ${trade.type.toLowerCase()}`}>{trade.type}</td>
-                    <td>{parseInt(trade.quantity).toLocaleString()}</td>
-                    <td>${trade.price}</td>
-                    <td>${(parseFloat(trade.price) * parseInt(trade.quantity)).toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-        
-        {/* Project Updates Tab (for environmental assets) */}
-        {activeTab === 'updates' && isEnvironmental(asset) && asset.project_updates && (
-          <div className="tab-content">
-            <h2 className="section-title">Project Updates</h2>
-            
-            <div className="updates-timeline" style={{ marginTop: '20px' }}>
-              {asset.project_updates.map((update, index) => (
-                <div key={index} className="update-item" style={{ 
-                  marginBottom: '30px',
-                  borderLeft: '3px solid #1976d2',
-                  paddingLeft: '25px',
-                  position: 'relative'
-                }}>
-                  <div className="update-date" style={{
-                    position: 'absolute',
-                    left: '-15px',
-                    backgroundColor: '#1976d2',
-                    color: 'white',
-                    width: '30px',
-                    height: '30px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    fontWeight: 'bold'
-                  }}>
-                    {index + 1}
-                  </div>
-                  <div className="update-content" style={{ 
-                    backgroundColor: '#f5f5f5',
-                    padding: '20px',
-                    borderRadius: '8px'
-                  }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between',
-                      alignItems: 'baseline',
-                      marginBottom: '10px'
-                    }}>
-                      <h3 className="update-title" style={{ 
-                        margin: 0,
-                        fontSize: '20px',
-                        color: '#333'
-                      }}>{update.title}</h3>
-                      <div style={{ fontSize: '14px', color: '#757575' }}>
-                        {formatDate(update.date)}
-                      </div>
-                    </div>
-                    <p className="update-text" style={{ 
-                      fontSize: '16px',
-                      lineHeight: '1.6',
-                      margin: '0 0 10px 0'
-                    }}>{update.content}</p>
-                    <div className="update-author" style={{ 
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      fontStyle: 'italic',
-                      color: '#666',
-                      textAlign: 'right'
-                    }}>- {update.author}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="asset-actions">
         <Link to="/marketplace" className="button secondary">Back to Marketplace</Link>
-        <button className="button primary">Invest Now</button>
+        <button 
+          className="button primary"
+          onClick={() => connected ? setShowPurchaseModal(true) : alert('Please connect your wallet to purchase assets')}
+        >
+          Invest Now
+        </button>
       </div>
+      
+      {/* Purchase Modal */}
+      <PurchaseModal
+        show={showPurchaseModal}
+        onHide={() => setShowPurchaseModal(false)}
+        asset={asset}
+        onPurchase={handlePurchase}
+        userTier={getUserTier()}
+      />
     </div>
   );
+};
+
+// Helper function to get SDG name
+const getSdgName = (sdgNumber: number): string => {
+  const sdgNames: Record<number, string> = {
+    1: 'No Poverty',
+    2: 'Zero Hunger',
+    3: 'Good Health and Well-being',
+    4: 'Quality Education',
+    5: 'Gender Equality',
+    6: 'Clean Water and Sanitation',
+    7: 'Affordable and Clean Energy',
+    8: 'Decent Work and Economic Growth',
+    9: 'Industry, Innovation and Infrastructure',
+    10: 'Reduced Inequalities',
+    11: 'Sustainable Cities and Communities',
+    12: 'Responsible Consumption and Production',
+    13: 'Climate Action',
+    14: 'Life Below Water',
+    15: 'Life on Land',
+    16: 'Peace, Justice and Strong Institutions',
+    17: 'Partnerships for the Goals'
+  };
+  
+  return sdgNames[sdgNumber] || `SDG ${sdgNumber}`;
 };
 
 export default AssetDetailPage; 

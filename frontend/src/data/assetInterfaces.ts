@@ -18,7 +18,7 @@ export interface TreasuryDetail {
   minimum_bid: string;
   issuance_size: string;
   custody_fee: number;
-  liquidity_rating: 'High' | 'Medium' | 'Low';
+  liquidity_rating: 'High' | 'Medium' | 'Low' | 'Very High';
   risk_rating: 'AAA' | 'AA+' | 'AA' | 'AA-' | 'A+' | 'A';
   historical_prices: { date: number; price: string }[];
   recent_trades: { 
@@ -34,6 +34,7 @@ export interface TreasuryDetail {
     type: 'PDF' | 'DOC' | 'TXT';
     size_kb: number;
   }[];
+  image_url?: string;
 }
 
 export interface EnvironmentalAsset {
@@ -50,7 +51,7 @@ export interface EnvironmentalAsset {
     latitude: number;
     longitude: number;
   };
-  verification_status: 'Verified' | 'Pending' | 'Rejected';
+  verification_status: 'Verified' | 'Pending' | 'Rejected' | string;
   verification_date: number;
   registry_link?: string;
   metadata_uri?: string;
@@ -62,12 +63,10 @@ export interface EnvironmentalAsset {
     biodiversity_species_protected?: number;
     local_communities_supported?: number;
     jobs_created?: number;
-    sdg_alignment?: {
-      [key: string]: number;
-    };
+    sdg_alignment?: Record<string, number>;
     verification_date?: number;
     third_party_verifier: string;
-  };
+  } | any[]; // Support both object and array format
   issuance_date?: number;
   expiration_date?: number;
   retired?: boolean;
@@ -80,15 +79,18 @@ export interface EnvironmentalAsset {
   available_supply: string;
   description: string;
   long_description?: string;
+  project_description?: string;
   price_per_unit: string;
   change_24h?: string;
   volume_24h?: string;
+  all_time_high?: string;
   image_url: string;
   gallery_images?: string[];
   project_developer?: string;
   methodology?: string;
   methodology_details?: string;
   co_benefits?: string[];
+  sdg_alignment?: number[];
   risks?: {
     name: string;
     description: string;

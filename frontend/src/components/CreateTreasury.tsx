@@ -21,6 +21,17 @@ const CreateTreasury: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [complianceError, setComplianceError] = useState<string | null>(null);
 
+  // Fee calculation state
+  const [feeAmount, setFeeAmount] = useState<string>('0');
+  const [feeTier, setFeeTier] = useState<string>('standard'); // 'standard', 'premium', 'enterprise'
+
+  // Platform fee tiers
+  const feeTiers = {
+    standard: { rate: 0.02, label: 'Standard (2%)', minFee: 500 },
+    premium: { rate: 0.015, label: 'Premium (1.5%)', minFee: 1000 },
+    enterprise: { rate: 0.01, label: 'Enterprise (1%)', minFee: 2500 },
+  };
+
   // Input change handler
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -37,8 +48,48 @@ const CreateTreasury: React.FC = () => {
       } else {
         setFormData({ ...formData, [name]: 0 });
       }
+    } else if (name === 'feeTier') {
+      setFeeTier(value);
+      // Recalculate fee when tier changes
+      calculateFee(formData.face_value || '', formData.total_supply || '', value);
     } else {
       setFormData({ ...formData, [name]: value });
+
+      // Recalculate fee when value changes if it's relevant to fee calculation
+      if (name === 'face_value' || name === 'total_supply') {
+        calculateFee(
+          name === 'face_value' ? value : formData.face_value || '',
+          name === 'total_supply' ? value : formData.total_supply || '',
+          feeTier
+        );
+      }
+    }
+  };
+
+  // Calculate platform fee
+  const calculateFee = (faceValue: string, totalSupply: string, tier: string) => {
+    const selectedTier = feeTiers[tier as keyof typeof feeTiers];
+    
+    if (!faceValue || !totalSupply) {
+      setFeeAmount('0');
+      return;
+    }
+    
+    try {
+      // Calculate total asset value
+      const value = parseFloat(faceValue) * parseFloat(totalSupply);
+      
+      // Calculate fee based on tier rate
+      let calculatedFee = value * selectedTier.rate;
+      
+      // Apply minimum fee
+      if (calculatedFee < selectedTier.minFee) {
+        calculatedFee = selectedTier.minFee;
+      }
+      
+      setFeeAmount(calculatedFee.toFixed(2));
+    } catch (err) {
+      setFeeAmount('0');
     }
   };
 
@@ -62,8 +113,17 @@ const CreateTreasury: React.FC = () => {
     }
     
     try {
+      // Include the platform fee in the submission data
+      const submissionData = {
+        ...formData as CreateTreasuryRequest,
+        platform_fee: {
+          amount: feeAmount,
+          tier: feeTier
+        }
+      };
+      
       // Submit the form
-      await treasuryService.createTreasury(formData as CreateTreasuryRequest);
+      await treasuryService.createTreasury(submissionData as CreateTreasuryRequest);
       setSuccess(true);
       
       // Reset form
@@ -77,6 +137,8 @@ const CreateTreasury: React.FC = () => {
         yield_rate: 0,
         maturity_date: 0,
       });
+      setFeeAmount('0');
+      setFeeTier('standard');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       
@@ -228,6 +290,49 @@ const CreateTreasury: React.FC = () => {
             onChange={handleChange}
             required
           />
+        </div>
+        
+        {/* Platform Fee Section */}
+        <div className="platform-fee-section">
+          <h3>Platform Fee</h3>
+          <p className="fee-explanation">
+            Quantera charges a one-time fee for creating and deploying new treasury assets on the platform.
+            The fee varies based on the selected tier and total asset value.
+          </p>
+          
+          <div className="form-group">
+            <label htmlFor="feeTier">Fee Tier</label>
+            <select
+              id="feeTier"
+              name="feeTier"
+              value={feeTier}
+              onChange={handleChange}
+            >
+              <option value="standard">{feeTiers.standard.label}</option>
+              <option value="premium">{feeTiers.premium.label}</option>
+              <option value="enterprise">{feeTiers.enterprise.label}</option>
+            </select>
+            <small className="tier-detail">
+              {feeTier === 'standard' && 'Recommended for assets under $1M. Minimum fee: $500'}
+              {feeTier === 'premium' && 'Recommended for assets from $1M-$10M. Minimum fee: $1,000'}
+              {feeTier === 'enterprise' && 'Recommended for assets over $10M. Minimum fee: $2,500'}
+            </small>
+          </div>
+          
+          <div className="fee-summary">
+            <div className="fee-calculation">
+              <p>
+                <strong>Total Asset Value:</strong> ${formData.face_value && formData.total_supply ? 
+                  (parseFloat(formData.face_value) * parseFloat(formData.total_supply)).toLocaleString() : '0'}
+              </p>
+              <p>
+                <strong>Calculated Fee:</strong> ${feeAmount} ({feeTiers[feeTier as keyof typeof feeTiers].rate * 100}% of total value)
+              </p>
+              <p className="fee-note">
+                This fee covers platform services including asset tokenization, compliance verification, and marketplace listing.
+              </p>
+            </div>
+          </div>
         </div>
         
         <div className="form-actions">

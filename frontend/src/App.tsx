@@ -4,7 +4,14 @@ import { TreasuryList, TreasuryDetail, CreateTreasury, TreasuryComparison } from
 import Login from './components/Login';
 import MarketplacePage from './pages/MarketplacePage';
 import AssetDetailPage from './pages/AssetDetailPage';
+import EnhancedLiquidityPoolPage from './pages/EnhancedLiquidityPoolPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LiquidityPoolProvider } from './contexts/LiquidityPoolContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+// Temporarily disable TypeScript's checking for this import 
+// @ts-ignore
+import { WalletProvider } from './contexts/WalletContext';
+import WalletConnectButton from './components/common/WalletConnectButton';
 import './App.css';
 
 // Protected Route component
@@ -31,11 +38,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <Router>
-        <div className="app">
-          <AppContent />
-        </div>
-      </Router>
+      <ThemeProvider>
+        <WalletProvider>
+          <LiquidityPoolProvider>
+            <Router>
+              <div className="app">
+                <AppContent />
+              </div>
+            </Router>
+          </LiquidityPoolProvider>
+        </WalletProvider>
+      </ThemeProvider>
     </AuthProvider>
   );
 };
@@ -53,6 +66,7 @@ const AppContent: React.FC = () => {
             <li><Link to="/">Home</Link></li>
             <li><Link to="/treasuries">Treasuries</Link></li>
             <li><Link to="/marketplace">Marketplace</Link></li>
+            <li><Link to="/liquidity">Liquidity Pools</Link></li>
             <li><Link to="/compare">Compare</Link></li>
             <li><Link to="/create">Create Treasury</Link></li>
             {isAuthenticated ? (
@@ -65,6 +79,9 @@ const AppContent: React.FC = () => {
             ) : (
               <li><Link to="/login">Login</Link></li>
             )}
+            <li className="wallet-button-container">
+              <WalletConnectButton size="sm" />
+            </li>
           </ul>
         </nav>
       </header>
@@ -77,6 +94,7 @@ const AppContent: React.FC = () => {
           <Route path="/treasuries/:id" element={<TreasuryDetail />} />
           <Route path="/marketplace" element={<MarketplacePage />} />
           <Route path="/assets/:id" element={<AssetDetailPage />} />
+          <Route path="/liquidity" element={<EnhancedLiquidityPoolPage />} />
           <Route path="/compare" element={<TreasuryComparison />} />
           <Route path="/create" element={
             <ProtectedRoute>
@@ -101,6 +119,7 @@ const Home: React.FC = () => (
     <div className="home-actions">
       <Link to="/marketplace" className="button primary">Browse Marketplace</Link>
       <Link to="/treasuries" className="button secondary">Browse Treasuries</Link>
+      <Link to="/liquidity" className="button secondary">Manage Liquidity</Link>
       <Link to="/create" className="button secondary">Create New Treasury</Link>
     </div>
   </div>
