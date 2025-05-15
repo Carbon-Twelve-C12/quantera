@@ -5,6 +5,10 @@ import Login from './components/Login';
 import MarketplacePage from './pages/MarketplacePage';
 import AssetDetailPage from './pages/AssetDetailPage';
 import EnhancedLiquidityPoolPage from './pages/EnhancedLiquidityPoolPage';
+import AboutPage from './pages/AboutPage';
+import ContractExplorerPage from './pages/ContractExplorerPage';
+import YieldStrategyPage from './pages/YieldStrategyPage';
+import PortfolioPage from './pages/PortfolioPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LiquidityPoolProvider } from './contexts/LiquidityPoolContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -64,9 +68,11 @@ const AppContent: React.FC = () => {
         <nav className="main-nav">
           <ul>
             <li><Link to="/">Home</Link></li>
+            <li><Link to="/about">About</Link></li>
             <li><Link to="/treasuries">Treasuries</Link></li>
             <li><Link to="/marketplace">Marketplace</Link></li>
             <li><Link to="/liquidity">Liquidity Pools</Link></li>
+            <li><Link to="/yield">Yield Strategy</Link></li>
             <li><Link to="/compare">Compare</Link></li>
             <li><Link to="/create">Create Treasury</Link></li>
             {isAuthenticated ? (
@@ -89,13 +95,17 @@ const AppContent: React.FC = () => {
       <main className="app-content">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/treasuries" element={<TreasuryList />} />
           <Route path="/treasuries/:id" element={<TreasuryDetail />} />
           <Route path="/marketplace" element={<MarketplacePage />} />
+          <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/assets/:id" element={<AssetDetailPage />} />
           <Route path="/liquidity" element={<EnhancedLiquidityPoolPage />} />
+          <Route path="/yield" element={<YieldStrategyPage />} />
           <Route path="/compare" element={<TreasuryComparison />} />
+          <Route path="/contracts" element={<ContractExplorerPage />} />
           <Route path="/create" element={
             <ProtectedRoute>
               <CreateTreasury />

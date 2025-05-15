@@ -16,6 +16,7 @@ import LiquidityPoolPage from './pages/LiquidityPoolPage';
 import YieldStrategyPage from './pages/YieldStrategyPage';
 import AssetCreationWizardPage from './pages/AssetCreationWizardPage';
 import ContractExplorerPage from './pages/ContractExplorerPage';
+import AboutPage from './pages/AboutPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { LiquidityPoolProvider } from './contexts/LiquidityPoolContext';
@@ -38,6 +39,9 @@ function App() {
                     <Route path="/marketplace" element={<MarketplacePage />} />
                     <Route path="/portfolio" element={<PortfolioPage />} />
                     <Route path="/trading" element={<TradingPage />} />
+                    
+                    {/* About Page Route */}
+                    <Route path="/about" element={<AboutPage />} />
                     
                     {/* Asset Detail Routes */}
                     <Route path="/assets/:id" element={<AssetDetailPage />} />

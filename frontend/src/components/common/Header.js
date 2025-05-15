@@ -24,6 +24,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import DescriptionIcon from '@mui/icons-material/Description';
+import InfoIcon from '@mui/icons-material/Info';
 
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
@@ -40,7 +41,8 @@ const Header = () => {
     { title: 'Portfolio', path: '/portfolio', icon: <AccountBalanceWalletIcon /> },
     { title: 'Liquidity', path: '/liquidity', icon: <PoolIcon /> },
     { title: 'Yield', path: '/yield', icon: <TrendingUpIcon /> },
-    { title: 'Contract Explorer', path: '/contracts', icon: <DescriptionIcon /> }
+    { title: 'Contract Explorer', path: '/contracts', icon: <DescriptionIcon /> },
+    { title: 'About', path: '/about', icon: <InfoIcon /> }
   ];
 
   const drawer = (
