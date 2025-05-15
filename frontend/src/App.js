@@ -15,6 +15,7 @@ import AssetDetailPage from './pages/AssetDetailPage';
 import LiquidityPoolPage from './pages/LiquidityPoolPage';
 import YieldStrategyPage from './pages/YieldStrategyPage';
 import AssetCreationWizardPage from './pages/AssetCreationWizardPage';
+import ContractExplorerPage from './pages/ContractExplorerPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { LiquidityPoolProvider } from './contexts/LiquidityPoolContext';
@@ -57,6 +58,9 @@ function App() {
                     
                     {/* Yield Strategy Route */}
                     <Route path="/yield" element={<YieldStrategyPage />} />
+                    
+                    {/* Contract Explorer Route */}
+                    <Route path="/contracts" element={<ContractExplorerPage />} />
                     
                     <Route path="*" element={
                       <Container className="py-5 text-center">

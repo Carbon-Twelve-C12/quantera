@@ -37,6 +37,7 @@ import {
   Code as CodeIcon,
   Pool as PoolIcon,
   AddCircleOutline as AddIcon,
+  Description as DocumentIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWallet } from '../../contexts/WalletContext';
@@ -95,6 +96,7 @@ const Header = () => {
     { label: 'Smart Account', path: '/smart-account', icon: <CodeIcon /> },
     { label: 'Liquidity Pools', path: '/liquidity', icon: <PoolIcon /> },
     { label: 'Create Asset', path: '/assets/create', icon: <AddIcon /> },
+    { label: 'Contract Explorer', path: '/contracts', icon: <DocumentIcon /> },
   ];
 
   const userMenuItems = [
@@ -301,6 +303,28 @@ const Header = () => {
                   startIcon={<CodeIcon />}
                 >
                   Smart Account
+                </Button>
+                
+                {/* Contract Explorer Button */}
+                <Button
+                  key="contract-explorer"
+                  component={RouterLink}
+                  to="/contracts"
+                  sx={{
+                    my: 2,
+                    mx: 1,
+                    color: 'text.primary',
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontWeight: location.pathname.includes('/contracts') ? 700 : 500,
+                    borderBottom:
+                      location.pathname.includes('/contracts')
+                        ? `2px solid ${theme.palette.primary.main}`
+                        : '2px solid transparent',
+                  }}
+                  startIcon={<DocumentIcon />}
+                >
+                  Contract Explorer
                 </Button>
                 
                 {/* Create Asset Button */}

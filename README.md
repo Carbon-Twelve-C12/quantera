@@ -87,6 +87,11 @@ Quantera/
   - Wallet connection and network switching functionality 
   - Persistent wallet connection with local storage
   - Robust error handling for wallet connection issues
+  - Contract Explorer page with smart contract browsing and documentation
+  - Syntax highlighting for Solidity code display
+  - Detailed contract information view with tabs for source code, functions, security, and documentation  
+  - Optimized header with hamburger menu navigation for better space utilization
+  - Improved responsive layout with better spacing and edge-to-edge design
 - **Environmental Asset Integration**:
   - Updated asset class enum from "CARBON_CREDIT" to "ENVIRONMENTAL_ASSET" for broader inclusivity
   - Support for biodiversity credits, renewable energy certificates, and water rights
@@ -202,6 +207,7 @@ The platform exposes the following API endpoints:
 - **Smart Accounts**: Configure automated investment strategies
 - **Environmental Impact**: View and track sustainability metrics
 - **Impact Dashboard**: Visualize environmental impact of investments
+- **Contract Explorer**: Browse and understand platform smart contracts with source code, functions, security info, and documentation
 
 ### Advanced Components
 - **Asset Template Explorer**: Browse templates for different asset classes
@@ -213,6 +219,8 @@ The platform exposes the following API endpoints:
 - **Impact Reporting Tool**: Generate customizable ESG reports
 - **Certification Verification System**: Validate environmental asset credentials
 - **Wallet Connection System**: Unified wallet integration with provider detection and persistent sessions
+- **Contract Code Viewer**: Syntax-highlighted code viewer with comprehensive function documentation
+- **Responsive Header System**: Space-efficient navigation with collapsible menu functionality
 
 ## Sustainable Finance Initiative
 

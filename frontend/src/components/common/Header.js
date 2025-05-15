@@ -23,6 +23,7 @@ import PoolIcon from '@mui/icons-material/Pool';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
@@ -38,11 +39,12 @@ const Header = () => {
     { title: 'Marketplace', path: '/marketplace', icon: <StorefrontIcon /> },
     { title: 'Portfolio', path: '/portfolio', icon: <AccountBalanceWalletIcon /> },
     { title: 'Liquidity', path: '/liquidity', icon: <PoolIcon /> },
-    { title: 'Yield', path: '/yield', icon: <TrendingUpIcon /> }
+    { title: 'Yield', path: '/yield', icon: <TrendingUpIcon /> },
+    { title: 'Contract Explorer', path: '/contracts', icon: <DescriptionIcon /> }
   ];
 
   const drawer = (
-    <Box onClick={toggleDrawer} sx={{ textAlign: 'center' }}>
+    <Box onClick={toggleDrawer} sx={{ textAlign: 'center', width: 250 }}>
       <Typography variant="h6" sx={{ my: 2 }}>
         <span style={{ color: muiTheme.palette.primary.main }}>Q</span>uantera Platform
       </Typography>
@@ -73,79 +75,32 @@ const Header = () => {
       }}
       elevation={1}
     >
-      <Container>
-        <Toolbar disableGutters>
-          <Typography
-            variant="h6"
-            component={Link}
-            to="/"
-            sx={{
-              mr: 2,
-              display: { xs: 'none', md: 'flex' },
-              fontWeight: 700,
-              color: 'var(--navbar-text)',
-              textDecoration: 'none',
-            }}
-          >
-            <span style={{ color: muiTheme.palette.primary.light }}>Q</span>uantera Platform
-          </Typography>
+      <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2 } }}>
+        <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton
+              sx={{ color: 'var(--navbar-text)', p: { xs: 0.5, sm: 1 } }}
+              aria-label="open menu"
+              edge="start"
+              onClick={toggleDrawer}
+            >
+              <MenuIcon />
+            </IconButton>
 
-          {isMobile ? (
-            <>
-              <IconButton
-                sx={{ mr: 2, display: { md: 'none' }, color: 'var(--navbar-text)' }}
-                aria-label="open drawer"
-                edge="start"
-                onClick={toggleDrawer}
-              >
-                <MenuIcon />
-              </IconButton>
-              <Typography
-                variant="h6"
-                component={Link}
-                to="/"
-                sx={{
-                  flexGrow: 1,
-                  display: { xs: 'flex', md: 'none' },
-                  fontWeight: 700,
-                  color: 'var(--navbar-text)',
-                  textDecoration: 'none',
-                }}
-              >
-                <span style={{ color: muiTheme.palette.primary.light }}>Q</span>uantera
-              </Typography>
-              <Drawer
-                anchor="left"
-                open={drawerOpen}
-                onClose={toggleDrawer}
-              >
-                {drawer}
-              </Drawer>
-            </>
-          ) : (
-            <Box sx={{ flexGrow: 1, display: 'flex' }}>
-              {navItems.map((item) => (
-                <Button
-                  key={item.title}
-                  component={NavLink}
-                  to={item.path}
-                  sx={{
-                    color: 'var(--navbar-text)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    mx: 1,
-                    '&.active': {
-                      color: muiTheme.palette.primary.light,
-                      fontWeight: 'bold'
-                    }
-                  }}
-                  startIcon={item.icon}
-                >
-                  {item.title}
-                </Button>
-              ))}
-            </Box>
-          )}
+            <Typography
+              variant="h6"
+              component={Link}
+              to="/"
+              sx={{
+                ml: 1,
+                fontWeight: 700,
+                color: 'var(--navbar-text)',
+                textDecoration: 'none',
+              }}
+            >
+              <span style={{ color: muiTheme.palette.primary.light }}>Q</span>uantera Platform
+            </Typography>
+          </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box 
@@ -154,7 +109,7 @@ const Header = () => {
                 position: 'relative',
                 width: '50px',
                 height: '26px',
-                mr: 2,
+                mr: 1,
                 borderRadius: '20px',
                 backgroundColor: 'var(--primary-color)',
                 cursor: 'pointer',
@@ -184,7 +139,9 @@ const Header = () => {
             </Box>
             <Button 
               variant="outlined" 
+              size="small"
               sx={{
+                ml: 1,
                 color: 'var(--navbar-text)',
                 borderColor: 'var(--navbar-text)',
                 '&:hover': {
@@ -197,6 +154,14 @@ const Header = () => {
               Connect Wallet
             </Button>
           </Box>
+
+          <Drawer
+            anchor="left"
+            open={drawerOpen}
+            onClose={toggleDrawer}
+          >
+            {drawer}
+          </Drawer>
         </Toolbar>
       </Container>
     </AppBar>
