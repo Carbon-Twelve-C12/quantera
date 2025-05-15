@@ -1,9 +1,11 @@
 name = "quantera-platform"
 compatibility_date = "2023-12-01"
 
+# Pages configuration
 [site]
 bucket = "./build"
 pages_build_output_dir = "build"
+pages_project_name = "quantera-platform"
 
 [env.production]
 name = "quantera-platform-production"
@@ -17,3 +19,7 @@ vars = { ENVIRONMENT = "staging" }
 # Configure page settings
 [site.static]
 exclude = ["temp_img/**/*"]
+
+# Pages-specific configuration
+[pages]
+build_directory = "build"
