@@ -1,4 +1,9 @@
 # Quantera Platform - Asset Tokenization Ecosystem
+
+[![Website](https://img.shields.io/badge/Website-Quantera.finance-blue)](https://quantera.finance/)
+[![Contributors](https://img.shields.io/github/contributors/mjohnson518/vault)](https://github.com/mjohnson518/vault/graphs/contributors)
+[![Version](https://img.shields.io/badge/Version-0.8.0-green)]()
+
 ## Version: 0.8.0 (80% Complete)
 
 ## Overview
@@ -56,6 +61,7 @@ Quantera/
   - L2Bridge contract with enhanced cross-chain capabilities and EIP-7691 blob data optimization
   - SmartAccountTemplates contract with template management and account deployment
   - Integration tests between contracts
+
 - **Backend Services**: 
   - Ethereum client with Pectra support
   - Contract client implementations
@@ -65,6 +71,7 @@ Quantera/
   - SmartAccountClient for managing smart account templates
   - API endpoints for L2 bridge and smart account functionality
   - WebSocket service for real-time updates on L2 bridge messages and smart account operations
+
 - **Frontend Components**: 
   - Core page components
   - Common components
@@ -92,12 +99,19 @@ Quantera/
   - Detailed contract information view with tabs for source code, functions, security, and documentation  
   - Optimized header with hamburger menu navigation for better space utilization
   - Improved responsive layout with better spacing and edge-to-edge design
+  - Asset image upload functionality with file and URL input options
+  - Custom ImageUploader component with preview, editing, and deletion capabilities
+  - Asset Creation wizard with multi-step interface for configuring asset properties
+  - Interactive asset class selection with visual categorization
+  - Comprehensive asset summary view with visual preview
+
 - **Environmental Asset Integration**:
   - Updated asset class enum from "CARBON_CREDIT" to "ENVIRONMENTAL_ASSET" for broader inclusivity
   - Support for biodiversity credits, renewable energy certificates, and water rights
   - Implementation of impact tracking mechanisms
   - Verification and certification integration for environmental credits
   - Visually distinctive presentation of environmental assets with impact metrics display
+
 - **Type System Implementation**:
   - Comprehensive TypeScript interface for WalletContext
   - Complete type definitions for L2Bridge functionality
@@ -109,7 +123,7 @@ Quantera/
 - **Liquidity Pools Integration**: Frontend interface for concentrated liquidity provision
 - **Environmental Impact Dashboard**: Real-time tracking and visualization of impact metrics
 - **Certification Standard Integration**: Direct connections to environmental asset verification frameworks
-- **Asset Creation UI**: Building a user interface for the AssetFactory contract
+- **Asset Creation UI Enhancements**: Advanced validation and template customization features
 
 ### Next Steps
 - Create Asset Management service for multi-asset support
@@ -117,7 +131,7 @@ Quantera/
 - Enhance analytics and reporting capabilities
 - Develop environmental impact metrics API
 - Complete implementation of frontend interfaces for liquidity pools
-- Implement Asset Creation wizard
+- Extend Asset Creation wizard with validation rules and template system
 - Build Portfolio management dashboard
 - Design Analytics visualization components
 - Create ESG scoring and impact visualization dashboards
@@ -240,18 +254,13 @@ For more details, see our [Sustainable Finance Initiative](docs/sustainable_fina
 Based on our progress, we are currently in Week 13 of our Implementation Plan. The next major milestones are:
 
 1. **Weeks 13-14**: Complete frontend interfaces for liquidity pools and asset creation
-2. **Weeks 14-15**: Comprehensive testing, security audits, and deployment preparation
-3. **Weeks 15-17**: Environmental asset marketplace launch and partner onboarding
+2. **Weeks 14-15**: Implement cross-chain functionality and white-label solutions
+3. **Weeks 15-16**: Comprehensive testing, security audits, and deployment preparation 
+4. **Weeks 16-18**: Marketplace launch and partner onboarding
 
-## Current Timeline
-
-Based on our progress, we are currently in Week 9 of our Implementation Plan. The next major milestones are:
-
-1. **Weeks 9-10**: Complete backend services, API layer, and type system implementation
-2. **Weeks 10-12**: Implement frontend integration and WalletContext
-3. **Weeks 12-14**: Cross-chain functionality and white-label solutions
-4. **Weeks 14-16**: Comprehensive testing, security audits, and deployment preparation
-5. **Weeks 16-18**: Environmental asset marketplace launch and partner onboarding
+Previous milestones completed:
+- Backend services, API layer, and type system implementation
+- Frontend integration and WalletContext implementation
 
 ## Competitive Positioning
 
