@@ -36,6 +36,7 @@ import {
   BarChart,
   Code as CodeIcon,
   Pool as PoolIcon,
+  AddCircleOutline as AddIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWallet } from '../../contexts/WalletContext';
@@ -73,6 +74,10 @@ const Header = () => {
   const handleLogin = () => {
     navigate('/login');
   };
+  
+  const handleCreateAsset = () => {
+    navigate('/assets/create');
+  };
 
   const mainNavigationItems = [
     { label: 'Home', path: '/' },
@@ -89,6 +94,7 @@ const Header = () => {
   const smartAccountNavigationItems = [
     { label: 'Smart Account', path: '/smart-account', icon: <CodeIcon /> },
     { label: 'Liquidity Pools', path: '/liquidity', icon: <PoolIcon /> },
+    { label: 'Create Asset', path: '/assets/create', icon: <AddIcon /> },
   ];
 
   const userMenuItems = [
@@ -295,6 +301,25 @@ const Header = () => {
                   startIcon={<CodeIcon />}
                 >
                   Smart Account
+                </Button>
+                
+                {/* Create Asset Button */}
+                <Button
+                  key="create-asset"
+                  component={RouterLink}
+                  to="/assets/create"
+                  variant="contained"
+                  color="primary"
+                  sx={{
+                    my: 2,
+                    mx: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontWeight: 500,
+                  }}
+                  startIcon={<AddIcon />}
+                >
+                  Create Asset
                 </Button>
               </Box>
 

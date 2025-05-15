@@ -14,6 +14,7 @@ import TradingPage from './pages/TradingPage';
 import AssetDetailPage from './pages/AssetDetailPage';
 import LiquidityPoolPage from './pages/LiquidityPoolPage';
 import YieldStrategyPage from './pages/YieldStrategyPage';
+import AssetCreationWizardPage from './pages/AssetCreationWizardPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { LiquidityPoolProvider } from './contexts/LiquidityPoolContext';
@@ -39,6 +40,9 @@ function App() {
                     
                     {/* Asset Detail Routes */}
                     <Route path="/assets/:id" element={<AssetDetailPage />} />
+                    
+                    {/* Asset Creation Route */}
+                    <Route path="/assets/create" element={<AssetCreationWizardPage />} />
                     
                     {/* Environmental Asset Routes */}
                     <Route path="/environmental/marketplace" element={<EnvironmentalMarketplacePage />} />
