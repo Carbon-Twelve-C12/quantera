@@ -42,6 +42,7 @@ const AssetCreationWizardPage: React.FC = () => {
     maturityDate: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60), // Default to 1 year from now
     yieldRate: '',
     metadataURI: '',
+    imageUrl: '',
     customFields: {}
   });
   
@@ -134,6 +135,7 @@ const AssetCreationWizardPage: React.FC = () => {
           maturityDate: assetData.maturityDate,
           yieldRate: assetData.yieldRate,
           metadataURI: assetData.metadataURI,
+          imageUrl: assetData.imageUrl,
           customFields: assetData.customFields
         },
         tokenomics: tokenomicsData,

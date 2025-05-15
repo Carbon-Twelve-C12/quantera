@@ -1,7 +1,8 @@
 import React from 'react';
-import { Box, Typography, TextField, InputAdornment } from '@mui/material';
+import { Box, Typography, TextField, InputAdornment, Divider } from '@mui/material';
 import { AssetClass } from '../../types/assetTypes';
 import CompatGrid from '../common/CompatGrid';
+import ImageUploader from '../common/ImageUploader';
 
 interface AssetDetailsProps {
   assetData: {
@@ -16,6 +17,7 @@ interface AssetDetailsProps {
     maturityDate: number;
     yieldRate: string;
     metadataURI: string;
+    imageUrl: string;
     customFields: Record<string, any>;
   };
   onChange: (field: string, value: any) => void;
@@ -222,6 +224,26 @@ const AssetDetails: React.FC<AssetDetailsProps> = ({ assetData, onChange }) => {
       </Typography>
       <Typography variant="body1" paragraph>
         Enter the details of your {assetData.assetClass?.replace('_', ' ').toLowerCase()} asset.
+      </Typography>
+
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="subtitle1" gutterBottom>
+          Asset Image
+        </Typography>
+        <Typography variant="body2" color="text.secondary" paragraph>
+          Upload an image that represents your asset. This image will be displayed in the marketplace and asset listings.
+        </Typography>
+        <ImageUploader 
+          imageUrl={assetData.imageUrl} 
+          onChange={(url) => onChange('imageUrl', url)}
+          defaultImage={`/images/assets/${assetData.assetClass.toLowerCase().replace('_', '-')}.jpg`}
+        />
+      </Box>
+
+      <Divider sx={{ my: 3 }} />
+      
+      <Typography variant="subtitle1" gutterBottom>
+        Basic Details
       </Typography>
 
       <CompatGrid container spacing={3}>

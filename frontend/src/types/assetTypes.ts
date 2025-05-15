@@ -32,6 +32,7 @@ export interface AssetParams {
   maturityDate: number;
   yieldRate: string;
   metadataURI: string;
+  imageUrl: string;
   customFields: Record<string, any>;
 }
 
@@ -83,6 +84,7 @@ export interface Asset {
   issuer: string;
   creationDate: number;
   metadataURI: string;
+  imageUrl: string;
 }
 
 export interface AssetWithDetails extends Asset {
@@ -91,6 +93,7 @@ export interface AssetWithDetails extends Asset {
   issuanceDate: number;
   maturityDate: number;
   yieldRate: string;
+  imageUrl: string;
   customFields: Record<string, any>;
   tokenomics: TokenomicsConfig;
   modules: {

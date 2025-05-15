@@ -2,103 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Typography, 
-  Card,
-  CardContent,
-  CardHeader,
-  CardActionArea,
-  Chip,
-  Switch,
-  FormControlLabel,
-  Divider,
+  Checkbox, 
+  FormControlLabel, 
+  Card, 
+  CardContent, 
+  CardActions, 
+  Button, 
+  Chip, 
+  CircularProgress, 
   Alert,
-  CircularProgress,
-  Paper
+  Divider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material';
-import { AssetClass, ComplianceModule } from '../../types/assetTypes';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import VerifiedIcon from '@mui/icons-material/Verified';
-import SecurityIcon from '@mui/icons-material/Security';
-import DescriptionIcon from '@mui/icons-material/Description';
-import GavelIcon from '@mui/icons-material/Gavel';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import LockIcon from '@mui/icons-material/Lock';
 import PublicIcon from '@mui/icons-material/Public';
+import ErrorIcon from '@mui/icons-material/Error';
 import CompatGrid from '../common/CompatGrid';
-
-// Mock modules for different categories
-const mockModules: ComplianceModule[] = [
-  {
-    moduleId: 'kyc-aml-basic',
-    name: 'KYC/AML Basic',
-    description: 'Basic identity verification and anti-money laundering checks for individuals',
-    isRequired: true,
-    compatibleAssetClasses: [AssetClass.TREASURY, AssetClass.CORPORATE_BOND, AssetClass.ENVIRONMENTAL_ASSET]
-  },
-  {
-    moduleId: 'kyc-aml-advanced',
-    name: 'KYC/AML Advanced',
-    description: 'Enhanced KYC and AML checks for high-value investors and institutions',
-    isRequired: false,
-    compatibleAssetClasses: [AssetClass.TREASURY, AssetClass.CORPORATE_BOND, AssetClass.REAL_ESTATE]
-  },
-  {
-    moduleId: 'accredited-investor',
-    name: 'Accredited Investor Verification',
-    description: 'Verifies investor accreditation status according to SEC requirements',
-    isRequired: false,
-    compatibleAssetClasses: [AssetClass.REAL_ESTATE, AssetClass.CORPORATE_BOND, AssetClass.INFRASTRUCTURE]
-  },
-  {
-    moduleId: 'transfer-restrictions',
-    name: 'Transfer Restrictions',
-    description: 'Enforces rules on who can send and receive tokens',
-    isRequired: false,
-    compatibleAssetClasses: [
-      AssetClass.TREASURY, 
-      AssetClass.REAL_ESTATE, 
-      AssetClass.CORPORATE_BOND, 
-      AssetClass.ENVIRONMENTAL_ASSET
-    ]
-  },
-  {
-    moduleId: 'tax-reporting',
-    name: 'Tax Reporting',
-    description: 'Automated tax document generation and reporting',
-    isRequired: false,
-    compatibleAssetClasses: [AssetClass.TREASURY, AssetClass.REAL_ESTATE, AssetClass.CORPORATE_BOND]
-  },
-  {
-    moduleId: 'jurisdiction-restriction',
-    name: 'Jurisdiction Restrictions',
-    description: 'Enforces geographic restrictions on token holders',
-    isRequired: false,
-    compatibleAssetClasses: [
-      AssetClass.TREASURY, 
-      AssetClass.REAL_ESTATE, 
-      AssetClass.CORPORATE_BOND, 
-      AssetClass.ENVIRONMENTAL_ASSET,
-      AssetClass.IP_RIGHT,
-      AssetClass.INVOICE,
-      AssetClass.COMMODITY,
-      AssetClass.INFRASTRUCTURE
-    ]
-  },
-  {
-    moduleId: 'environmental-certification',
-    name: 'Environmental Asset Certification',
-    description: 'Tracks and verifies environmental asset certification and standards compliance',
-    isRequired: true,
-    compatibleAssetClasses: [AssetClass.ENVIRONMENTAL_ASSET]
-  }
-];
-
-// Icon mapping for module categories
-const moduleIcons: Record<string, React.ReactNode> = {
-  'kyc-aml': <VerifiedIcon fontSize="large" color="primary" />,
-  'accredited': <AccountBalanceIcon fontSize="large" color="primary" />,
-  'transfer': <SecurityIcon fontSize="large" color="primary" />,
-  'tax': <DescriptionIcon fontSize="large" color="primary" />,
-  'jurisdiction': <PublicIcon fontSize="large" color="primary" />,
-  'environmental': <GavelIcon fontSize="large" color="primary" />
-};
+import { AssetClass, ComplianceModule } from '../../types/assetTypes';
+import api from '../../api';
 
 interface ComplianceModulesProps {
   templateId: string;
@@ -113,65 +38,98 @@ const ComplianceModules: React.FC<ComplianceModulesProps> = ({
   selectedModules,
   onToggleModule
 }) => {
+  const [modules, setModules] = useState<ComplianceModule[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [modules, setModules] = useState<ComplianceModule[]>([]);
 
-  // In a real implementation, this would fetch modules from the API
   useEffect(() => {
-    const fetchModules = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        // Mock API call - in real implementation, this would be:
-        // const response = await api.getCompatibleModules(templateId, assetClass);
-        // setModules(response.modules);
-        
-        // For now, filter mock modules by asset class
-        const filteredModules = mockModules.filter(
-          module => module.compatibleAssetClasses.includes(assetClass)
-        );
-        
-        setTimeout(() => {
-          setModules(filteredModules);
-          setIsLoading(false);
-        }, 500); // Simulate API delay
-        
-      } catch (err) {
-        console.error('Error fetching compliance modules:', err);
-        setError('Failed to load compliance modules. Please try again.');
-        setIsLoading(false);
-      }
-    };
-    
-    if (assetClass) {
-      fetchModules();
+    if (templateId && assetClass) {
+      fetchCompatibleModules();
     }
   }, [templateId, assetClass]);
 
-  // Helper to get module icon
-  const getModuleIcon = (moduleId: string) => {
-    if (moduleId.includes('kyc') || moduleId.includes('aml')) {
-      return moduleIcons['kyc-aml'];
-    } else if (moduleId.includes('accredited')) {
-      return moduleIcons['accredited'];
-    } else if (moduleId.includes('transfer')) {
-      return moduleIcons['transfer'];
-    } else if (moduleId.includes('tax')) {
-      return moduleIcons['tax'];
-    } else if (moduleId.includes('jurisdiction')) {
-      return moduleIcons['jurisdiction'];
-    } else if (moduleId.includes('environmental')) {
-      return moduleIcons['environmental'];
+  const fetchCompatibleModules = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await api.getCompatibleModules(templateId, assetClass);
+      setModules(response.modules || []);
+    } catch (err) {
+      console.error('Error fetching compliance modules:', err);
+      setError('Failed to load compliance modules. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-    return <SecurityIcon fontSize="large" color="primary" />;
   };
 
-  if (!assetClass) {
+  // If we don't have real modules from the API yet, show these mock modules
+  const mockModules: ComplianceModule[] = [
+    {
+      moduleId: 'kyc-aml',
+      name: 'KYC/AML Verification',
+      description: 'Ensures that all token holders have passed Know Your Customer and Anti-Money Laundering checks',
+      isRequired: true,
+      compatibleAssetClasses: [
+        AssetClass.TREASURY, 
+        AssetClass.REAL_ESTATE, 
+        AssetClass.CORPORATE_BOND,
+        AssetClass.ENVIRONMENTAL_ASSET
+      ]
+    },
+    {
+      moduleId: 'accredited-investor',
+      name: 'Accredited Investor',
+      description: 'Restricts token transfers to addresses that have been verified as accredited investors',
+      isRequired: false,
+      compatibleAssetClasses: [
+        AssetClass.TREASURY, 
+        AssetClass.REAL_ESTATE, 
+        AssetClass.CORPORATE_BOND
+      ]
+    },
+    {
+      moduleId: 'transfer-restriction',
+      name: 'Transfer Restrictions',
+      description: 'Implements time-based or rule-based restrictions on token transfers',
+      isRequired: false,
+      compatibleAssetClasses: [
+        AssetClass.TREASURY, 
+        AssetClass.REAL_ESTATE, 
+        AssetClass.CORPORATE_BOND,
+        AssetClass.ENVIRONMENTAL_ASSET
+      ]
+    },
+    {
+      moduleId: 'tax-withholding',
+      name: 'Tax Withholding',
+      description: 'Automatically withholds and reports taxes on dividend distributions',
+      isRequired: false,
+      compatibleAssetClasses: [
+        AssetClass.TREASURY, 
+        AssetClass.REAL_ESTATE, 
+        AssetClass.CORPORATE_BOND
+      ]
+    },
+    {
+      moduleId: 'environmental-verification',
+      name: 'Environmental Verification',
+      description: 'Verifies and tracks environmental credits through certification standards',
+      isRequired: true,
+      compatibleAssetClasses: [
+        AssetClass.ENVIRONMENTAL_ASSET
+      ]
+    }
+  ];
+
+  // Use mock modules if none are available from API
+  const availableModules = modules.length > 0 ? modules : mockModules.filter(
+    module => module.compatibleAssetClasses.includes(assetClass)
+  );
+
+  if (!templateId || !assetClass) {
     return (
       <Alert severity="warning">
-        Please select an asset class first
+        Please select an asset class and template first
       </Alert>
     );
   }
@@ -184,142 +142,145 @@ const ComplianceModules: React.FC<ComplianceModulesProps> = ({
     );
   }
 
-  if (error) {
-    return (
-      <Alert severity="error">
-        {error}
-      </Alert>
-    );
-  }
-
-  // Group modules into categories: Required and Optional
-  const requiredModules = modules.filter(module => module.isRequired);
-  const optionalModules = modules.filter(module => !module.isRequired);
-
   return (
     <Box>
       <Typography variant="h6" gutterBottom>
         Compliance & Modules
       </Typography>
       <Typography variant="body1" paragraph>
-        Select compliance modules and additional features for your {assetClass.replace('_', ' ').toLowerCase()} asset. Required modules cannot be disabled.
+        Select the compliance modules to enable for your asset. Compliance modules ensure your asset adheres to regulatory requirements and implements specific functionality.
       </Typography>
 
-      {/* Required Modules */}
-      {requiredModules.length > 0 && (
-        <Box mb={4}>
-          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-            Required Modules
-          </Typography>
-          <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
-            <Alert severity="info" sx={{ mb: 2 }}>
-              These modules are required for this asset class and cannot be disabled.
-            </Alert>
-            <CompatGrid container spacing={3}>
-              {requiredModules.map((module) => (
-                <CompatGrid item xs={12} key={module.moduleId}>
-                  <Card 
-                    sx={{ 
-                      display: 'flex',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      border: '1px solid #e0e0e0'
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', p: 2, alignItems: 'center', justifyContent: 'center', width: 80 }}>
-                      {getModuleIcon(module.moduleId)}
-                    </Box>
-                    <Divider orientation="vertical" flexItem />
-                    <CardContent sx={{ flexGrow: 1, py: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="h6" component="div">
-                          {module.name}
-                        </Typography>
-                        <Chip 
-                          label="Required" 
-                          size="small" 
-                          color="primary" 
-                          sx={{ ml: 2 }}
-                        />
-                      </Box>
-                      <Typography variant="body2" color="text.secondary">
-                        {module.description}
-                      </Typography>
-                    </CardContent>
-                    <Box sx={{ display: 'flex', p: 2, alignItems: 'center' }}>
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={true}
-                            disabled={true}
-                            color="primary"
-                          />
-                        }
-                        label=""
-                      />
-                    </Box>
-                  </Card>
-                </CompatGrid>
-              ))}
-            </CompatGrid>
-          </Paper>
-        </Box>
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
       )}
 
-      {/* Optional Modules */}
-      {optionalModules.length > 0 && (
-        <Box>
-          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-            Optional Modules
-          </Typography>
-          <CompatGrid container spacing={3}>
-            {optionalModules.map((module) => (
-              <CompatGrid item xs={12} key={module.moduleId}>
-                <Card 
-                  sx={{ 
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    border: selectedModules.includes(module.moduleId) ? '1px solid #3f51b5' : '1px solid #e0e0e0',
-                    boxShadow: selectedModules.includes(module.moduleId) ? '0 4px 8px rgba(63, 81, 181, 0.2)' : 'none'
-                  }}
-                >
-                  <Box sx={{ display: 'flex', p: 2, alignItems: 'center', justifyContent: 'center', width: 80 }}>
-                    {getModuleIcon(module.moduleId)}
-                  </Box>
-                  <Divider orientation="vertical" flexItem />
-                  <CardContent sx={{ flexGrow: 1, py: 2 }}>
-                    <Typography variant="h6" component="div">
-                      {module.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {module.description}
-                    </Typography>
-                  </CardContent>
-                  <Box sx={{ display: 'flex', p: 2, alignItems: 'center' }}>
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="subtitle2" color="text.secondary">
+          Required modules are automatically selected and cannot be disabled.
+        </Typography>
+      </Box>
+
+      <CompatGrid container spacing={3}>
+        {availableModules.map((module) => (
+          <CompatGrid item xs={12} key={module.moduleId}>
+            <Card 
+              variant="outlined" 
+              sx={{ 
+                borderColor: module.isRequired ? 'primary.main' : 'divider',
+                bgcolor: selectedModules.includes(module.moduleId) ? 'action.selected' : 'background.paper'
+              }}
+            >
+              <CardContent sx={{ pb: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <FormControlLabel
                       control={
-                        <Switch
-                          checked={selectedModules.includes(module.moduleId)}
-                          onChange={() => onToggleModule(module.moduleId)}
+                        <Checkbox
+                          checked={selectedModules.includes(module.moduleId) || module.isRequired}
+                          onChange={() => !module.isRequired && onToggleModule(module.moduleId)}
+                          disabled={module.isRequired}
                           color="primary"
                         />
                       }
-                      label=""
+                      label={
+                        <Typography variant="subtitle1" fontWeight="medium">
+                          {module.name}
+                        </Typography>
+                      }
+                    />
+                    {module.isRequired && (
+                      <Chip 
+                        label="Required" 
+                        size="small" 
+                        color="primary" 
+                        icon={<VerifiedIcon />}
+                        sx={{ ml: 1 }}
+                      />
+                    )}
+                  </Box>
+                  
+                  <Box>
+                    <Chip 
+                      icon={module.moduleId === 'environmental-verification' ? <PublicIcon /> : <LockIcon />}
+                      label={module.moduleId === 'environmental-verification' ? "Environmental" : "Regulatory"} 
+                      size="small" 
+                      color={module.moduleId === 'environmental-verification' ? "success" : "default"}
+                      sx={{ ml: 1 }}
                     />
                   </Box>
-                </Card>
-              </CompatGrid>
-            ))}
+                </Box>
+                
+                <Typography variant="body2" color="text.secondary" sx={{ pl: 4 }}>
+                  {module.description}
+                </Typography>
+              </CardContent>
+              
+              <Divider />
+              
+              <CardActions sx={{ justifyContent: 'flex-end', pt: 1, pb: 1 }}>
+                <Button 
+                  size="small" 
+                  disabled={!selectedModules.includes(module.moduleId) && !module.isRequired}
+                >
+                  Configure
+                </Button>
+              </CardActions>
+              
+              {selectedModules.includes(module.moduleId) && module.moduleId === 'environmental-verification' && (
+                <Box sx={{ px: 2, pb: 2 }}>
+                  <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Typography>Verification Standards</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <CompatGrid container spacing={2}>
+                        <CompatGrid item xs={12}>
+                          <FormControlLabel
+                            control={<Checkbox defaultChecked />}
+                            label="Verra Verified Carbon Standard (VCS)"
+                          />
+                        </CompatGrid>
+                        <CompatGrid item xs={12}>
+                          <FormControlLabel
+                            control={<Checkbox />}
+                            label="Gold Standard"
+                          />
+                        </CompatGrid>
+                        <CompatGrid item xs={12}>
+                          <FormControlLabel
+                            control={<Checkbox />}
+                            label="Climate Action Reserve (CAR)"
+                          />
+                        </CompatGrid>
+                        <CompatGrid item xs={12}>
+                          <FormControlLabel
+                            control={<Checkbox />}
+                            label="American Carbon Registry (ACR)"
+                          />
+                        </CompatGrid>
+                      </CompatGrid>
+                    </AccordionDetails>
+                  </Accordion>
+                </Box>
+              )}
+            </Card>
           </CompatGrid>
-        </Box>
-      )}
-
-      {modules.length === 0 && (
-        <Alert severity="info">
-          No compliance modules found for {assetClass.replace('_', ' ').toLowerCase()} assets.
-        </Alert>
-      )}
+        ))}
+        
+        {availableModules.length === 0 && (
+          <CompatGrid item xs={12}>
+            <Alert 
+              severity="info" 
+              icon={<ErrorIcon />}
+            >
+              No compliance modules available for this asset class and template. Please contact support for assistance.
+            </Alert>
+          </CompatGrid>
+        )}
+      </CompatGrid>
     </Box>
   );
 };

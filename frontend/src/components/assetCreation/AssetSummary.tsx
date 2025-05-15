@@ -3,27 +3,14 @@ import {
   Box, 
   Typography, 
   Paper, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableRow,
-  Divider,
+  Divider, 
   Chip,
-  Card,
-  CardContent,
   List,
   ListItem,
-  ListItemIcon,
   ListItemText,
-  Alert
+  Avatar
 } from '@mui/material';
-import { AssetClass, TokenomicsConfig } from '../../types/assetTypes';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import StarIcon from '@mui/icons-material/Star';
-import PermIdentityIcon from '@mui/icons-material/PermIdentity';
+import { AssetClass } from '../../types/assetTypes';
 import CompatGrid from '../common/CompatGrid';
 
 interface AssetSummaryProps {
@@ -40,336 +27,393 @@ interface AssetSummaryProps {
     maturityDate: number;
     yieldRate: string;
     metadataURI: string;
+    imageUrl: string;
     customFields: Record<string, any>;
   };
-  tokenomicsData: TokenomicsConfig;
+  tokenomicsData: {
+    hasTransferRestrictions: boolean;
+    hasDividends: boolean;
+    hasMaturity: boolean;
+    hasRoyalties: boolean;
+    feeRate: number;
+    feeRecipient: string;
+    customTokenomics: Record<string, any>;
+  };
   selectedModules: string[];
 }
 
-// Mock function to get module name from ID
-const getModuleName = (moduleId: string): string => {
-  const modules: Record<string, string> = {
-    'kyc-aml-basic': 'KYC/AML Basic',
-    'kyc-aml-advanced': 'KYC/AML Advanced',
-    'accredited-investor': 'Accredited Investor Verification',
-    'transfer-restrictions': 'Transfer Restrictions',
-    'tax-reporting': 'Tax Reporting',
-    'jurisdiction-restriction': 'Jurisdiction Restrictions',
-    'environmental-certification': 'Environmental Asset Certification'
-  };
-  
-  return modules[moduleId] || moduleId;
-};
-
-const AssetSummary: React.FC<AssetSummaryProps> = ({ 
-  assetData, 
-  tokenomicsData, 
-  selectedModules 
+const AssetSummary: React.FC<AssetSummaryProps> = ({
+  assetData,
+  tokenomicsData,
+  selectedModules
 }) => {
-  // Format date from timestamp
+  // Helper function to format date from timestamp
   const formatDate = (timestamp: number): string => {
-    return new Date(timestamp * 1000).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    return new Date(timestamp * 1000).toLocaleDateString();
   };
-  
-  // Calculate the estimated gas cost
-  const calculateGasCost = (): number => {
-    // This is a simple mock calculation
-    // In a real app, this would be based on asset complexity and current gas prices
-    let baseCost = 0.05; // Base cost in ETH
+
+  // Function to generate human-readable module names
+  const getModuleName = (moduleId: string): string => {
+    const moduleNames: Record<string, string> = {
+      'kyc-aml': 'KYC/AML Verification',
+      'accredited-investor': 'Accredited Investor',
+      'transfer-restriction': 'Transfer Restrictions',
+      'tax-withholding': 'Tax Withholding',
+      'environmental-verification': 'Environmental Verification'
+    };
     
-    // Add cost for each enabled feature
-    if (tokenomicsData.hasTransferRestrictions) baseCost += 0.01;
-    if (tokenomicsData.hasDividends) baseCost += 0.015;
-    if (tokenomicsData.hasMaturity) baseCost += 0.005;
-    if (tokenomicsData.hasRoyalties) baseCost += 0.01;
-    
-    // Add cost for each selected module
-    baseCost += selectedModules.length * 0.008;
-    
-    return parseFloat(baseCost.toFixed(4));
+    return moduleNames[moduleId] || moduleId;
   };
-  
-  // Check if required fields are filled
-  const hasRequiredFields = (): boolean => {
-    return !!(
-      assetData.name &&
-      assetData.symbol &&
-      assetData.totalSupply &&
-      assetData.assetClass
-    );
-  };
-  
+
   return (
     <Box>
       <Typography variant="h6" gutterBottom>
-        Review & Create
+        Review Asset Details
       </Typography>
       <Typography variant="body1" paragraph>
-        Review the details of your asset before creating it. Please verify all information is correct.
+        Please review all information before creating your {assetData.assetClass.replace('_', ' ').toLowerCase()} asset.
       </Typography>
-      
-      {!hasRequiredFields() && (
-        <Alert severity="warning" sx={{ mb: 3 }}>
-          Some required fields are missing. Please go back and complete all required information.
-        </Alert>
-      )}
-      
-      <CompatGrid container spacing={4}>
-        {/* Basic Asset Information */}
+
+      <CompatGrid container spacing={3}>
+        {/* Asset Image */}
+        <CompatGrid item xs={12}>
+          <Paper elevation={1} sx={{ p: 3, textAlign: 'center' }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Asset Image
+            </Typography>
+            <Divider sx={{ my: 1.5, mb: 3 }} />
+            
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                justifyContent: 'center',
+                mb: 2
+              }}
+            >
+              <Box
+                component="img"
+                src={assetData.imageUrl || `/images/assets/${assetData.assetClass.toLowerCase().replace('_', '-')}.jpg`}
+                alt={assetData.name}
+                sx={{
+                  width: '100%',
+                  maxWidth: 400,
+                  height: 200,
+                  objectFit: 'cover',
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider'
+                }}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                  e.currentTarget.src = '/images/assets/placeholder.jpg';
+                }}
+              />
+            </Box>
+            <Typography variant="caption" color="text.secondary">
+              This image will represent your asset in listings and the marketplace
+            </Typography>
+          </Paper>
+        </CompatGrid>
+
+        {/* Asset Basic Information */}
         <CompatGrid item xs={12} md={6}>
-          <Paper elevation={2} sx={{ p: 3 }}>
-            <Typography variant="subtitle1" gutterBottom fontWeight="bold">
-              Asset Information
+          <Paper elevation={1} sx={{ p: 3, height: '100%' }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Basic Information
             </Typography>
-            <TableContainer>
-              <Table size="small">
-                <TableBody>
-                  <TableRow>
-                    <TableCell component="th" sx={{ fontWeight: 'bold', width: '40%' }}>
-                      Asset Class
-                    </TableCell>
-                    <TableCell>
-                      {assetData.assetClass && (
-                        <Chip 
-                          label={assetData.assetClass.replace('_', ' ')} 
-                          color="primary" 
-                          size="small" 
-                        />
-                      )}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" sx={{ fontWeight: 'bold' }}>
-                      Name
-                    </TableCell>
-                    <TableCell>{assetData.name || '-'}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" sx={{ fontWeight: 'bold' }}>
-                      Symbol
-                    </TableCell>
-                    <TableCell>{assetData.symbol || '-'}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" sx={{ fontWeight: 'bold' }}>
-                      Total Supply
-                    </TableCell>
-                    <TableCell>
-                      {assetData.totalSupply ? `${assetData.totalSupply} (${assetData.decimals} decimals)` : '-'}
-                    </TableCell>
-                  </TableRow>
-                  {assetData.faceValue && (
-                    <TableRow>
-                      <TableCell component="th" sx={{ fontWeight: 'bold' }}>
-                        Face Value
-                      </TableCell>
-                      <TableCell>${assetData.faceValue}</TableCell>
-                    </TableRow>
-                  )}
-                  {assetData.yieldRate && (
-                    <TableRow>
-                      <TableCell component="th" sx={{ fontWeight: 'bold' }}>
-                        Yield Rate
-                      </TableCell>
-                      <TableCell>{assetData.yieldRate}%</TableCell>
-                    </TableRow>
-                  )}
-                  {tokenomicsData.hasMaturity && (
-                    <>
-                      <TableRow>
-                        <TableCell component="th" sx={{ fontWeight: 'bold' }}>
-                          Issuance Date
-                        </TableCell>
-                        <TableCell>{formatDate(assetData.issuanceDate)}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell component="th" sx={{ fontWeight: 'bold' }}>
-                          Maturity Date
-                        </TableCell>
-                        <TableCell>{formatDate(assetData.maturityDate)}</TableCell>
-                      </TableRow>
-                    </>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <Divider sx={{ my: 1.5 }} />
             
-            <Divider sx={{ my: 3 }} />
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Asset Class
+              </Typography>
+              <Typography variant="body1" fontWeight="medium">
+                {assetData.assetClass.replace('_', ' ')}
+              </Typography>
+            </Box>
             
-            <Typography variant="subtitle2" gutterBottom>
-              Description
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Asset Name
+              </Typography>
+              <Typography variant="body1">
+                {assetData.name || '[Not Set]'}
+              </Typography>
+            </Box>
+            
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Symbol
+              </Typography>
+              <Typography variant="body1">
+                {assetData.symbol || '[Not Set]'}
+              </Typography>
+            </Box>
+            
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Description
+              </Typography>
+              <Typography variant="body1">
+                {assetData.description || '[Not Set]'}
+              </Typography>
+            </Box>
+            
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Total Supply
+              </Typography>
+              <Typography variant="body1">
+                {assetData.totalSupply ? `${assetData.totalSupply} tokens` : '[Not Set]'}
+              </Typography>
+            </Box>
+            
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Decimals
+              </Typography>
+              <Typography variant="body1">
+                {assetData.decimals}
+              </Typography>
+            </Box>
+          </Paper>
+        </CompatGrid>
+
+        {/* Asset Specific Information */}
+        <CompatGrid item xs={12} md={6}>
+          <Paper elevation={1} sx={{ p: 3, height: '100%' }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              {assetData.assetClass.replace('_', ' ')} Specific Details
             </Typography>
-            <Typography variant="body2" paragraph sx={{ whiteSpace: 'pre-wrap' }}>
-              {assetData.description || 'No description provided.'}
-            </Typography>
+            <Divider sx={{ my: 1.5 }} />
             
-            {assetData.metadataURI && (
+            {assetData.assetClass === AssetClass.TREASURY && (
               <>
-                <Typography variant="subtitle2" gutterBottom>
-                  Metadata URI
-                </Typography>
-                <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
-                  {assetData.metadataURI}
-                </Typography>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Face Value
+                  </Typography>
+                  <Typography variant="body1">
+                    {assetData.faceValue ? `$${assetData.faceValue}` : '[Not Set]'}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Yield Rate
+                  </Typography>
+                  <Typography variant="body1">
+                    {assetData.yieldRate ? `${assetData.yieldRate}%` : '[Not Set]'}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Issuance Date
+                  </Typography>
+                  <Typography variant="body1">
+                    {formatDate(assetData.issuanceDate)}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Maturity Date
+                  </Typography>
+                  <Typography variant="body1">
+                    {formatDate(assetData.maturityDate)}
+                  </Typography>
+                </Box>
+              </>
+            )}
+            
+            {assetData.assetClass === AssetClass.ENVIRONMENTAL_ASSET && (
+              <>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Certification Standard
+                  </Typography>
+                  <Typography variant="body1">
+                    {assetData.customFields?.certificationStandard || '[Not Set]'}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Vintage Year
+                  </Typography>
+                  <Typography variant="body1">
+                    {assetData.customFields?.vintageYear || '[Not Set]'}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Project ID
+                  </Typography>
+                  <Typography variant="body1">
+                    {assetData.customFields?.projectId || '[Not Set]'}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Project Location
+                  </Typography>
+                  <Typography variant="body1">
+                    {assetData.customFields?.projectLocation || '[Not Set]'}
+                  </Typography>
+                </Box>
+              </>
+            )}
+            
+            {assetData.assetClass === AssetClass.REAL_ESTATE && (
+              <>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Property Address
+                  </Typography>
+                  <Typography variant="body1">
+                    {assetData.customFields?.propertyAddress || '[Not Set]'}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Property Type
+                  </Typography>
+                  <Typography variant="body1">
+                    {assetData.customFields?.propertyType || '[Not Set]'}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Square Footage
+                  </Typography>
+                  <Typography variant="body1">
+                    {assetData.customFields?.squareFootage ? `${assetData.customFields.squareFootage} sq ft` : '[Not Set]'}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Appraisal Value
+                  </Typography>
+                  <Typography variant="body1">
+                    {assetData.customFields?.appraisalValue ? `$${assetData.customFields.appraisalValue}` : '[Not Set]'}
+                  </Typography>
+                </Box>
               </>
             )}
           </Paper>
         </CompatGrid>
-        
-        {/* Tokenomics */}
+
+        {/* Tokenomics Information */}
         <CompatGrid item xs={12} md={6}>
-          <Paper elevation={2} sx={{ p: 3 }}>
-            <Typography variant="subtitle1" gutterBottom fontWeight="bold">
+          <Paper elevation={1} sx={{ p: 3 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
               Tokenomics
             </Typography>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  {tokenomicsData.hasTransferRestrictions ? 
-                    <CheckCircleIcon color="success" /> : 
-                    <CancelIcon color="disabled" />
-                  }
-                </ListItemIcon>
-                <ListItemText 
-                  primary="Transfer Restrictions" 
-                  secondary={tokenomicsData.hasTransferRestrictions ? 
-                    "Enabled - Token transfers will be restricted based on compliance rules" : 
-                    "Disabled - Tokens can be freely transferred"
-                  }
-                />
-              </ListItem>
-              
-              <ListItem>
-                <ListItemIcon>
-                  {tokenomicsData.hasDividends ? 
-                    <CheckCircleIcon color="success" /> : 
-                    <CancelIcon color="disabled" />
-                  }
-                </ListItemIcon>
-                <ListItemText 
-                  primary="Dividend Distribution" 
-                  secondary={tokenomicsData.hasDividends ? 
-                    `Enabled - ${tokenomicsData.customTokenomics?.dividendFrequency || 'Quarterly'} distribution` : 
-                    "Disabled - No dividend distribution"
-                  }
-                />
-              </ListItem>
-              
-              <ListItem>
-                <ListItemIcon>
-                  {tokenomicsData.hasMaturity ? 
-                    <CheckCircleIcon color="success" /> : 
-                    <CancelIcon color="disabled" />
-                  }
-                </ListItemIcon>
-                <ListItemText 
-                  primary="Maturity Date" 
-                  secondary={tokenomicsData.hasMaturity ? 
-                    `Enabled - Matures on ${formatDate(assetData.maturityDate)}` : 
-                    "Disabled - No maturity date"
-                  }
-                />
-              </ListItem>
-              
-              <ListItem>
-                <ListItemIcon>
-                  {tokenomicsData.hasRoyalties ? 
-                    <CheckCircleIcon color="success" /> : 
-                    <CancelIcon color="disabled" />
-                  }
-                </ListItemIcon>
-                <ListItemText 
-                  primary="Secondary Market Royalties" 
-                  secondary={tokenomicsData.hasRoyalties ? 
-                    `Enabled - ${tokenomicsData.customTokenomics?.royaltyRate || 2}% royalty on secondary sales` : 
-                    "Disabled - No royalties on secondary market sales"
-                  }
-                />
-              </ListItem>
-              
-              <Divider sx={{ my: 2 }} />
-              
-              <ListItem>
-                <ListItemIcon>
-                  <AttachMoneyIcon color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary="Transaction Fee Rate" 
-                  secondary={`${(tokenomicsData.feeRate / 100).toFixed(2)}% fee on transactions`}
-                />
-              </ListItem>
-              
-              {tokenomicsData.feeRecipient && (
-                <ListItem>
-                  <ListItemIcon>
-                    <PermIdentityIcon color="primary" />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary="Fee Recipient" 
-                    secondary={tokenomicsData.feeRecipient}
-                  />
-                </ListItem>
-              )}
-            </List>
+            <Divider sx={{ my: 1.5 }} />
+            
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Features
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                {tokenomicsData.hasTransferRestrictions && (
+                  <Chip label="Transfer Restrictions" size="small" />
+                )}
+                {tokenomicsData.hasDividends && (
+                  <Chip label="Dividends" size="small" />
+                )}
+                {tokenomicsData.hasMaturity && (
+                  <Chip label="Maturity" size="small" />
+                )}
+                {tokenomicsData.hasRoyalties && (
+                  <Chip label="Royalties" size="small" />
+                )}
+                {!tokenomicsData.hasTransferRestrictions && 
+                  !tokenomicsData.hasDividends && 
+                  !tokenomicsData.hasMaturity && 
+                  !tokenomicsData.hasRoyalties && (
+                    <Typography variant="body2">[No special features]</Typography>
+                )}
+              </Box>
+            </Box>
+            
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Transaction Fee
+              </Typography>
+              <Typography variant="body1">
+                {(tokenomicsData.feeRate / 100).toFixed(2)}%
+              </Typography>
+            </Box>
+            
+            {tokenomicsData.feeRecipient && (
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Fee Recipient
+                </Typography>
+                <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
+                  {tokenomicsData.feeRecipient}
+                </Typography>
+              </Box>
+            )}
+            
+            {tokenomicsData.hasRoyalties && tokenomicsData.customTokenomics?.royaltyRate && (
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Royalty Rate
+                </Typography>
+                <Typography variant="body1">
+                  {tokenomicsData.customTokenomics.royaltyRate}%
+                </Typography>
+              </Box>
+            )}
+            
+            {tokenomicsData.hasDividends && tokenomicsData.customTokenomics?.dividendFrequency && (
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Dividend Frequency
+                </Typography>
+                <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>
+                  {tokenomicsData.customTokenomics.dividendFrequency}
+                </Typography>
+              </Box>
+            )}
           </Paper>
         </CompatGrid>
-        
-        {/* Compliance Modules */}
+
+        {/* Compliance & Modules */}
         <CompatGrid item xs={12} md={6}>
-          <Paper elevation={2} sx={{ p: 3 }}>
-            <Typography variant="subtitle1" gutterBottom fontWeight="bold">
-              Selected Compliance Modules
+          <Paper elevation={1} sx={{ p: 3 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Compliance & Modules
             </Typography>
+            <Divider sx={{ my: 1.5 }} />
+            
             {selectedModules.length > 0 ? (
-              <List>
+              <List dense>
                 {selectedModules.map((moduleId) => (
                   <ListItem key={moduleId}>
-                    <ListItemIcon>
-                      <CheckCircleIcon color="success" />
-                    </ListItemIcon>
-                    <ListItemText primary={getModuleName(moduleId)} />
+                    <ListItemText
+                      primary={getModuleName(moduleId)}
+                    />
                   </ListItem>
                 ))}
               </List>
             ) : (
               <Typography variant="body2" color="text.secondary">
-                No optional compliance modules selected.
+                No compliance modules selected
               </Typography>
             )}
           </Paper>
-        </CompatGrid>
-        
-        {/* Deployment Cost Estimate */}
-        <CompatGrid item xs={12} md={6}>
-          <Card sx={{ bgcolor: 'primary.light', color: 'primary.contrastText' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={1}>
-                <StarIcon sx={{ mr: 1 }} />
-                <Typography variant="h6" component="div">
-                  Deployment Cost Estimate
-                </Typography>
-              </Box>
-              <Divider sx={{ bgcolor: 'primary.contrastText', opacity: 0.1, my: 1 }} />
-              <Typography variant="body2" paragraph>
-                Estimated gas cost to deploy your asset:
-              </Typography>
-              <Typography variant="h4" component="div" gutterBottom>
-                {calculateGasCost()} ETH
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                This is an estimate based on current gas prices and the complexity of your asset configuration.
-                Actual costs may vary at the time of deployment.
-              </Typography>
-            </CardContent>
-          </Card>
         </CompatGrid>
       </CompatGrid>
     </Box>
   );
 };
 
-export default AssetSummary; 
+export default AssetSummary;
