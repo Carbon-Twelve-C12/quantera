@@ -314,6 +314,23 @@ const AssetDetailPage = () => {
                   </Row>
                 </div>
               )}
+              {isEnvironmental(asset) && (
+                <Row className="g-0 pt-3 border-top mt-3">
+                  <Col xs={12} className="mb-2">
+                    <Link 
+                      to={`/environmental/assets/${asset.asset_id}`}
+                      className="btn btn-success btn-sm w-100"
+                    >
+                      <i className="bi bi-globe me-1"></i> View Environmental Impact Dashboard
+                    </Link>
+                  </Col>
+                  <Col xs={12}>
+                    <small className="text-muted">
+                      Access detailed environmental metrics, impact data, and verification reports
+                    </small>
+                  </Col>
+                </Row>
+              )}
             </Card.Body>
           </Card>
           

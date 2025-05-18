@@ -37,7 +37,15 @@ const MarketplacePage: React.FC = () => {
       description: treasury.description.substring(0, 120) + '...',
       price: treasury.current_price || '',
       yield_rate: treasury.yield_rate,
-      image_url: `/images/treasury-${treasury.treasury_type || 'default'}.jpg`,
+      image_url: treasury.treasury_type === 'tbill' 
+        ? '/images/assets/treasury-bill.jpg' 
+        : treasury.treasury_type === 'tnote' 
+        ? '/images/assets/treasury-note.jpg'
+        : treasury.treasury_type === 'tbond'
+        ? '/images/assets/treasury-bond.jpg'
+        : treasury.treasury_type === 'moneymarket'
+        ? '/images/assets/money-market-fund.jpg'
+        : `/images/treasury-${treasury.treasury_type || 'default'}.jpg`,
       asset_type: treasury.treasury_type || '',
       token_address: treasury.token_address || '',
       maturity_date: treasury.maturity_date,
@@ -153,7 +161,7 @@ const MarketplacePage: React.FC = () => {
       <div className="marketplace-header">
         <h1>Quantera Marketplace</h1>
         <p className="marketplace-description">
-          Browse and invest in tokenized treasury securities and environmental assets.
+          Browse and invest in tokenized financial products and environmental assets with transparent impact metrics.
         </p>
       </div>
 

@@ -9,6 +9,7 @@ import AboutPage from './pages/AboutPage';
 import ContractExplorerPage from './pages/ContractExplorerPage';
 import YieldStrategyPage from './pages/YieldStrategyPage';
 import PortfolioPage from './pages/PortfolioPage';
+import EnvironmentalAssetPage from './pages/EnvironmentalAssetPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LiquidityPoolProvider } from './contexts/LiquidityPoolContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -16,7 +17,11 @@ import { ThemeProvider } from './contexts/ThemeContext';
 // @ts-ignore
 import { WalletProvider } from './contexts/WalletContext';
 import WalletConnectButton from './components/common/WalletConnectButton';
+
+// Import styles
 import './App.css';
+import './styles/marketplace.css';
+import './styles/assetDetail.css';
 
 // Protected Route component
 interface ProtectedRouteProps {
@@ -102,6 +107,7 @@ const AppContent: React.FC = () => {
           <Route path="/marketplace" element={<MarketplacePage />} />
           <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/assets/:id" element={<AssetDetailPage />} />
+          <Route path="/environmental/assets/:assetId" element={<EnvironmentalAssetPage />} />
           <Route path="/liquidity" element={<EnhancedLiquidityPoolPage />} />
           <Route path="/yield" element={<YieldStrategyPage />} />
           <Route path="/compare" element={<TreasuryComparison />} />

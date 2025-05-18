@@ -373,6 +373,17 @@ const AssetDetailPage: React.FC = () => {
               </span>
             </div>
           </div>
+          
+          {isEnvironmental(asset) && (
+            <div className="environmental-dashboard-button">
+              <Link 
+                to={`/environmental/assets/${asset.asset_id}`} 
+                className="btn btn-success btn-lg mt-3"
+              >
+                <span className="icon">🌍</span> View Environmental Impact Dashboard
+              </Link>
+            </div>
+          )}
         </div>
         
         {hasProperty(asset, 'image_url') && asset.image_url && (
@@ -640,6 +651,15 @@ const AssetDetailPage: React.FC = () => {
                     </div>
                   </div>
                   
+                  <div className="environmental-dashboard-link">
+                    <Link to={`/environmental/assets/${asset.asset_id}`} className="btn btn-outline-primary mt-4">
+                      <span className="icon">🌍</span> View Environmental Impact Dashboard
+                    </Link>
+                    <p className="mt-2 text-muted">
+                      Access detailed environmental metrics, impact data, and verification reports
+                    </p>
+                  </div>
+                  
                   <div className="security-details">
                     <h3>Security Details</h3>
                     <div className="detail-grid">
@@ -662,6 +682,20 @@ const AssetDetailPage: React.FC = () => {
                         <div className="detail-label">Token ID</div>
                         <div className="detail-value">{asset.security_details.token_id}</div>
                       </div>
+                      
+                      {isEnvironmental(asset) && (
+                        <div className="detail-item">
+                          <div className="detail-label">Environmental Dashboard</div>
+                          <div className="detail-value">
+                            <Link 
+                              to={`/environmental/assets/${asset.asset_id}`}
+                              className="environmental-link"
+                            >
+                              View Impact Dashboard →
+                            </Link>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

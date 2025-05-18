@@ -13,10 +13,10 @@ const HomePage = () => {
           <Row className="align-items-center">
             <Col lg={6} className="mb-4 mb-lg-0">
               <h1 className="display-4 fw-bold mb-3">
-                Tokenized Financial Securities
+                Tokenized Financial Products
               </h1>
               <p className="lead mb-4">
-                The Quantera Platform brings financial securities to the Ethereum 
+                The Quantera Platform brings financial products to the Ethereum 
                 blockchain, enabling fractional ownership, instant settlement, and 24/7 liquidity.
               </p>
               <div className="d-flex gap-3">
@@ -52,7 +52,7 @@ const HomePage = () => {
                 </div>
                 <Card.Title>Yield Generation</Card.Title>
                 <Card.Text>
-                  Earn interest on your tokenized treasury securities with automatic yield distribution.
+                  Earn interest on your tokenized financial products with automatic yield distribution.
                 </Card.Text>
               </Card.Body>
             </Card>
@@ -78,7 +78,7 @@ const HomePage = () => {
                 </div>
                 <Card.Title>Seamless Trading</Card.Title>
                 <Card.Text>
-                  Trade treasury tokens 24/7 with instant settlement and low transaction costs.
+                  Trade tokenized assets 24/7 with instant settlement and low transaction costs.
                 </Card.Text>
               </Card.Body>
             </Card>
@@ -91,7 +91,7 @@ const HomePage = () => {
         <Container className="text-center">
           <h2 className="mb-3">Ready to get started?</h2>
           <p className="lead mb-4">
-            Connect your wallet and start exploring tokenized treasuries today.
+            Connect your wallet and start exploring tokenized financial products today.
           </p>
           <Button as={Link} to="/marketplace" variant="primary" size="lg">
             Browse Marketplace

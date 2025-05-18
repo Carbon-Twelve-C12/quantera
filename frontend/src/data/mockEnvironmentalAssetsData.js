@@ -19,7 +19,7 @@ export const environmentalAssets = [
     description: "The Amazon Rainforest Conservation Initiative focuses on protecting critical primary forest in the heart of the Brazilian Amazon.",
     price_per_unit: "24.75",
     change_24h: "+2.5%",
-    image_url: "/images/treasuries/amazon-rainforest.jpg",
+    image_url: "/images/assets/amazon-rainforest.jpg",
     impact_metrics: {
       carbon_offset_tons: 750000,
       land_area_protected_hectares: 45000,
@@ -119,7 +119,7 @@ export const environmentalAssets = [
     description: "The Blue Carbon Mangrove Restoration project focuses on rehabilitating degraded mangrove ecosystems in the Sundarban Delta. Mangroves sequester up to five times more carbon than terrestrial forests and protect coastal communities from storms and erosion.",
     price_per_unit: "18.50",
     change_24h: "+1.8%",
-    image_url: "/images/treasuries/mangrove-restoration.jpg",
+    image_url: "/images/assets/mangrove-restoration.jpg",
     impact_metrics: {
       carbon_offset_tons: 350000,
       land_area_protected_hectares: 12000,
@@ -220,7 +220,7 @@ export const environmentalAssets = [
     description: "The Highland Watershed Protection Initiative safeguards critical water sources that supply drinking water to over 2 million people in Quito, Ecuador. The project protects high-altitude páramo ecosystems and cloud forests that capture, filter, and regulate water flow.",
     price_per_unit: "22.80",
     change_24h: "+3.2%",
-    image_url: "/images/treasuries/highland-watershed.jpg",
+    image_url: "/images/assets/highland-watershed.jpg",
     impact_metrics: {
       carbon_offset_tons: 180000,
       land_area_protected_hectares: 24000,
@@ -320,7 +320,7 @@ export const environmentalAssets = [
     description: "The Moroccan Solar Thermal Power Generation project is one of the world's largest concentrated solar power (CSP) complexes. Located in Morocco's Sahara Desert, this innovative facility combines solar thermal technology with molten salt energy storage to provide clean, reliable power even after sunset.",
     price_per_unit: "16.75",
     change_24h: "+1.2%",
-    image_url: "/images/treasuries/morocco-solar.jpg",
+    image_url: "/images/assets/morocco-solar.jpg",
     impact_metrics: {
       carbon_offset_tons: 580000,
       land_area_protected_hectares: 3000,

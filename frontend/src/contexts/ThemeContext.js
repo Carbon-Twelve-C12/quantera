@@ -12,31 +12,53 @@ const createAppTheme = (mode) => {
     palette: {
       mode,
       primary: {
-        main: mode === 'light' ? '#2563eb' : '#60a5fa',
+        // Deep blue-green primary color
+        main: mode === 'light' ? '#1A5276' : '#3498DB',
       },
       secondary: {
-        main: mode === 'light' ? '#475569' : '#94a3b8',
+        // Vibrant accent color
+        main: mode === 'light' ? '#27AE60' : '#2ECC71', 
       },
       success: {
-        main: mode === 'light' ? '#10b981' : '#34d399',
+        main: mode === 'light' ? '#2ECC71' : '#34d399',
       },
       warning: {
-        main: '#f59e0b',
+        main: '#F39C12', // Warning accent color from design doc
       },
       error: {
-        main: '#ef4444',
+        main: '#E74C3C', // Alert/Error accent color from design doc
       },
       background: {
-        default: mode === 'light' ? '#f8fafc' : '#121212',
-        paper: mode === 'light' ? '#ffffff' : '#1e1e1e',
+        default: mode === 'light' ? '#F5F5F5' : '#121212', // Light background from design doc
+        paper: mode === 'light' ? '#FFFFFF' : '#1E1E1E',
       },
       text: {
-        primary: mode === 'light' ? '#0f172a' : '#e5e5e5',
-        secondary: mode === 'light' ? '#6c757d' : '#a0a0a0',
+        primary: mode === 'light' ? '#333333' : '#E5E5E5', // Dark color for primary text
+        secondary: mode === 'light' ? '#757575' : '#A0A0A0', // Mid-tone for secondary text
       },
     },
     typography: {
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Inter", "Proxima Nova", "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
+      h1: {
+        fontSize: '36px',
+        fontWeight: 500,
+      },
+      h2: {
+        fontSize: '32px',
+        fontWeight: 500,
+      },
+      h3: {
+        fontSize: '24px',
+        fontWeight: 500,
+      },
+      body1: {
+        fontSize: '16px',
+        fontWeight: 400,
+      },
+      body2: {
+        fontSize: '14px',
+        fontWeight: 300,
+      },
     },
     components: {
       MuiButton: {
@@ -51,12 +73,22 @@ const createAppTheme = (mode) => {
       MuiCard: {
         styleOverrides: {
           root: {
-            borderRadius: 12,
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            borderRadius: 8, // Consistent with design doc (8px radius)
+            boxShadow: mode === 'light' 
+              ? '0 4px 8px rgba(0, 0, 0, 0.1)' 
+              : '0 4px 8px rgba(0, 0, 0, 0.5)',
+          },
+        },
+      },
+      MuiDivider: {
+        styleOverrides: {
+          root: {
+            opacity: 0.1, // Subtle dividers as specified in design doc
           },
         },
       },
     },
+    spacing: factor => `${8 * factor}px`, // 8px spacing system from design doc
   });
 };
 

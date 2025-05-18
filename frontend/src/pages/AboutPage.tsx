@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, Typography, Paper, List, ListItem, ListItemText } from '@mui/material';
+import { Box, Container, Typography, Paper, List, ListItem, ListItemText, Alert } from '@mui/material';
 import CompatGrid from '../components/common/CompatGrid';
 import styled from '@emotion/styled';
 import { useTheme } from '../contexts/ThemeContext';
@@ -8,7 +8,7 @@ import { useTheme } from '../contexts/ThemeContext';
 const Hero = styled.div<{ isDarkMode?: boolean }>`
   background: ${props => props.isDarkMode ? 
     'linear-gradient(135deg, #1A237E 0%, #303F9F 100%)' : 
-    'linear-gradient(135deg, #303F9F 0%, #3F51B5 100%)'};
+    'linear-gradient(135deg, #1A5276 0%, #3498DB 100%)'};
   color: white;
   padding: 5rem 0;
   text-align: center;
@@ -21,7 +21,7 @@ const Section = styled.section<{ isDarkMode?: boolean }>`
 `;
 
 const LightSection = styled(Section)<{ isDarkMode?: boolean }>`
-  background-color: ${props => props.isDarkMode ? '#1E1E1E' : '#FAFAFA'};
+  background-color: ${props => props.isDarkMode ? '#1E1E1E' : '#F5F5F5'};
 `;
 
 const DarkSection = styled(Section)<{ isDarkMode?: boolean }>`
@@ -39,6 +39,7 @@ const StyledCard = styled(Paper)<{ isDarkMode?: boolean }>`
     '0 4px 8px rgba(0, 0, 0, 0.1)'};
   display: flex;
   flex-direction: column;
+  border-radius: 8px;
 `;
 
 const FeatureCard = styled(StyledCard)`
@@ -54,7 +55,7 @@ const FeatureCard = styled(StyledCard)`
 
 const ArchCard = styled(StyledCard)`
   padding: 1.5rem;
-  border-top: 4px solid #3F51B5;
+  border-top: 4px solid #1A5276;
 `;
 
 const ComparisonCard = styled(StyledCard)`
@@ -64,11 +65,25 @@ const ComparisonCard = styled(StyledCard)`
 
 const UseCase = styled(StyledCard)`
   padding: 1.5rem;
-  border-left: 4px solid #4CAF50;
+  border-left: 4px solid #27AE60;
 `;
 
 const TimelineItem = styled(StyledCard)`
   padding: 2rem;
+`;
+
+const AdvantageCard = styled(StyledCard)`
+  padding: 2rem;
+  border-left: 4px solid #1A5276;
+  margin-bottom: 1rem;
+`;
+
+const DisclaimerBox = styled(Box)<{ isDarkMode?: boolean }>`
+  background-color: ${props => props.isDarkMode ? '#2C3E50' : '#EBF5FB'};
+  border: 1px solid ${props => props.isDarkMode ? '#34495E' : '#AED6F1'};
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 2rem 0;
 `;
 
 // Custom Grid container to ensure consistent layouts
@@ -105,6 +120,15 @@ const AboutPage: React.FC = () => {
           <Typography variant="body1" align="center" paragraph sx={{ maxWidth: 800, mx: 'auto' }}>
             Leveraging Ethereum's capabilities and extending across multiple blockchains, Quantera aims to become the leading tokenization platform globally, serving both institutional and individual investors. The platform provides specialized support for environmental assets and sustainable finance instruments, positioning Quantera at the forefront of Web3 sustainability solutions.
           </Typography>
+          
+          <DisclaimerBox isDarkMode={isDarkMode}>
+            <Typography variant="h6" color="primary" gutterBottom>
+              Important Notice
+            </Typography>
+            <Typography variant="body2">
+              The assets listed on this platform have not yet been fully custodied and are presented for demonstration purposes only. Quantera Finance is currently in development, and the platform features, assets, and functionalities shown may not reflect the final product. Investors should not make investment decisions based on the information presented without conducting proper due diligence. The platform does not currently offer actual investment opportunities in the assets displayed.
+            </Typography>
+          </DisclaimerBox>
         </Container>
       </Section>
 
@@ -254,6 +278,72 @@ const AboutPage: React.FC = () => {
         </Container>
       </Section>
 
+      <LightSection isDarkMode={isDarkMode}>
+        <Container maxWidth="lg">
+          <Typography variant="h3" align="center" color="primary" gutterBottom sx={{ mb: 4 }}>
+            The Quantera Advantage
+          </Typography>
+          
+          <AdvantageCard elevation={2} isDarkMode={isDarkMode}>
+            <Typography variant="h5" color="primary" gutterBottom>
+              Superior Security Architecture
+            </Typography>
+            <Typography variant="body2">
+              Our multi-layered security infrastructure exceeds industry standards, ensuring your digital assets remain protected at all times.
+            </Typography>
+          </AdvantageCard>
+          
+          <AdvantageCard elevation={2} isDarkMode={isDarkMode}>
+            <Typography variant="h5" color="primary" gutterBottom>
+              Enhanced Transparency
+            </Typography>
+            <Typography variant="body2">
+              Real-time reporting and immutable transaction records provide unprecedented visibility into asset performance and history.
+            </Typography>
+          </AdvantageCard>
+          
+          <AdvantageCard elevation={2} isDarkMode={isDarkMode}>
+            <Typography variant="h5" color="primary" gutterBottom>
+              Regulatory Foresight
+            </Typography>
+            <Typography variant="body2">
+              Our platform is built from the ground up with regulatory compliance in mind, future-proofing your investments against evolving requirements.
+            </Typography>
+          </AdvantageCard>
+          
+          <AdvantageCard elevation={2} isDarkMode={isDarkMode}>
+            <Typography variant="h5" color="primary" gutterBottom>
+              Broader Asset Accessibility
+            </Typography>
+            <Typography variant="body2">
+              Quantera's flexible tokenization framework accommodates a wider range of asset classes, opening new investment frontiers.
+            </Typography>
+          </AdvantageCard>
+          
+          <AdvantageCard elevation={2} isDarkMode={isDarkMode}>
+            <Typography variant="h5" color="primary" gutterBottom>
+              Intuitive User Experience
+            </Typography>
+            <Typography variant="body2">
+              Designed with both institutional and individual investors in mind, our platform simplifies complex financial processes without sacrificing sophistication.
+            </Typography>
+          </AdvantageCard>
+          
+          <AdvantageCard elevation={2} isDarkMode={isDarkMode}>
+            <Typography variant="h5" color="primary" gutterBottom>
+              Accelerated Settlement
+            </Typography>
+            <Typography variant="body2">
+              Our technology reduces transaction settlement times from days to minutes, increasing capital efficiency and reducing counterparty risk.
+            </Typography>
+          </AdvantageCard>
+          
+          <Typography variant="body1" align="center" sx={{ mt: 4 }}>
+            By combining cutting-edge blockchain technology with deep financial expertise, Quantera is creating the new standard for digital asset management and investment.
+          </Typography>
+        </Container>
+      </LightSection>
+      
       <DarkSection isDarkMode={isDarkMode}>
         <Container maxWidth="lg">
           <Typography variant="h3" align="center" color="primary" gutterBottom>
