@@ -113,12 +113,24 @@ const NoticeBox = styled(Box)<{ isDarkMode?: boolean }>`
 
 const StyledList = styled(List)`
   width: 100%;
-  padding-left: 1rem;
+  padding: 0.75rem 0 0.5rem 0.5rem;
+  list-style-type: none;
 `;
 
 const StyledListItem = styled(ListItem)`
-  display: list-item;
-  padding: 0.25rem 0;
+  display: flex;
+  padding: 0.4rem 0;
+  margin-left: 0;
+  align-items: center;
+  &:before {
+    content: "•";
+    color: #3498DB;
+    font-weight: bold;
+    display: inline-block; 
+    width: 1em;
+    margin-right: 0.5em;
+    font-size: 1.2em;
+  }
 `;
 
 const AboutPage: React.FC = () => {
@@ -262,19 +274,23 @@ const AboutPage: React.FC = () => {
   ];
 
   const currentFocusItems = [
-    "Complete frontend interfaces for liquidity pools and asset creation",
-    "Implement cross-chain functionality and white-label solutions",
+    "Complete cross-chain functionality and white-label solutions",
     "Comprehensive testing, security audits, and deployment preparation",
-    "Marketplace launch and partner onboarding"
+    "Marketplace launch and partner onboarding",
+    "Trade finance settlement automation and verification",
+    "Tokenized Treasury and bond infrastructure with automated distributions"
   ];
 
   const futureDevelopmentItems = [
-    "Enhanced analytics and reporting capabilities",
-    "Environmental impact metrics API",
-    "Portfolio management dashboard",
-    "ESG scoring and impact visualization dashboards",
-    "Comprehensive monitoring system",
-    "Validation of environmental asset verification mechanisms"
+    "Portfolio management dashboard with cross-asset analytics",
+    "Enhanced analytics and institutional risk management tools",
+    "Automated trade finance KYC/AML verification framework",
+    "Equity tokenization with corporate action processing",
+    "Direct Treasury auction participation mechanism",
+    "Cross-asset collateralization and margin management",
+    "Institutional-grade custody and governance solutions",
+    //"Environmental impact metrics API and verification",
+    //"ESG scoring and impact visualization dashboards",
   ];
 
   return (
@@ -286,7 +302,7 @@ const AboutPage: React.FC = () => {
             Revolutionizing Asset Tokenization
           </Typography>
           <Typography variant="h6" sx={{ maxWidth: '800px', mx: 'auto' }}>
-            Quantera is a comprehensive ecosystem designed to tokenize any financial asset class with advanced liquidity solutions, yield optimization, and cross-chain interoperability.
+            Quantera is a comprehensive ecosystem designed to tokenize any financial product with advanced liquidity solutions, yield optimization, and cross-chain interoperability.
           </Typography>
         </Container>
       </Hero>
@@ -309,7 +325,7 @@ const AboutPage: React.FC = () => {
           
           <NoticeBox isDarkMode={isDarkMode}>
             <Typography variant="h6" color="primary" gutterBottom>
-              Platform Status: Version 0.8.5 (85% Complete)
+              Platform Status: Version 0.8.5
             </Typography>
             <Typography variant="body2">
               The assets listed on this platform have not yet been fully custodied and are presented for demonstration purposes only. Quantera Finance is currently in development, and the platform features, assets, and functionalities shown may not reflect the final product. Investors should not make investment decisions based on the information presented without conducting proper due diligence.
@@ -468,7 +484,7 @@ const AboutPage: React.FC = () => {
             Roadmap & Vision
           </SectionTitle>
           <SectionDescription variant="body1">
-            Quantera is currently at Version 0.8.0 (80% complete) with the following focus areas:
+            Quantera is currently at Version 0.8.5 (85% complete) with the following focus areas:
           </SectionDescription>
           
           <CardContainer>

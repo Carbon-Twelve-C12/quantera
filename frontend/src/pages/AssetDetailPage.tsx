@@ -8,7 +8,7 @@ import { useWallet } from '../contexts/WalletContext';
 import { Modal, Button, Form } from 'react-bootstrap';
 
 // Combined type for asset details
-type AssetDetail = TreasuryDetail | EnvironmentalAsset;
+type AssetDetail = TreasuryDetail | EnvironmentalAsset | RealEstateAsset | TradeFinanceAsset;
 
 // Transaction fee tiers
 const TRANSACTION_FEE_TIERS = {
@@ -189,7 +189,71 @@ const hasProperty = <T extends object, K extends string>(obj: T, prop: K): obj i
 
 // Type assertion functions to handle mock data
 const asTreasuryDetail = (data: any): TreasuryDetail => data as TreasuryDetail;
-const asEnvironmentalAsset = (data: any): EnvironmentalAsset => data as EnvironmentalAsset;
+const asEnvironmentalAsset = (data: any): EnvironmentalAsset => {
+  // Ensure security_details exists to prevent runtime errors
+  if (!data.security_details) {
+    data.security_details = {
+      token_standard: 'N/A',
+      contract_address: 'N/A',
+      blockchain: 'N/A',
+      token_id: 'N/A',
+      marketplace_url: 'N/A'
+    };
+  }
+  return data as EnvironmentalAsset;
+};
+
+// Define extended types for different asset types
+interface PropertyDetails {
+  location: {
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    coordinates: {
+      latitude: number;
+      longitude: number;
+    }
+  };
+  size: {
+    square_feet: number;
+    residential_units: number;
+    retail_spaces: number;
+    office_suites: number;
+  };
+  occupancy_rate: number;
+  property_manager: string;
+  legal_structure: string;
+}
+
+interface TradeDetails {
+  asset_type: string;
+  recipient: string;
+  currency: string;
+  fractional_units: number;
+  minimum_investment: number;
+  settlement_currency: string;
+  risk_rating: number;
+}
+
+interface RealEstateAsset extends TreasuryDetail {
+  treasury_type: 'realestate';
+  property_details: PropertyDetails;
+}
+
+interface TradeFinanceAsset extends TreasuryDetail {
+  treasury_type: 'tradefinance';
+  trade_details: TradeDetails;
+}
+
+// Update type guards with proper type checking
+const isRealEstate = (asset: AssetDetail): asset is RealEstateAsset => {
+  return 'treasury_type' in asset && asset.treasury_type === 'realestate';
+};
+
+const isTradeFinance = (asset: AssetDetail): asset is TradeFinanceAsset => {
+  return 'treasury_type' in asset && asset.treasury_type === 'tradefinance';
+};
 
 const AssetDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -235,6 +299,19 @@ const AssetDetailPage: React.FC = () => {
         // First try to find it in treasuries
         const treasury = MOCK_TREASURIES.find(t => t.token_id === id);
         if (treasury) {
+          // Check the treasury type and add any missing properties
+          if (treasury.treasury_type === 'realestate' || treasury.treasury_type === 'tradefinance') {
+            // These types need security_details for the UI
+            if (!('security_details' in treasury)) {
+              (treasury as any).security_details = {
+                token_standard: 'N/A',
+                contract_address: 'N/A',
+                blockchain: 'N/A',
+                token_id: treasury.token_id,
+                marketplace_url: 'N/A'
+              };
+            }
+          }
           setAsset(asTreasuryDetail(treasury));
           setLoading(false);
           return;
@@ -243,6 +320,16 @@ const AssetDetailPage: React.FC = () => {
         // Then try environmental assets
         const envAsset = MOCK_ENVIRONMENTAL_ASSETS.find(a => a.asset_id === id);
         if (envAsset) {
+          // Ensure the asset has all required properties before setting it
+          if (!envAsset.security_details) {
+            envAsset.security_details = {
+              token_standard: 'N/A',
+              contract_address: 'N/A',
+              blockchain: 'N/A',
+              token_id: 'N/A',
+              marketplace_url: 'N/A'
+            };
+          }
           setAsset(asEnvironmentalAsset(envAsset));
           setLoading(false);
           return;
@@ -275,11 +362,13 @@ const AssetDetailPage: React.FC = () => {
     return `${(yieldRate / 100).toFixed(2)}%`;
   };
   
-  // Determine if this is a TreasuryDetail
+  // Check if this is a treasury asset (including real estate and trade finance)
   const isTreasury = (asset: AssetDetail): asset is TreasuryDetail => {
-    return 'treasury_type' in asset;
+    return 'treasury_type' in asset && 
+      asset.treasury_type !== undefined && 
+      ['tbill', 'tnote', 'tbond', 'moneymarket', 'realestate', 'tradefinance'].includes(asset.treasury_type);
   };
-  
+
   // Determine if this is an EnvironmentalAsset
   const isEnvironmental = (asset: AssetDetail): asset is EnvironmentalAsset => {
     return 'asset_type' in asset && 'project_name' in asset;
@@ -551,7 +640,7 @@ const AssetDetailPage: React.FC = () => {
           {/* Details Tab */}
           {activeTab === 'details' && (
             <div className="details-tab">
-              {isTreasury(asset) && (
+              {isTreasury(asset) && !isRealEstate(asset) && !isTradeFinance(asset) && (
                 <div className="details-section">
                   <h3>Treasury Details</h3>
                   
@@ -598,6 +687,216 @@ const AssetDetailPage: React.FC = () => {
                       <div className="detail-value">{asset.risk_rating}</div>
                     </div>
                   </div>
+                </div>
+              )}
+              
+              {isRealEstate(asset) && (
+                <div className="details-section">
+                  <h3>Real Estate Details</h3>
+                  
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <div className="detail-label">Token ID</div>
+                      <div className="detail-value">{asset.token_id}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Token Address</div>
+                      <div className="detail-value address">{asset.token_address}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Asset Type</div>
+                      <div className="detail-value">Real Estate</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Total Supply</div>
+                      <div className="detail-value">
+                        {parseInt(asset.total_supply).toLocaleString()}
+                      </div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Yield Rate</div>
+                      <div className="detail-value">{formatYield(asset.yield_rate)}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Issuer</div>
+                      <div className="detail-value">{asset.issuer}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Liquidity Rating</div>
+                      <div className="detail-value">{asset.liquidity_rating}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Risk Rating</div>
+                      <div className="detail-value">{asset.risk_rating}</div>
+                    </div>
+                  </div>
+                  
+                  {asset.property_details && (
+                    <div className="property-details">
+                      <h3>Property Information</h3>
+                      <div className="detail-grid">
+                        <div className="detail-item">
+                          <div className="detail-label">Property Address</div>
+                          <div className="detail-value">
+                            {asset.property_details.location.address}, {asset.property_details.location.city}, {asset.property_details.location.state}
+                          </div>
+                        </div>
+                        
+                        <div className="detail-item">
+                          <div className="detail-label">Property Size</div>
+                          <div className="detail-value">
+                            {asset.property_details.size.square_feet.toLocaleString()} sq ft
+                          </div>
+                        </div>
+                        
+                        <div className="detail-item">
+                          <div className="detail-label">Units</div>
+                          <div className="detail-value">
+                            {asset.property_details.size.residential_units} residential, {asset.property_details.size.retail_spaces} retail, {asset.property_details.size.office_suites} office
+                          </div>
+                        </div>
+                        
+                        <div className="detail-item">
+                          <div className="detail-label">Occupancy Rate</div>
+                          <div className="detail-value">
+                            {asset.property_details.occupancy_rate}%
+                          </div>
+                        </div>
+                        
+                        <div className="detail-item">
+                          <div className="detail-label">Property Manager</div>
+                          <div className="detail-value">
+                            {asset.property_details.property_manager}
+                          </div>
+                        </div>
+                        
+                        <div className="detail-item">
+                          <div className="detail-label">Legal Structure</div>
+                          <div className="detail-value">
+                            {asset.property_details.legal_structure}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {isTradeFinance(asset) && (
+                <div className="details-section">
+                  <h3>Trade Finance Details</h3>
+                  
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <div className="detail-label">Token ID</div>
+                      <div className="detail-value">{asset.token_id}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Token Address</div>
+                      <div className="detail-value address">{asset.token_address}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Asset Type</div>
+                      <div className="detail-value">Trade Finance</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Total Supply</div>
+                      <div className="detail-value">
+                        {parseInt(asset.total_supply).toLocaleString()}
+                      </div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Yield Rate</div>
+                      <div className="detail-value">{formatYield(asset.yield_rate)}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Issuer</div>
+                      <div className="detail-value">{asset.issuer}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Liquidity Rating</div>
+                      <div className="detail-value">{asset.liquidity_rating}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Risk Rating</div>
+                      <div className="detail-value">{asset.risk_rating}</div>
+                    </div>
+                    
+                    <div className="detail-item">
+                      <div className="detail-label">Maturity Date</div>
+                      <div className="detail-value">{formatDate(asset.maturity_date)}</div>
+                    </div>
+                  </div>
+                  
+                  {asset.trade_details && (
+                    <div className="trade-details">
+                      <h3>Trade Finance Information</h3>
+                      <div className="detail-grid">
+                        <div className="detail-item">
+                          <div className="detail-label">Asset Type</div>
+                          <div className="detail-value">
+                            {asset.trade_details.asset_type}
+                          </div>
+                        </div>
+                        
+                        <div className="detail-item">
+                          <div className="detail-label">Recipient</div>
+                          <div className="detail-value">
+                            {asset.trade_details.recipient}
+                          </div>
+                        </div>
+                        
+                        <div className="detail-item">
+                          <div className="detail-label">Currency</div>
+                          <div className="detail-value">
+                            {asset.trade_details.currency}
+                          </div>
+                        </div>
+                        
+                        <div className="detail-item">
+                          <div className="detail-label">Fractional Units</div>
+                          <div className="detail-value">
+                            {asset.trade_details.fractional_units.toLocaleString()}
+                          </div>
+                        </div>
+                        
+                        <div className="detail-item">
+                          <div className="detail-label">Minimum Investment</div>
+                          <div className="detail-value">
+                            {asset.trade_details.minimum_investment}
+                          </div>
+                        </div>
+                        
+                        <div className="detail-item">
+                          <div className="detail-label">Settlement Currency</div>
+                          <div className="detail-value">
+                            {asset.trade_details.settlement_currency}
+                          </div>
+                        </div>
+                        
+                        <div className="detail-item">
+                          <div className="detail-label">Risk Rating</div>
+                          <div className="detail-value">
+                            {asset.trade_details.risk_rating}/10
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               
@@ -659,30 +958,31 @@ const AssetDetailPage: React.FC = () => {
                       Access detailed environmental metrics, impact data, and verification reports
                     </p>
                   </div>
-                  
+                
+                {hasProperty(asset, 'security_details') && asset.security_details && (
                   <div className="security-details">
                     <h3>Security Details</h3>
                     <div className="detail-grid">
                       <div className="detail-item">
                         <div className="detail-label">Token Standard</div>
-                        <div className="detail-value">{asset.security_details.token_standard}</div>
+                        <div className="detail-value">{asset.security_details?.token_standard || 'N/A'}</div>
                       </div>
                       
                       <div className="detail-item">
                         <div className="detail-label">Contract Address</div>
-                        <div className="detail-value address">{asset.security_details.contract_address}</div>
+                        <div className="detail-value address">{asset.security_details?.contract_address || 'N/A'}</div>
                       </div>
                       
                       <div className="detail-item">
                         <div className="detail-label">Blockchain</div>
-                        <div className="detail-value">{asset.security_details.blockchain}</div>
+                        <div className="detail-value">{asset.security_details?.blockchain || 'N/A'}</div>
                       </div>
                       
                       <div className="detail-item">
                         <div className="detail-label">Token ID</div>
-                        <div className="detail-value">{asset.security_details.token_id}</div>
+                        <div className="detail-value">{asset.security_details?.token_id || 'N/A'}</div>
                       </div>
-                      
+                
                       {isEnvironmental(asset) && (
                         <div className="detail-item">
                           <div className="detail-label">Environmental Dashboard</div>
@@ -698,6 +998,7 @@ const AssetDetailPage: React.FC = () => {
                       )}
                     </div>
                   </div>
+                )}
                 </div>
               )}
             </div>
@@ -708,7 +1009,7 @@ const AssetDetailPage: React.FC = () => {
             <div className="documents-tab">
               <h3>Documentation & Resources</h3>
               
-              {isTreasury(asset) && asset.documents && (
+              {isTreasury(asset) && asset.documents && Array.isArray(asset.documents) && (
                 <div className="documents-list">
                   {asset.documents.map((doc, index) => (
                     <a 
@@ -735,7 +1036,7 @@ const AssetDetailPage: React.FC = () => {
                 </div>
               )}
               
-              {isEnvironmental(asset) && asset.certification_documents && (
+              {isEnvironmental(asset) && asset.certification_documents && Array.isArray(asset.certification_documents) && (
                 <div className="documents-list">
                   {asset.certification_documents.map((doc, index) => (
                     <a 
@@ -778,7 +1079,7 @@ const AssetDetailPage: React.FC = () => {
                 ))}
               </div>
               
-              {isEnvironmental(asset) && hasProperty(asset, 'sdg_alignment') && asset.sdg_alignment && (
+              {isEnvironmental(asset) && hasProperty(asset, 'sdg_alignment') && Array.isArray(asset.sdg_alignment) && asset.sdg_alignment && (
                 <div className="sdg-alignment">
                   <h4>Sustainable Development Goals</h4>
                   <div className="sdg-icons">
@@ -795,7 +1096,7 @@ const AssetDetailPage: React.FC = () => {
                 </div>
               )}
               
-              {isEnvironmental(asset) && hasProperty(asset, 'project_updates') && asset.project_updates && (
+              {isEnvironmental(asset) && hasProperty(asset, 'project_updates') && Array.isArray(asset.project_updates) && asset.project_updates && (
                 <div className="project-updates">
                   <h4>Project Updates</h4>
                   
@@ -844,7 +1145,7 @@ const AssetDetailPage: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {asset.recent_trades.map((trade, index) => (
+                        {asset.recent_trades && Array.isArray(asset.recent_trades) && asset.recent_trades.map((trade, index) => (
                           <tr key={index} className={`trade-${trade.type.toLowerCase()}`}>
                             <td>{formatDate(trade.date)}</td>
                             <td className={`trade-type ${trade.type.toLowerCase()}`}>
@@ -878,18 +1179,19 @@ const AssetDetailPage: React.FC = () => {
                   <div className="market-stats">
                     <div className="stat-item">
                       <div className="stat-label">24h Volume</div>
-                      <div className="stat-value">${asset.volume_24h}</div>
+                      <div className="stat-value">${hasProperty(asset, 'volume_24h') ? asset.volume_24h : 'N/A'}</div>
                     </div>
                     <div className="stat-item">
                       <div className="stat-label">24h Change</div>
-                      <div className={`stat-value ${asset.change_24h && parseFloat(asset.change_24h) >= 0 ? 'positive' : 'negative'}`}>
-                        {asset.change_24h && (parseFloat(asset.change_24h) >= 0 ? '+' : '')}{asset.change_24h}%
+                      <div className={`stat-value ${hasProperty(asset, 'change_24h') && asset.change_24h && parseFloat(asset.change_24h) >= 0 ? 'positive' : 'negative'}`}>
+                        {hasProperty(asset, 'change_24h') && asset.change_24h ? (parseFloat(asset.change_24h) >= 0 ? '+' : '') + asset.change_24h + '%' : 'N/A'}
                       </div>
                     </div>
                     <div className="stat-item">
                       <div className="stat-label">Market Cap</div>
                       <div className="stat-value">
-                        ${(parseFloat(asset.price_per_unit) * parseInt(asset.total_supply)).toLocaleString()}
+                        ${hasProperty(asset, 'price_per_unit') && hasProperty(asset, 'total_supply') ? 
+                          (parseFloat(asset.price_per_unit) * parseInt(asset.total_supply)).toLocaleString() : 'N/A'}
                       </div>
                     </div>
                     <div className="stat-item">

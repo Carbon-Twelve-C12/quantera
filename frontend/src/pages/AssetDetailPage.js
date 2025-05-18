@@ -356,17 +356,17 @@ const AssetDetailPage = () => {
                   <code className="px-2 py-1 rounded small" style={{ backgroundColor: 'var(--gray-100)', color: 'var(--text-color)' }}>
                     {isTreasury(asset) 
                       ? asset.token_address 
-                      : asset.security_details.contract_address}
+                      : (asset.security_details ? asset.security_details.contract_address : 'N/A')}
                   </code>
                 </Col>
               </Row>
-              {isEnvironmental(asset) && (
+              {isEnvironmental(asset) && asset.security_details && (
                 <Row className="g-0 border-bottom pb-2 mb-2">
                   <Col xs={4} className="text-muted">Blockchain:</Col>
                   <Col xs={8}>{asset.security_details.blockchain}</Col>
                 </Row>
               )}
-              {isEnvironmental(asset) && (
+              {isEnvironmental(asset) && asset.security_details && (
                 <Row className="g-0 mb-2">
                   <Col xs={4} className="text-muted">Token Standard:</Col>
                   <Col xs={8}>{asset.security_details.token_standard}</Col>
