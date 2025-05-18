@@ -212,6 +212,78 @@ const AssetDetails: React.FC<AssetDetailsProps> = ({ assetData, onChange }) => {
           </>
         );
 
+      case AssetClass.CUSTOM:
+        return (
+          <>
+            <CompatGrid item xs={12} md={6}>
+              <TextField
+                label="Asset Type"
+                fullWidth
+                value={assetData.customFields?.assetType || ''}
+                onChange={(e) => onChange('customFields', {
+                  ...assetData.customFields,
+                  assetType: e.target.value
+                })}
+                helperText="Type of custom asset (e.g., Fund, Structured Product, etc.)"
+              />
+            </CompatGrid>
+            <CompatGrid item xs={12} md={6}>
+              <TextField
+                label="Custom Identifier"
+                fullWidth
+                value={assetData.customFields?.customIdentifier || ''}
+                onChange={(e) => onChange('customFields', {
+                  ...assetData.customFields,
+                  customIdentifier: e.target.value
+                })}
+                helperText="Unique identifier in external systems"
+              />
+            </CompatGrid>
+            <CompatGrid item xs={12} md={6}>
+              <TextField
+                label="Issuer Name"
+                fullWidth
+                value={assetData.customFields?.issuerName || ''}
+                onChange={(e) => onChange('customFields', {
+                  ...assetData.customFields,
+                  issuerName: e.target.value
+                })}
+                helperText="Name of the issuing organization"
+              />
+            </CompatGrid>
+            <CompatGrid item xs={12} md={6}>
+              <TextField
+                label="Expected Yield"
+                type="number"
+                fullWidth
+                value={assetData.customFields?.expectedYield || ''}
+                onChange={(e) => onChange('customFields', {
+                  ...assetData.customFields,
+                  expectedYield: e.target.value
+                })}
+                InputProps={{
+                  endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                }}
+                helperText="Expected annual return for this asset"
+              />
+            </CompatGrid>
+            <CompatGrid item xs={12}>
+              <TextField
+                label="Additional Terms"
+                fullWidth
+                multiline
+                rows={3}
+                value={assetData.customFields?.additionalTerms || ''}
+                onChange={(e) => onChange('customFields', {
+                  ...assetData.customFields,
+                  additionalTerms: e.target.value
+                })}
+                helperText="Any special terms or conditions for this asset"
+              />
+            </CompatGrid>
+          </>
+        );
+
       default:
         return null;
     }

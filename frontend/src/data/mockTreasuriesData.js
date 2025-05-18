@@ -77,6 +77,7 @@ export const treasuries = [
       { name: 'Auction Results', url: '#', type: 'PDF', size_kb: 195 },
       { name: 'Coupon Schedule', url: '#', type: 'PDF', size_kb: 165 },
     ],
+    image_url: '/images/assets/treasury-notes/5-year-tnote-q3-2023.jpg'
   },
   {
     token_id: "tbond-30y-2023q3",
@@ -175,7 +176,7 @@ export const treasuries = [
       property_manager: 'Pacific Northwest Properties',
       legal_structure: 'Real Estate Investment Trust (REIT)'
     },
-    image_url: '/images/assets/harbor-district.jpg'
+    image_url: '/images/assets/harbor-district/mixed-use-development.jpg'
   },
   {
     token_id: "scf-taiwan-semiconductor-2023",
@@ -223,7 +224,7 @@ export const treasuries = [
       settlement_currency: "USDC",
       risk_rating: 2
     },
-    image_url: '/images/assets/supply-chain-finance.jpg'
+    image_url: '/images/assets/supply-chain-finance/taiwan-semiconductor.jpg'
   },
   {
     token_id: "moneymarket-prime-2023",

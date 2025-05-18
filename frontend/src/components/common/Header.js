@@ -41,6 +41,7 @@ const Header = () => {
     { title: 'Portfolio', path: '/portfolio', icon: <AccountBalanceWalletIcon /> },
     { title: 'Liquidity', path: '/liquidity', icon: <PoolIcon /> },
     { title: 'Yield', path: '/yield', icon: <TrendingUpIcon /> },
+    { title: 'Create Asset', path: '/assets/create', icon: <DescriptionIcon /> },
     { title: 'Contract Explorer', path: '/contracts', icon: <DescriptionIcon /> },
     { title: 'About', path: '/about', icon: <InfoIcon /> }
   ];

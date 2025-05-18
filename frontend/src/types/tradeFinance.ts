@@ -33,6 +33,7 @@ export interface TradeFinanceAsset {
   minimumInvestment: number;
   settlementCurrency: SettlementCurrency;
   status: 'PENDING' | 'ACTIVE' | 'MATURED' | 'DEFAULTED' | 'SETTLED';
+  imageUrl?: string;
 }
 
 export interface TradeFinancePosition {

@@ -40,13 +40,6 @@ const assetClassInfo = [
     color: '#FF9800'
   },
   {
-    class: AssetClass.CUSTOM,
-    title: 'Fund Tokens',
-    description: 'Enable efficient fund participation with reduced minimums, automated NAV calculations, and programmable redemption terms.',
-    image: '/images/assets/custom.jpg',
-    color: '#F44336'
-  },
-  {
     class: AssetClass.IP_RIGHT,
     title: 'Intellectual Property',
     description: 'Patents, copyrights, trademarks, and other IP rights with royalty distribution and usage tracking.',
@@ -66,6 +59,13 @@ const assetClassInfo = [
     description: 'Infrastructure projects and investments with transparent project tracking and revenue distribution.',
     image: '/images/assets/infrastructure.jpg',
     color: '#607D8B'
+  },
+  {
+    class: AssetClass.CUSTOM,
+    title: 'Custom Asset',
+    description: 'Create your own asset type with customizable parameters and flexible data structures for any tokenization need.',
+    image: '/images/assets/custom.jpg',
+    color: '#F44336'
   }
 ];
 

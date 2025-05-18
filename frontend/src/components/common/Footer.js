@@ -42,7 +42,7 @@ const Footer = () => {
                 letterSpacing: 0.2 
               }}
             >
-              Tokenized Securities on Ethereum
+              Tokenized Financial Products
             </Typography>
           </Grid>
           

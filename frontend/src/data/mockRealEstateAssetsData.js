@@ -234,7 +234,7 @@ export const realEstateAssets = [
     occupancy_rate: 91.5,
     annual_return: 8.2,
     property_manager: 'Pacific Northwest Properties',
-    image_url: '/images/assets/harbor-district.jpg',
+    image_url: '/images/assets/harbor-district/mixed-use-development.jpg',
     documents: {
       appraisal: 'QmHash623456789appraisal',
       title: 'QmHash623456789title', 

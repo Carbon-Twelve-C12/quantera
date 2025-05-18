@@ -119,7 +119,8 @@ const mockTradeFinanceAssets: TradeFinanceAsset[] = [
     fractionalUnits: 2850,
     minimumInvestment: 100,
     settlementCurrency: 'USDC' as any,
-    status: 'ACTIVE'
+    status: 'ACTIVE',
+    imageUrl: '/images/assets/supply-chain-finance/taiwan-semiconductor.jpg'
   }
 ];
 

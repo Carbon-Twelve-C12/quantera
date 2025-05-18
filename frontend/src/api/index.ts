@@ -6,14 +6,16 @@ import {
   CreateAssetRequest, 
   CreateAssetResponse 
 } from '../types/assetTypes';
+import { getMockTemplatesByClass } from '../data/mockTemplatesData';
 
 // Directly export all the API functions
 const api = {
   instance: apiInstance,
   getTemplatesByClass: async (assetClass: AssetClass): Promise<{ templates: AssetTemplate[] }> => {
-    // Simulate API call since there seems to be an issue with the import
+    // Use mock data for templates
+    const templates = getMockTemplatesByClass(assetClass);
     return {
-      templates: []
+      templates
     };
   },
   getCompatibleModules: async (

@@ -2,9 +2,9 @@
 
 [![Website](https://img.shields.io/badge/Website-Quantera.finance-blue)](https://quantera.finance/)
 [![Contributors](https://img.shields.io/github/contributors/mjohnson518/vault)](https://github.com/mjohnson518/vault/graphs/contributors)
-[![Version](https://img.shields.io/badge/Version-0.8.0-green)]()
+[![Version](https://img.shields.io/badge/Version-0.8.5-green)]()
 
-## Version: 0.8.0 (80% Complete)
+## Version: 0.8.5 (85% Complete)
 
 ## Overview
 Quantera is an ecosystem for tokenizing any financial asset class. While initially focused on U.S. Treasury securities, the platform is architecturally designed for multi-asset support with superior liquidity solutions, yield optimization, and cross-chain interoperability. Leveraging Ethereum's capabilities, Quantera aims to become the leading tokenization platform globally, serving both institutional and individual investors. The platform provides specialized support for environmental assets and sustainable finance instruments, positioning Quantera at the forefront of Web3 sustainability solutions.
@@ -21,6 +21,7 @@ Quantera is an ecosystem for tokenizing any financial asset class. While initial
 - **White-Label Customization**: For institutional asset managers
 - **Developer Ecosystem**: SDK and template marketplace
 - **Trade Finance Capabilities**: Support for letters of credit, invoice receivables, warehouse receipts, and other trade finance instruments with fractional ownership
+- **Custom Asset Creation**: Flexible framework for creating any tokenized asset type with customizable fields
 
 ## Project Structure
 ```
@@ -105,6 +106,8 @@ Quantera/
   - Asset Creation wizard with multi-step interface for configuring asset properties
   - Interactive asset class selection with visual categorization
   - Comprehensive asset summary view with visual preview
+  - Full support for custom asset types with customizable fields
+  - Enhanced asset image handling with dedicated storage paths for different asset categories
   - Trade Finance marketplace with support for tokenized trade finance instruments
   - Detailed analytics dashboard for trade finance metrics, risk distribution, and geographic exposure
   - Fractional investment interface for trade finance assets with real-time settlement
@@ -126,24 +129,17 @@ Quantera/
   - TypeScript configuration with proper path mappings
 
 ### In Progress
-- **Liquidity Pools Integration**: Frontend interface for concentrated liquidity provision
-- **Environmental Impact Dashboard**: Real-time tracking and visualization of impact metrics
-- **Certification Standard Integration**: Direct connections to environmental asset verification frameworks
-- **Asset Creation UI Enhancements**: Advanced validation and template customization features
+- **Portfolio Management Dashboard**: Real-time tracking of holdings with performance analytics
+- **ESG Impact Dashboard**: Comprehensive visualization of environmental and social impacts
+- **Analytics Platform**: Advanced data visualization and insights for all asset classes
 
 ### Next Steps
-- Create Asset Management service for multi-asset support
-- Implement WebSocket support for real-time updates
-- Enhance analytics and reporting capabilities
-- Develop environmental impact metrics API
-- Complete implementation of frontend interfaces for liquidity pools
-- Extend Asset Creation wizard with validation rules and template system
-- Build Portfolio management dashboard
+- Improve asset analytics and reporting capabilities
+- Implement comprehensive monitoring system
+- Conduct security audits and gas optimization
+- Complete Portfolio management dashboard
 - Design Analytics visualization components
 - Create ESG scoring and impact visualization dashboards
-- Conduct security audits and gas optimization
-- Implement comprehensive monitoring system
-- Validate environmental asset verification mechanisms
 
 ## API Endpoints
 The platform exposes the following API endpoints:
@@ -231,7 +227,7 @@ The platform exposes the following API endpoints:
 - **Home**: Platform overview showcasing multi-asset support
 - **Marketplace**: Browse, filter, and search available assets
 - **Portfolio**: View holdings, yield information, and performance
-- **Asset Factory**: Create and customize new asset tokens
+- **Asset Factory**: Create and customize new asset tokens with support for all asset classes
 - **Liquidity**: Manage liquidity positions across assets
 - **Yield Strategy Marketplace**: Browse, filter, and apply yield strategies with environmental impact calculation
 - **Smart Accounts**: Configure automated investment strategies
@@ -244,6 +240,9 @@ The platform exposes the following API endpoints:
 
 ### Advanced Components
 - **Asset Template Explorer**: Browse templates for different asset classes
+- **Asset Creation Wizard**: Multi-step interface for creating new assets of any type
+- **Custom Asset Support**: Flexible framework for creating any tokenized asset with customizable fields
+- **Enhanced Asset Imagery**: Accurate visual representation with dedicated storage paths for different asset types
 - **Liquidity Pool Visualizer**: Interactive view of pool positions
 - **Yield Strategy Marketplace**: Browse, filter, and apply yield strategies with environmental impact calculation
 - **Cross-Chain Navigator**: Seamlessly switch between blockchain networks
@@ -272,7 +271,7 @@ For more details, see our [Sustainable Finance Initiative](docs/sustainable_fina
 
 Based on our progress, we are currently in Week 13 of our Implementation Plan. The next major milestones are:
 
-1. **Weeks 13-14**: Complete frontend interfaces for liquidity pools and asset creation
+1. **Weeks 13-14**: Complete frontend interfaces for portfolio management dashboard and analytics
 2. **Weeks 14-15**: Implement cross-chain functionality and white-label solutions
 3. **Weeks 15-16**: Comprehensive testing, security audits, and deployment preparation 
 4. **Weeks 16-18**: Marketplace launch and partner onboarding
@@ -280,6 +279,7 @@ Based on our progress, we are currently in Week 13 of our Implementation Plan. T
 Previous milestones completed:
 - Backend services, API layer, and type system implementation
 - Frontend integration and WalletContext implementation
+- Asset Creation wizard with support for all asset types
 
 ## Competitive Positioning
 
@@ -300,6 +300,8 @@ With our continued implementation of AssetFactory, LiquidityPools, YieldOptimize
 7. **Environmental Impact Tracking**: Advanced capabilities for measuring, reporting, and verifying environmental impact.
 
 8. **Seamless Wallet Integration**: Robust wallet connection system with support for multiple providers and persistent connections.
+
+9. **Complete Asset Creation**: Full-featured asset creation wizard supporting all asset classes with customizable fields.
 
 ## Development Setup
 
