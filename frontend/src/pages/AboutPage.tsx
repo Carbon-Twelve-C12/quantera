@@ -300,10 +300,10 @@ const AboutPage: React.FC = () => {
           
           <Box sx={{ maxWidth: '800px', mx: 'auto', mb: 4 }}>
             <Typography variant="body1" paragraph>
-              Quantera represents the next evolution in asset tokenization platforms. The platform is architecturally designed for multi-asset support with superior liquidity solutions, yield optimization, and cross-chain interoperability.
+              Quantera represents the next evolution in tokenized financial products. The platform is architecturally designed for multi-asset support with superior liquidity solutions, yield optimization, and cross-chain interoperability.
             </Typography>
             <Typography variant="body1" paragraph>
-              Leveraging Ethereum's capabilities and extending across multiple blockchains, Quantera aims to become the leading tokenization platform globally, serving both institutional and individual investors. The platform provides specialized support for environmental assets and sustainable finance instruments, positioning Quantera at the forefront of Web3 sustainability solutions.
+              Leveraging Ethereum's capabilities and extending across multiple blockchains, Quantera aims to become the leading tokenization platform globally, serving both institutional and individual investors. The platform provides specialized support for trade finance and environmental instruments, positioning Quantera at the forefront of tokenization platforms.
             </Typography>
           </Box>
           
@@ -325,7 +325,7 @@ const AboutPage: React.FC = () => {
             Core Platform Features
           </SectionTitle>
           <SectionDescription variant="body1">
-            Quantera provides a comprehensive suite of features designed to transform traditional financial assets into efficient digital tokens.
+            Quantera provides a comprehensive suite of features designed to transform traditional financial assets into efficient tokenized financial products.
           </SectionDescription>
           
           <CardContainer>
