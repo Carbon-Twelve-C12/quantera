@@ -38,7 +38,11 @@ const MarketplacePage = () => {
       price: treasury.current_price,
       faceValue: treasury.face_value,
       type: getTreasuryTypeLabel(treasury.treasury_type),
-      image: `/images/treasury-${treasury.treasury_type}.jpg`,
+      image: treasury.treasury_type === 'realestate' 
+        ? '/images/assets/real-estate.jpg'
+        : treasury.treasury_type === 'tradefinance'
+        ? '/images/assets/trade-finance.jpg'
+        : `/images/treasury-${treasury.treasury_type}.jpg`,
       treasury_details: treasury
     }));
 
@@ -101,6 +105,8 @@ const MarketplacePage = () => {
       case 'tnote': return 'T-Note';
       case 'tbond': return 'T-Bond';
       case 'moneymarket': return 'Money Market';
+      case 'realestate': return 'Real Estate';
+      case 'tradefinance': return 'Trade Finance';
       default: return type;
     }
   };
@@ -112,6 +118,8 @@ const MarketplacePage = () => {
       case 'tnote': return '5 years';
       case 'tbond': return '30 years';
       case 'moneymarket': return 'Daily';
+      case 'realestate': return '10 years';
+      case 'tradefinance': return '180 days';
       default: return 'Varies';
     }
   };
@@ -135,6 +143,8 @@ const MarketplacePage = () => {
       case 'T-Note': return 'primary';
       case 'T-Bond': return 'warning';
       case 'Money Market': return 'secondary';
+      case 'Real Estate': return 'danger';
+      case 'Trade Finance': return 'dark';
       case 'Environmental': return 'success';
       default: return 'secondary';
     }
@@ -168,6 +178,8 @@ const MarketplacePage = () => {
             <option value="T-Note">T-Notes</option>
             <option value="T-Bond">T-Bonds</option>
             <option value="Money Market">Money Market</option>
+            <option value="Real Estate">Real Estate</option>
+            <option value="Trade Finance">Trade Finance</option>
             <option value="Environmental">Environmental Assets</option>
           </Form.Select>
         </Col>

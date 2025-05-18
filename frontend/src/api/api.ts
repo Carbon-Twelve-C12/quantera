@@ -7,6 +7,7 @@ import {
   CreateAssetRequest, 
   CreateAssetResponse,
 } from '../types/assetTypes';
+import { getMockTemplatesByClass } from '../data/mockTemplatesData';
 
 // API base URL
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
@@ -68,11 +69,18 @@ export default api;
 // Asset Factory API
 export const getTemplatesByClass = async (assetClass: AssetClass): Promise<{ templates: AssetTemplate[] }> => {
   try {
+    // For development, use mock data instead of API calls
+    const templates = getMockTemplatesByClass(assetClass);
+    return { templates };
+    
+    // When backend is ready, uncomment the following:
+    /*
     const response = await fetch(`${API_BASE_URL}/api/templates?assetClass=${assetClass}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch templates: ${response.statusText}`);
     }
     return await response.json();
+    */
   } catch (error) {
     console.error('Error fetching templates:', error);
     throw error;

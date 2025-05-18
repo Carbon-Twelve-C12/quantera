@@ -15,7 +15,9 @@ import {
   DialogTitle, 
   DialogContent, 
   DialogActions,
-  TextField
+  TextField,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import { AssetClass, AssetTemplate } from '../../types/assetTypes';
 import AddIcon from '@mui/icons-material/Add';
@@ -45,6 +47,8 @@ const TemplateSelection: React.FC<TemplateSelectionProps> = ({
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateDescription, setNewTemplateDescription] = useState('');
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   if (!assetClass) {
     return (
@@ -81,97 +85,135 @@ const TemplateSelection: React.FC<TemplateSelectionProps> = ({
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
+      <Typography variant="h6" gutterBottom align="center">
         Choose Template
       </Typography>
-      <Typography variant="body1" paragraph>
+      <Typography variant="body1" paragraph align="center" sx={{ maxWidth: '800px', mx: 'auto', mb: 4 }}>
         Select a template for your {assetClass.replace('_', ' ').toLowerCase()} asset or create a new one. Templates define the basic structure and modules available for your asset.
       </Typography>
 
-      <CompatGrid container spacing={3}>
-        {/* Create new template card */}
-        <CompatGrid item xs={12} sm={6} md={4}>
-          <Card 
-            sx={{ 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column',
-              border: '1px dashed #aaa'
-            }}
-          >
-            <CardActionArea 
-              onClick={() => setShowCreateDialog(true)}
-              sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 4 }}
-            >
-              <AddIcon fontSize="large" />
-              <Typography variant="h6" align="center" sx={{ mt: 2 }}>
-                Create New Template
-              </Typography>
-              <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 1 }}>
-                Design a custom template for your specific needs
-              </Typography>
-            </CardActionArea>
-          </Card>
-        </CompatGrid>
-
-        {/* Existing templates */}
-        {templates.map((template) => (
-          <CompatGrid item xs={12} sm={6} md={4} key={template.templateId}>
+      <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+        <CompatGrid container spacing={3}>
+          {/* Create new template card */}
+          <CompatGrid item xs={12} sm={6} md={4}>
             <Card 
               sx={{ 
-                height: '100%', 
+                height: 320,
                 display: 'flex', 
                 flexDirection: 'column',
-                border: selectedTemplateId === template.templateId ? '2px solid #3f51b5' : 'none',
-                boxShadow: selectedTemplateId === template.templateId ? '0 4px 20px rgba(63, 81, 181, 0.5)' : 'inherit'
+                border: '1px dashed #aaa',
+                transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 6px 20px rgba(0,0,0,0.15)'
+                },
               }}
             >
               <CardActionArea 
-                onClick={() => onSelect(template.templateId)}
-                sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
+                onClick={() => setShowCreateDialog(true)}
+                sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 4 }}
               >
-                <CardHeader
-                  title={template.name}
-                  action={
-                    <Chip 
-                      icon={template.isPublic ? <PublicIcon /> : <LockIcon />} 
-                      label={template.isPublic ? "Public" : "Private"}
-                      size="small"
-                      color={template.isPublic ? "success" : "default"}
-                    />
-                  }
-                />
-                <Divider />
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <PersonIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-                    <Typography variant="body2" color="text.secondary">
-                      Created by: {template.creator.slice(0, 6)}...{template.creator.slice(-4)}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <CalendarTodayIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-                    <Typography variant="body2" color="text.secondary">
-                      {new Date(template.creationDate * 1000).toLocaleDateString()}
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2">
-                    {template.compatibleModules.length} compatible modules
-                  </Typography>
-                </CardContent>
+                <AddIcon fontSize="large" />
+                <Typography variant="h6" align="center" sx={{ mt: 2 }}>
+                  Create New Template
+                </Typography>
+                <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 1, px: 2, maxWidth: '100%' }}>
+                  Design a custom template for your specific needs
+                </Typography>
               </CardActionArea>
             </Card>
           </CompatGrid>
-        ))}
 
-        {templates.length === 0 && (
-          <CompatGrid item xs={12}>
-            <Alert severity="info">
-              No templates found for {assetClass.replace('_', ' ').toLowerCase()} assets. You can create a new template to get started.
-            </Alert>
-          </CompatGrid>
-        )}
-      </CompatGrid>
+          {/* Existing templates */}
+          {templates.map((template) => (
+            <CompatGrid item xs={12} sm={6} md={4} key={template.templateId}>
+              <Card 
+                sx={{ 
+                  height: 320,
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  border: selectedTemplateId === template.templateId ? '2px solid #3f51b5' : 'none',
+                  boxShadow: selectedTemplateId === template.templateId ? '0 4px 20px rgba(63, 81, 181, 0.5)' : '0 2px 8px rgba(0,0,0,0.1)',
+                  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 6px 20px rgba(0,0,0,0.15)'
+                  },
+                }}
+              >
+                <CardActionArea 
+                  onClick={() => onSelect(template.templateId)}
+                  sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
+                >
+                  <CardHeader
+                    title={template.name}
+                    titleTypographyProps={{ 
+                      variant: 'h6', 
+                      align: 'center', 
+                      noWrap: true,
+                      sx: { 
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        width: '100%',
+                        fontSize: '1.1rem'
+                      }
+                    }}
+                    action={
+                      <Chip 
+                        icon={template.isPublic ? <PublicIcon /> : <LockIcon />} 
+                        label={template.isPublic ? "Public" : "Private"}
+                        size="small"
+                        color={template.isPublic ? "success" : "default"}
+                      />
+                    }
+                    sx={{
+                      pb: 1
+                    }}
+                  />
+                  <Divider />
+                  <CardContent sx={{ 
+                    flexGrow: 1, 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    justifyContent: 'space-between',
+                    p: 2
+                  }}>
+                    <Box sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <PersonIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                        <Typography variant="body2" color="text.secondary" noWrap>
+                          Created by: {template.creator.slice(0, 6)}...{template.creator.slice(-4)}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <CalendarTodayIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {new Date(template.creationDate * 1000).toLocaleDateString()}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    
+                    <Box sx={{ mt: 'auto' }}>
+                      <Divider sx={{ mb: 2 }} />
+                      <Typography variant="body2" align="center">
+                        {template.compatibleModules.length} compatible modules
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </CompatGrid>
+          ))}
+
+          {templates.length === 0 && (
+            <CompatGrid item xs={12}>
+              <Alert severity="info">
+                No templates found for {assetClass.replace('_', ' ').toLowerCase()} assets. You can create a new template to get started.
+              </Alert>
+            </CompatGrid>
+          )}
+        </CompatGrid>
+      </Box>
 
       {/* Create template dialog */}
       <Dialog open={showCreateDialog} onClose={() => setShowCreateDialog(false)} maxWidth="sm" fullWidth>

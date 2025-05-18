@@ -20,6 +20,7 @@ Quantera is an ecosystem for tokenizing any financial asset class. While initial
 - **Impact Tracking & Reporting**: Comprehensive ESG metrics and reporting tools
 - **White-Label Customization**: For institutional asset managers
 - **Developer Ecosystem**: SDK and template marketplace
+- **Trade Finance Capabilities**: Support for letters of credit, invoice receivables, warehouse receipts, and other trade finance instruments with fractional ownership
 
 ## Project Structure
 ```
@@ -104,6 +105,11 @@ Quantera/
   - Asset Creation wizard with multi-step interface for configuring asset properties
   - Interactive asset class selection with visual categorization
   - Comprehensive asset summary view with visual preview
+  - Trade Finance marketplace with support for tokenized trade finance instruments
+  - Detailed analytics dashboard for trade finance metrics, risk distribution, and geographic exposure
+  - Fractional investment interface for trade finance assets with real-time settlement
+  - Multi-asset type filtering for trade finance instruments
+  - Comprehensive risk visualization and yield analytics for trade finance
 
 - **Environmental Asset Integration**:
   - Updated asset class enum from "CARBON_CREDIT" to "ENVIRONMENTAL_ASSET" for broader inclusivity
@@ -209,6 +215,16 @@ The platform exposes the following API endpoints:
 - `POST /wallet/switch-network`: Change active blockchain network
 - `GET /wallet/balance/{address}`: Get token balances for an address
 
+### Trade Finance
+- `GET /tradefinance/assets`: List all trade finance assets with filtering options
+- `GET /tradefinance/assets/{id}`: Get specific trade finance asset details
+- `GET /tradefinance/assets/type/{type}`: Filter assets by trade finance type
+- `POST /tradefinance/assets/{id}/invest`: Invest in a trade finance asset
+- `GET /tradefinance/analytics`: Get trade finance market analytics
+- `GET /tradefinance/positions/{address}`: Get user's trade finance positions
+- `GET /tradefinance/verification/{entityId}`: Get trade entity verification status
+- `POST /tradefinance/assets/create`: Create new trade finance asset (issuer only)
+
 ## Frontend Features
 
 ### Core Pages
@@ -222,6 +238,9 @@ The platform exposes the following API endpoints:
 - **Environmental Impact**: View and track sustainability metrics
 - **Impact Dashboard**: Visualize environmental impact of investments
 - **Contract Explorer**: Browse and understand platform smart contracts with source code, functions, security info, and documentation
+- **Trade Finance Marketplace**: Browse and invest in tokenized trade finance instruments
+- **Trade Finance Analytics**: View detailed metrics and risk analysis for trade finance market
+- **Trade Finance Portfolio**: Track investments in trade finance instruments
 
 ### Advanced Components
 - **Asset Template Explorer**: Browse templates for different asset classes

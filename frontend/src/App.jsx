@@ -21,11 +21,22 @@ import EnvironmentalMarketplacePage from './pages/EnvironmentalMarketplacePage';
 import EnvironmentalAssetPage from './pages/EnvironmentalAssetPage';
 import ImpactDashboardPage from './pages/ImpactDashboardPage';
 
+// Trade Finance Components
+import TradeFinanceMarketplace from './components/tradeFinance/TradeFinanceMarketplace';
+import { TradeFinanceProvider } from './contexts/TradeFinanceContext';
+
 // Context Providers
 import { AuthProvider } from './contexts/AuthContext';
 import { WalletProvider } from './contexts/WalletContext';
 import { NotificationProvider } from './contexts/NotificationProvider';
 import { ThemeProvider } from './contexts/ThemeContext';
+
+// Trade Finance Route Component (with context provider)
+const TradeFinanceRoute = () => (
+  <TradeFinanceProvider>
+    <TradeFinanceMarketplace />
+  </TradeFinanceProvider>
+);
 
 const App = () => {
   return (
@@ -52,6 +63,9 @@ const App = () => {
                     <Route path="/environmental/marketplace" element={<EnvironmentalMarketplacePage />} />
                     <Route path="/environmental/assets/:assetId" element={<EnvironmentalAssetPage />} />
                     <Route path="/environmental/impact" element={<ImpactDashboardPage />} />
+                    
+                    {/* Trade Finance Routes */}
+                    <Route path="/tradefinance/marketplace" element={<TradeFinanceRoute />} />
                     
                     <Route path="*" element={<NotFoundPage />} />
                   </Routes>

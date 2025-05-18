@@ -38,6 +38,7 @@ import {
   Pool as PoolIcon,
   AddCircleOutline as AddIcon,
   Description as DocumentIcon,
+  AccountBalance as AccountBalanceIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWallet } from '../../contexts/WalletContext';
@@ -92,6 +93,11 @@ const Header = () => {
     { label: 'Impact Dashboard', path: '/environmental/impact', icon: <BarChart /> },
   ];
   
+  const tradeFinanceNavigationItems = [
+    { label: 'Trade Finance Marketplace', path: '/tradefinance/marketplace', icon: <AccountBalanceIcon /> },
+    { label: 'Create Trade Finance Asset', path: '/tradefinance/create', icon: <AddIcon /> },
+  ];
+  
   const smartAccountNavigationItems = [
     { label: 'Smart Account', path: '/smart-account', icon: <CodeIcon /> },
     { label: 'Liquidity Pools', path: '/liquidity', icon: <PoolIcon /> },
@@ -128,6 +134,27 @@ const Header = () => {
       
       <List>
         {environmentalNavigationItems.map((item) => (
+          <ListItem
+            button
+            key={item.label}
+            component={RouterLink}
+            to={item.path}
+            selected={location.pathname === item.path}
+          >
+            <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItemText primary={item.label} />
+          </ListItem>
+        ))}
+      </List>
+      
+      <Divider />
+      
+      <Typography variant="subtitle2" color="text.secondary" sx={{ px: 2, py: 1 }}>
+        Trade Finance
+      </Typography>
+      
+      <List>
+        {tradeFinanceNavigationItems.map((item) => (
           <ListItem
             button
             key={item.label}
@@ -281,6 +308,28 @@ const Header = () => {
                   startIcon={<ForestOutlined />}
                 >
                   Environmental Assets
+                </Button>
+                
+                {/* Trade Finance Button */}
+                <Button
+                  key="tradefinance"
+                  component={RouterLink}
+                  to="/tradefinance/marketplace"
+                  sx={{
+                    my: 2,
+                    mx: 1,
+                    color: 'text.primary',
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontWeight: location.pathname.includes('/tradefinance') ? 700 : 500,
+                    borderBottom:
+                      location.pathname.includes('/tradefinance')
+                        ? `2px solid ${theme.palette.primary.main}`
+                        : '2px solid transparent',
+                  }}
+                  startIcon={<AccountBalanceIcon />}
+                >
+                  Trade Finance
                 </Button>
                 
                 {/* Smart Account Button */}

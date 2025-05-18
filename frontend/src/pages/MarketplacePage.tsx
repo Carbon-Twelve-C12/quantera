@@ -45,6 +45,10 @@ const MarketplacePage: React.FC = () => {
         ? '/images/assets/treasury-bond.jpg'
         : treasury.treasury_type === 'moneymarket'
         ? '/images/assets/money-market-fund.jpg'
+        : treasury.treasury_type === 'realestate'
+        ? '/images/assets/real-estate.jpg'
+        : treasury.treasury_type === 'tradefinance'
+        ? '/images/assets/trade-finance.jpg'
         : `/images/treasury-${treasury.treasury_type || 'default'}.jpg`,
       asset_type: treasury.treasury_type || '',
       token_address: treasury.token_address || '',
@@ -127,6 +131,9 @@ const MarketplacePage: React.FC = () => {
       case 'tbill': return 'Treasury Bill';
       case 'tnote': return 'Treasury Note';
       case 'tbond': return 'Treasury Bond';
+      case 'moneymarket': return 'Money Market Fund';
+      case 'realestate': return 'Real Estate';
+      case 'tradefinance': return 'Trade Finance';
       case 'carboncredit': return 'Carbon Credit';
       case 'biodiversitycredit': return 'Biodiversity Credit';
       case 'watercredit': return 'Water Credit';
@@ -141,6 +148,9 @@ const MarketplacePage: React.FC = () => {
     { value: 'tbill', label: 'Treasury Bills' },
     { value: 'tnote', label: 'Treasury Notes' },
     { value: 'tbond', label: 'Treasury Bonds' },
+    { value: 'moneymarket', label: 'Money Market Funds' },
+    { value: 'realestate', label: 'Real Estate' },
+    { value: 'tradefinance', label: 'Trade Finance' },
     { value: 'CarbonCredit', label: 'Carbon Credits' },
     { value: 'BiodiversityCredit', label: 'Biodiversity Credits' },
     { value: 'WaterCredit', label: 'Water Credits' },
@@ -163,6 +173,48 @@ const MarketplacePage: React.FC = () => {
         <p className="marketplace-description">
           Browse and invest in tokenized financial products and environmental assets with transparent impact metrics.
         </p>
+      </div>
+
+      {/* Featured Categories Section */}
+      <div className="featured-categories">
+        <h2>Featured Asset Categories</h2>
+        <div className="category-cards">
+          <div className="category-card">
+            <div className="category-image">
+              <img src="/images/assets/treasury-bill.jpg" alt="Treasury Securities" />
+            </div>
+            <h3>Treasury Securities</h3>
+            <p>Tokenized government securities with yield optimization</p>
+            <Link to="/marketplace" className="category-link">Browse Treasury Assets</Link>
+          </div>
+          
+          <div className="category-card">
+            <div className="category-image">
+              <img src="/images/assets/trade-finance.jpg" alt="Trade Finance" onError={(e) => e.currentTarget.src = "/images/asset-placeholder.jpg"} />
+            </div>
+            <h3>Trade Finance</h3>
+            <p>Letters of credit, invoice receivables, and supply chain finance assets</p>
+            <Link to="/tradefinance/marketplace" className="category-link">Explore Trade Finance</Link>
+          </div>
+          
+          <div className="category-card">
+            <div className="category-image">
+              <img src="/images/assets/real-estate.jpg" alt="Real Estate" onError={(e) => e.currentTarget.src = "/images/asset-placeholder.jpg"} />
+            </div>
+            <h3>Real Estate</h3>
+            <p>Fractional ownership in commercial and residential properties</p>
+            <Link to="/realestate/marketplace" className="category-link">View Real Estate</Link>
+          </div>
+          
+          <div className="category-card">
+            <div className="category-image">
+              <img src="/images/assets/carbon-credit.jpg" alt="Environmental Assets" onError={(e) => e.currentTarget.src = "/images/asset-placeholder.jpg"} />
+            </div>
+            <h3>Environmental Assets</h3>
+            <p>Carbon credits, biodiversity credits and renewable energy certificates</p>
+            <Link to="/environmental/marketplace" className="category-link">View Environmental Assets</Link>
+          </div>
+        </div>
       </div>
 
       <div className="marketplace-filters">
@@ -231,7 +283,7 @@ const MarketplacePage: React.FC = () => {
                   className="asset-image" 
                   onError={fallbackImage}
                 />
-                <div className="asset-type-badge">
+                <div className={`asset-type-badge ${asset.asset_type.toLowerCase().replace('_', '-')}`}>
                   {getAssetTypeDisplayName(asset.asset_type)}
                 </div>
               </div>

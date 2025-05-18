@@ -185,6 +185,38 @@
   backdrop-filter: blur(4px);
 }
 
+/* Asset type-specific badge colors */
+.asset-type-badge.treasury-bill {
+  background-color: rgba(41, 128, 185, 0.9); /* Blue */
+}
+
+.asset-type-badge.treasury-note {
+  background-color: rgba(22, 160, 133, 0.9); /* Green */
+}
+
+.asset-type-badge.treasury-bond {
+  background-color: rgba(243, 156, 18, 0.9); /* Orange */
+}
+
+.asset-type-badge.money-market {
+  background-color: rgba(142, 68, 173, 0.9); /* Purple */
+}
+
+.asset-type-badge.real-estate {
+  background-color: rgba(231, 76, 60, 0.9); /* Red */
+}
+
+.asset-type-badge.trade-finance {
+  background-color: rgba(52, 73, 94, 0.9); /* Dark Blue */
+}
+
+.asset-type-badge.carbon-credit,
+.asset-type-badge.biodiversity-credit,
+.asset-type-badge.water-credit,
+.asset-type-badge.renewable-energy {
+  background-color: rgba(39, 174, 96, 0.9); /* Green */
+}
+
 .asset-content {
   padding: 1.5rem;
   display: flex;
@@ -311,4 +343,93 @@
   .assets-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Featured Categories */
+.featured-categories {
+  margin: 2rem 0;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.featured-categories h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #1a5276;
+}
+
+.category-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.category-card {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.category-image {
+  height: 160px;
+  overflow: hidden;
+}
+
+.category-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.category-card h3 {
+  padding: 1rem 1rem 0.5rem;
+  font-size: 1.2rem;
+  color: #1a5276;
+}
+
+.category-card p {
+  padding: 0 1rem 1rem;
+  color: #555;
+  font-size: 0.9rem;
+  height: 60px;
+}
+
+.category-link {
+  display: block;
+  text-align: center;
+  padding: 0.8rem;
+  background-color: #3498db;
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.category-link:hover {
+  background-color: #2980b9;
+}
+
+/* Dark mode styles */
+body.dark-theme .featured-categories {
+  background-color: #232a30;
+}
+
+body.dark-theme .category-card {
+  background-color: #2c3e50;
+}
+
+body.dark-theme .category-card h3 {
+  color: #3498db;
+}
+
+body.dark-theme .category-card p {
+  color: #ecf0f1;
 } 
