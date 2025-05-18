@@ -1,131 +1,91 @@
 import React from 'react';
+import { Paper, ToggleButtonGroup, ToggleButton, Typography, Box } from '@mui/material';
 import { TradeFinanceAssetType } from '../../types/tradeFinance';
-import { Box, ToggleButtonGroup, ToggleButton, Typography } from '@mui/material';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import FactoryIcon from '@mui/icons-material/Factory';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import PublicIcon from '@mui/icons-material/Public';
+import AllInclusiveIcon from '@mui/icons-material/AllInclusive';
 
 interface TradeFinanceAssetTypeFilterProps {
   selectedType: TradeFinanceAssetType | null;
   onTypeChange: (type: TradeFinanceAssetType | null) => void;
 }
 
-const assetTypeConfig: {
-  type: TradeFinanceAssetType;
-  label: string;
-  icon: React.ReactNode;
-}[] = [
-  {
-    type: TradeFinanceAssetType.LETTER_OF_CREDIT,
-    label: 'Letter of Credit',
-    icon: <AccountBalanceIcon />
-  },
-  {
-    type: TradeFinanceAssetType.INVOICE_RECEIVABLE,
-    label: 'Invoice Receivable',
-    icon: <ReceiptLongIcon />
-  },
-  {
-    type: TradeFinanceAssetType.WAREHOUSE_RECEIPT,
-    label: 'Warehouse Receipt',
-    icon: <InventoryIcon />
-  },
-  {
-    type: TradeFinanceAssetType.BILL_OF_LADING,
-    label: 'Bill of Lading',
-    icon: <DirectionsBoatIcon />
-  },
-  {
-    type: TradeFinanceAssetType.EXPORT_CREDIT,
-    label: 'Export Credit',
-    icon: <LocalShippingIcon />
-  },
-  {
-    type: TradeFinanceAssetType.SUPPLY_CHAIN_FINANCE,
-    label: 'Supply Chain Finance',
-    icon: <FactoryIcon />
-  }
-];
-
 const TradeFinanceAssetTypeFilter: React.FC<TradeFinanceAssetTypeFilterProps> = ({
   selectedType,
   onTypeChange
 }) => {
-  const handleTypeChange = (
+  const handleChange = (
     _event: React.MouseEvent<HTMLElement>,
-    newType: TradeFinanceAssetType | ''
+    newType: TradeFinanceAssetType | null
   ) => {
-    onTypeChange(newType === '' ? null : newType);
+    onTypeChange(newType);
   };
 
   return (
-    <Box 
+    <Paper 
+      elevation={0} 
       sx={{ 
-        mb: 3, 
         p: 2, 
-        borderRadius: 1,
-        bgcolor: 'background.paper'
+        mb: 3, 
+        border: '1px solid', 
+        borderColor: 'divider',
+        borderRadius: 2
       }}
     >
-      <Box display="flex" alignItems="center" mb={2}>
-        <FilterAltIcon sx={{ mr: 1 }} color="primary" />
-        <Typography variant="subtitle1">Filter by Asset Type</Typography>
+      <Box mb={2}>
+        <Typography variant="subtitle1" fontWeight="medium">
+          Filter by Asset Type
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Select a specific type of trade finance instrument or view all assets
+        </Typography>
       </Box>
       
       <ToggleButtonGroup
-        value={selectedType || ''}
+        value={selectedType}
         exclusive
-        onChange={handleTypeChange}
-        aria-label="asset type filter"
-        fullWidth
-        sx={{
-          flexWrap: { xs: 'wrap', md: 'nowrap' }
+        onChange={handleChange}
+        aria-label="trade finance asset type"
+        sx={{ 
+          flexWrap: 'wrap',
+          '& .MuiToggleButtonGroup-grouped': {
+            m: 0.5,
+            border: 1,
+            borderColor: 'divider',
+            '&.Mui-selected': {
+              borderColor: 'primary.main',
+            }
+          }
         }}
       >
-        {assetTypeConfig.map((config) => (
-          <ToggleButton 
-            key={config.type} 
-            value={config.type}
-            aria-label={config.label}
-            sx={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: 0.5, 
-              padding: 1,
-              margin: { xs: 0.25, md: 0 },
-              flex: { xs: '1 0 40%', sm: '1 0 30%', md: 1 },
-              height: { xs: 60, md: 80 }
-            }}
-          >
-            {config.icon}
-            <Typography variant="caption" noWrap>
-              {config.label}
-            </Typography>
-          </ToggleButton>
-        ))}
+        <ToggleButton value="" aria-label="all assets">
+          <AllInclusiveIcon sx={{ mr: 1 }} />
+          All
+        </ToggleButton>
         
-        <ToggleButton 
-          value=""
-          aria-label="All Types"
-          sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: 0.5, 
-            padding: 1,
-            margin: { xs: 0.25, md: 0 },
-            flex: { xs: '1 0 40%', sm: '1 0 30%', md: 1 },
-            height: { xs: 60, md: 80 }
-          }}
-        >
-          <FilterAltIcon />
-          <Typography variant="caption">All Types</Typography>
+        <ToggleButton value={TradeFinanceAssetType.EXPORT_FINANCING} aria-label="export financing">
+          <PublicIcon sx={{ mr: 1 }} />
+          Export Financing
+        </ToggleButton>
+        
+        <ToggleButton value={TradeFinanceAssetType.IMPORT_FINANCING} aria-label="import financing">
+          <LocalShippingIcon sx={{ mr: 1 }} />
+          Import Financing
+        </ToggleButton>
+        
+        <ToggleButton value={TradeFinanceAssetType.INVENTORY_FINANCING} aria-label="inventory financing">
+          <InventoryIcon sx={{ mr: 1 }} />
+          Inventory Financing
+        </ToggleButton>
+        
+        <ToggleButton value={TradeFinanceAssetType.SUPPLY_CHAIN_FINANCE} aria-label="supply chain finance">
+          <FactoryIcon sx={{ mr: 1 }} />
+          Supply Chain Finance
         </ToggleButton>
       </ToggleButtonGroup>
-    </Box>
+    </Paper>
   );
 };
 

@@ -7,7 +7,68 @@ import {
   TradeFinanceAssetType
 } from '../types/tradeFinance';
 
-interface TradeFinanceContextType {
+// Mock data for demonstration purposes
+const mockTradeFinanceAssets: TradeFinanceAsset[] = [
+  {
+    id: 'tf-001',
+    name: 'Taiwan Semiconductor Supply Chain Finance',
+    description: 'Supply chain financing for semiconductor component manufacturer in Taiwan with multinational technology company buyers.',
+    assetType: TradeFinanceAssetType.SUPPLY_CHAIN_FINANCE,
+    issuer: 'Global Trade Finance Partners',
+    recipient: 'Taiwan Advanced Semiconductor Manufacturing',
+    imageUrl: '/images/assets/supply-chain-finance/taiwan-semiconductor.jpg',
+    yieldRate: 595, // 5.95%
+    maturityDate: Math.floor(Date.now() / 1000) + (180 * 86400), // 180 days from now
+    currentPrice: '95.50',
+    nominalValue: 100000,
+    currency: 'USD',
+    fractionalUnits: 1000,
+    status: 'Active',
+    riskRating: 3,
+    minimumInvestment: 1000,
+    settlementCurrency: 'USDC'
+  },
+  {
+    id: 'tf-002',
+    name: 'German Auto Parts Export Finance',
+    description: 'Export financing for German automotive parts manufacturer shipping to international markets.',
+    assetType: TradeFinanceAssetType.EXPORT_FINANCING,
+    issuer: 'European Trade Bank',
+    recipient: 'German Precision Auto Parts GmbH',
+    imageUrl: '/images/assets/supply-chain-finance/auto-parts.jpg',
+    yieldRate: 475, // 4.75%
+    maturityDate: Math.floor(Date.now() / 1000) + (90 * 86400), // 90 days from now
+    currentPrice: '97.25',
+    nominalValue: 200000,
+    currency: 'EUR',
+    fractionalUnits: 2000,
+    status: 'Active',
+    riskRating: 2,
+    minimumInvestment: 500,
+    settlementCurrency: 'USDC'
+  },
+  {
+    id: 'tf-003',
+    name: 'Brazilian Coffee Harvest Inventory Finance',
+    description: 'Pre-export inventory financing for premium coffee producers in Brazil.',
+    assetType: TradeFinanceAssetType.INVENTORY_FINANCING,
+    issuer: 'South American Trade Solutions',
+    recipient: 'Brazilian Coffee Exporters Association',
+    imageUrl: '/images/assets/supply-chain-finance/coffee-inventory.jpg',
+    yieldRate: 650, // 6.50%
+    maturityDate: Math.floor(Date.now() / 1000) + (120 * 86400), // 120 days from now
+    currentPrice: '94.75',
+    nominalValue: 150000,
+    currency: 'USD',
+    fractionalUnits: 1500,
+    status: 'Active',
+    riskRating: 4,
+    minimumInvestment: 750,
+    settlementCurrency: 'USDC'
+  }
+];
+
+interface TradeFinanceContextValue {
   assets: TradeFinanceAsset[];
   positions: TradeFinancePosition[];
   analytics: TradeFinanceAnalytics | null;
@@ -21,11 +82,11 @@ interface TradeFinanceContextType {
   purchaseAsset: (assetId: string, userAddress: string, units: number) => Promise<boolean>;
 }
 
-const TradeFinanceContext = createContext<TradeFinanceContextType | undefined>(undefined);
+const TradeFinanceContext = createContext<TradeFinanceContextValue | undefined>(undefined);
 
-export const useTradeFinance = (): TradeFinanceContextType => {
+export const useTradeFinance = (): TradeFinanceContextValue => {
   const context = useContext(TradeFinanceContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useTradeFinance must be used within a TradeFinanceProvider');
   }
   return context;
@@ -124,4 +185,6 @@ export const TradeFinanceProvider: React.FC<TradeFinanceProviderProps> = ({
       {children}
     </TradeFinanceContext.Provider>
   );
-}; 
+};
+
+export default TradeFinanceProvider; 

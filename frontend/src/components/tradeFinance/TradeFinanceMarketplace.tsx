@@ -39,9 +39,11 @@ const TradeFinanceMarketplace: React.FC = () => {
         </Grid>
 
         {/* Analytics Panel */}
-        <Grid xs={12} item>
-          <TradeFinanceAnalyticsPanel analytics={analytics} />
-        </Grid>
+        {analytics && (
+          <Grid xs={12} item>
+            <TradeFinanceAnalyticsPanel analytics={analytics} />
+          </Grid>
+        )}
 
         {/* Filters */}
         <Grid xs={12} item>

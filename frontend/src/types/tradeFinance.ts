@@ -2,12 +2,10 @@
 // Aligned with ERC-3643 security token standard for regulatory compliance
 
 export enum TradeFinanceAssetType {
-  LETTER_OF_CREDIT = 'LETTER_OF_CREDIT',
-  INVOICE_RECEIVABLE = 'INVOICE_RECEIVABLE',
-  WAREHOUSE_RECEIPT = 'WAREHOUSE_RECEIPT',
-  BILL_OF_LADING = 'BILL_OF_LADING',
-  EXPORT_CREDIT = 'EXPORT_CREDIT',
-  SUPPLY_CHAIN_FINANCE = 'SUPPLY_CHAIN_FINANCE'
+  EXPORT_FINANCING = "EXPORT_FINANCING",
+  IMPORT_FINANCING = "IMPORT_FINANCING",
+  INVENTORY_FINANCING = "INVENTORY_FINANCING",
+  SUPPLY_CHAIN_FINANCE = "SUPPLY_CHAIN_FINANCE"
 }
 
 export enum SettlementCurrency {
@@ -19,21 +17,22 @@ export enum SettlementCurrency {
 
 export interface TradeFinanceAsset {
   id: string;
+  name: string;
+  description: string;
   assetType: TradeFinanceAssetType;
   issuer: string;
   recipient: string;
+  imageUrl: string;
+  yieldRate: number;
+  maturityDate: number;
+  currentPrice: string;
   nominalValue: number;
   currency: string;
-  maturityDate: Date;
-  description: string;
-  termsDocumentHash: string;
-  riskRating: number; // 1-10 scale
-  yieldRate: number; // Annualized percentage
-  fractionalUnits: number; // Number of fractions the asset is divided into
+  fractionalUnits: number;
+  status: 'Active' | 'Pending' | 'Completed';
+  riskRating: number;
   minimumInvestment: number;
-  settlementCurrency: SettlementCurrency;
-  status: 'PENDING' | 'ACTIVE' | 'MATURED' | 'DEFAULTED' | 'SETTLED';
-  imageUrl?: string;
+  settlementCurrency: string;
 }
 
 export interface TradeFinancePosition {
@@ -47,13 +46,20 @@ export interface TradeFinancePosition {
 }
 
 export interface TradeFinanceAnalytics {
-  totalValueLocked: number;
+  totalVolume: number;
   activeAssets: number;
   averageYield: number;
-  averageTerm: number; // Days
-  assetTypeDistribution: Record<TradeFinanceAssetType, number>;
-  riskDistribution: Record<number, number>; // Key is risk rating 1-10
-  geographicDistribution: Record<string, number>; // Country code to percentage
+  averageMaturity: number;
+  assetTypeDistribution: {
+    type: TradeFinanceAssetType;
+    count: number;
+    percentage: number;
+  }[];
+  countryDistribution: {
+    country: string;
+    count: number;
+    percentage: number;
+  }[];
 }
 
 // Digital Identity Verification Interface
