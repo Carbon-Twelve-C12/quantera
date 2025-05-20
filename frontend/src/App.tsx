@@ -9,10 +9,12 @@ import AboutPage from './pages/AboutPage';
 import ContractExplorerPage from './pages/ContractExplorerPage';
 import YieldStrategyPage from './pages/YieldStrategyPage';
 import PortfolioPage from './pages/PortfolioPage';
+import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
 import EnvironmentalAssetPage from './pages/EnvironmentalAssetPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LiquidityPoolProvider } from './contexts/LiquidityPoolContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AnalyticsProvider } from './contexts/AnalyticsContext';
 // Temporarily disable TypeScript's checking for this import 
 // @ts-ignore
 import { WalletProvider } from './contexts/WalletContext';
@@ -50,11 +52,13 @@ const App: React.FC = () => {
       <ThemeProvider>
         <WalletProvider>
           <LiquidityPoolProvider>
-            <Router>
-              <div className="app">
-                <AppContent />
-              </div>
-            </Router>
+            <AnalyticsProvider>
+              <Router>
+                <div className="app">
+                  <AppContent />
+                </div>
+              </Router>
+            </AnalyticsProvider>
           </LiquidityPoolProvider>
         </WalletProvider>
       </ThemeProvider>
@@ -78,6 +82,8 @@ const AppContent: React.FC = () => {
             <li><Link to="/marketplace">Marketplace</Link></li>
             <li><Link to="/liquidity">Liquidity Pools</Link></li>
             <li><Link to="/yield">Yield Strategy</Link></li>
+            <li><Link to="/portfolio">Portfolio</Link></li>
+            <li><Link to="/analytics">Analytics</Link></li>
             <li><Link to="/compare">Compare</Link></li>
             <li><Link to="/create">Create Treasury</Link></li>
             {isAuthenticated ? (
@@ -106,6 +112,7 @@ const AppContent: React.FC = () => {
           <Route path="/treasuries/:id" element={<TreasuryDetail />} />
           <Route path="/marketplace" element={<MarketplacePage />} />
           <Route path="/portfolio" element={<PortfolioPage />} />
+          <Route path="/analytics" element={<AnalyticsDashboardPage />} />
           <Route path="/assets/:id" element={<AssetDetailPage />} />
           <Route path="/environmental/assets/:assetId" element={<EnvironmentalAssetPage />} />
           <Route path="/liquidity" element={<EnhancedLiquidityPoolPage />} />
@@ -135,6 +142,8 @@ const Home: React.FC = () => (
     <div className="home-actions">
       <Link to="/marketplace" className="button primary">Browse Marketplace</Link>
       <Link to="/treasuries" className="button secondary">Browse Treasuries</Link>
+      <Link to="/portfolio" className="button secondary">View Portfolio</Link>
+      <Link to="/analytics" className="button secondary">Platform Analytics</Link>
       <Link to="/liquidity" className="button secondary">Manage Liquidity</Link>
       <Link to="/create" className="button secondary">Create New Treasury</Link>
     </div>

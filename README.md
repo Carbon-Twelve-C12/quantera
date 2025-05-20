@@ -2,9 +2,9 @@
 
 [![Website](https://img.shields.io/badge/Website-Quantera.finance-blue)](https://quantera.finance/)
 [![Contributors](https://img.shields.io/github/contributors/mjohnson518/vault)](https://github.com/mjohnson518/vault/graphs/contributors)
-[![Version](https://img.shields.io/badge/Version-0.8.5-green)]()
+[![Version](https://img.shields.io/badge/Version-0.87-green)]()
 
-## Version: 0.8.5 (85% Complete)
+## Version: 0.87 (87% Complete)
 
 ## Overview
 Quantera is an ecosystem for tokenizing any financial asset class. While initially focused on U.S. Treasury securities, the platform is architecturally designed for multi-asset support with superior liquidity solutions, yield optimization, and cross-chain interoperability. Leveraging Ethereum's capabilities, Quantera aims to become the leading tokenization platform globally, serving both institutional and individual investors. The platform provides specialized support for environmental assets and sustainable finance instruments, positioning Quantera at the forefront of Web3 sustainability solutions.
@@ -93,9 +93,11 @@ Quantera/
   - Environmental impact calculation for sustainable finance instruments
   - Custom CompatGrid component for Material UI v7 compatibility
   - WalletContext implementation with proper wallet integration
-  - Wallet connection and network switching functionality 
-  - Persistent wallet connection with local storage
-  - Robust error handling for wallet connection issues
+  - Enhanced WalletConnect system with WalletKit integration and robust fallback mechanism
+  - Smart abstraction layer for wallet connectivity providing consistent API regardless of implementation
+  - Persistent wallet session management with secure local storage mechanism
+  - Graceful error handling for wallet connections and network switching
+  - Wallet connection and network switching functionality with detailed transaction event tracking
   - Contract Explorer page with smart contract browsing and documentation
   - Syntax highlighting for Solidity code display
   - Detailed contract information view with tabs for source code, functions, security, and documentation  
@@ -278,7 +280,7 @@ Based on our progress, we are currently in Week 13 of our Implementation Plan. T
 
 Previous milestones completed:
 - Backend services, API layer, and type system implementation
-- Frontend integration and WalletContext implementation
+- Frontend integration and WalletContext implementation with comprehensive WalletConnect support
 - Asset Creation wizard with support for all asset types
 
 ## Competitive Positioning
@@ -299,7 +301,7 @@ With our continued implementation of AssetFactory, LiquidityPools, YieldOptimize
 
 7. **Environmental Impact Tracking**: Advanced capabilities for measuring, reporting, and verifying environmental impact.
 
-8. **Seamless Wallet Integration**: Robust wallet connection system with support for multiple providers and persistent connections.
+8. **Seamless Wallet Integration**: Robust wallet connection system with support for multiple providers, persistent connections, and graceful fallback mechanisms for a consistent user experience
 
 9. **Complete Asset Creation**: Full-featured asset creation wizard supporting all asset classes with customizable fields.
 

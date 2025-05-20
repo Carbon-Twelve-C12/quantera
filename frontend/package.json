@@ -7,6 +7,8 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
+    "@reown/walletkit": "^1.2.4",
+    "@types/node": "^22.15.20",
     "@types/react-syntax-highlighter": "^15.5.13",
     "ace-builds": "^1.41.0",
     "axios": "^1.3.4",

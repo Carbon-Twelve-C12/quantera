@@ -1,5 +1,5 @@
 # Quantera Platform - Progress Report
-## Version: 0.8.5 (85% Complete)
+## Version: 0.87 (87% Complete)
 
 ## Completed Tasks
 
@@ -121,6 +121,11 @@
 
 ## Recently Completed Tasks
 
+- [x] Implemented robust WalletKit/WalletConnect integration with proper abstraction and fallback mechanisms
+- [x] Created walletConnect wrapper module that provides consistent API regardless of implementation
+- [x] Added graceful error handling for wallet connections and session management
+- [x] Upgraded wallet authentication system with proper TypeScript typing
+- [x] Implemented persistent wallet session management across page reloads
 - [x] Implemented WebSocket service for real-time updates on L2 bridge messages and smart account operations
 - [x] Implemented L2BridgeGasOptimizer for efficient EIP-7691 blob data handling
 - [x] Integrated L2BridgeGasOptimizer with L2Bridge contract for optimized cross-chain messaging

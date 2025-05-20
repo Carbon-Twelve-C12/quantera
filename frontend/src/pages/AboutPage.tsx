@@ -274,6 +274,7 @@ const AboutPage: React.FC = () => {
   ];
 
   const currentFocusItems = [
+    "Enhanced wallet connectivity with WalletKit integration",
     "Complete cross-chain functionality and white-label solutions",
     "Comprehensive testing, security audits, and deployment preparation",
     "Marketplace launch and partner onboarding",
@@ -325,7 +326,7 @@ const AboutPage: React.FC = () => {
           
           <NoticeBox isDarkMode={isDarkMode}>
             <Typography variant="h6" color="primary" gutterBottom>
-              Platform Status: Version 0.8.5
+              Platform Status: Version 0.87
             </Typography>
             <Typography variant="body2">
               The assets listed on this platform have not yet been fully custodied and are presented for demonstration purposes only. Quantera Finance is currently in development, and the platform features, assets, and functionalities shown may not reflect the final product. Investors should not make investment decisions based on the information presented without conducting proper due diligence.
