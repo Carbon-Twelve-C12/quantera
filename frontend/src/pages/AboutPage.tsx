@@ -326,7 +326,7 @@ const AboutPage: React.FC = () => {
           
           <NoticeBox isDarkMode={isDarkMode}>
             <Typography variant="h6" color="primary" gutterBottom>
-              Platform Status: Version 0.94 (94% Complete)
+              Platform Status: Version 0.9.4
             </Typography>
             <Typography variant="body2">
               The assets listed on this platform have not yet been fully custodied and are presented for demonstration purposes only. Quantera Finance is currently in development, and the platform features, assets, and functionalities shown may not reflect the final product. Investors should not make investment decisions based on the information presented without conducting proper due diligence.
@@ -485,7 +485,7 @@ const AboutPage: React.FC = () => {
             Roadmap & Vision
           </SectionTitle>
           <SectionDescription variant="body1">
-            Quantera is currently at Version 0.94 (94% complete) with the following focus areas:
+            Quantera is currently at Version 0.9.4 with the following focus areas:
           </SectionDescription>
           
           <CardContainer>

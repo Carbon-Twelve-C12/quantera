@@ -2,9 +2,9 @@
 
 [![Website](https://img.shields.io/badge/Website-Quantera.finance-blue)](https://quantera.finance/)
 [![Contributors](https://img.shields.io/github/contributors/mjohnson518/vault)](https://github.com/mjohnson518/vault/graphs/contributors)
-[![Version](https://img.shields.io/badge/Version-0.94-green)]()
+[![Version](https://img.shields.io/badge/Version-0.9.4-green)]()
 
-## Version: 0.94 (94% Complete)
+## Version: 0.9.4
 
 ## Overview
 Quantera is an ecosystem for tokenizing any financial asset class. While initially focused on U.S. Treasury securities, the platform is architecturally designed for multi-asset support with superior liquidity solutions, yield optimization, and cross-chain interoperability. Leveraging Ethereum's capabilities, Quantera aims to become the leading tokenization platform globally, serving both institutional and individual investors. The platform provides specialized support for environmental assets and sustainable finance instruments, positioning Quantera at the forefront of Web3 sustainability solutions.
