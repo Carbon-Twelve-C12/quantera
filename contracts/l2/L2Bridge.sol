@@ -73,6 +73,7 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     event TradeSettled(bytes32 indexed tradeId, bytes32 indexed messageId, uint64 indexed destinationChainId);
     event MessageRetried(bytes32 indexed messageId, uint64 indexed destinationChainId);
     event BlobDataUsed(bytes32 indexed messageId, uint64 indexed chainId, uint256 dataSize);
+    event BatchMessageSent(bytes32[] messageIds, uint64 indexed destinationChainId, address indexed sender);
 
     // Constructor
     constructor(address gasOptimizerAddress) {
@@ -269,7 +270,7 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     }
 
     /**
-     * @dev Create a new cross-chain message
+     * @dev Create a new cross-chain message with optimized encoding
      * @param destinationChainId The destination chain ID
      * @param recipient The recipient address on the destination chain
      * @param data The message data
@@ -284,10 +285,36 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     ) private returns (bytes32) {
         require(isChainSupported(destinationChainId), "Destination chain not supported");
         
-        bytes32 messageId = _generateMessageId();
+        // Gas optimization: Generate messageId more efficiently
+        _messageIdCounter.increment();
         uint256 currentNonce = _messageIdCounter.current();
+        bytes32 messageId = bytes32(currentNonce);
         
-        // Gas optimization: Create in memory first, then store all at once
+        // Gas optimization: Use blob data if enabled and optimal for this message size
+        bytes memory optimizedData = data;
+        bool useBlob = false;
+        
+        // Only try to optimize data if the chain supports blobs and data is large enough
+        if (chains[destinationChainId].blob_enabled && data.length >= gasOptimizer.blobSizeThreshold() / 2) {
+            // Determine if we should use blob data for this message
+            useBlob = calculateOptimalDataFormat(destinationChainId, uint64(data.length));
+            
+            // If using blob data, optimize the data
+            if (useBlob) {
+                // Detect data type: 0 = JSON, 1 = Binary, 2 = Merkle Proof, 3 = Transaction
+                uint8 dataType = 3; // Default to transaction data
+                if (data.length > 0) {
+                    // Simple heuristic based on first byte
+                    bytes1 firstByte = data[0];
+                    if (firstByte == 0x7B) dataType = 0; // JSON (starts with '{')
+                }
+                
+                optimizedData = gasOptimizer.optimizeData(data, dataType);
+                emit BlobDataUsed(messageId, destinationChainId, optimizedData.length);
+            }
+        }
+        
+        // Gas optimization: Create in memory first, then store with optimized data
         CrossChainMessage memory newMessage = CrossChainMessage({
             messageId: messageId,
             sourceChainId: uint64(block.chainid),
@@ -295,7 +322,7 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
             sender: msg.sender,
             recipient: recipient,
             amount: amount,
-            data: data,
+            data: optimizedData, // Use the optimized data
             timestamp: block.timestamp,
             nonce: currentNonce,
             status: MessageStatus.PENDING,
@@ -454,6 +481,43 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      */
     function getMessageCount(uint64 chainId) external view returns (uint64) {
         return uint64(chainMessages[chainId].length);
+    }
+
+    /**
+     * @dev Creates and sends multiple messages in a batch for gas efficiency
+     * @param destinationChainId The destination chain ID (same for all messages)
+     * @param recipients Array of recipient addresses
+     * @param dataArray Array of message data
+     * @param amounts Array of amounts to transfer
+     * @return messageIds Array of created message IDs
+     */
+    function createBatchMessages(
+        uint64 destinationChainId,
+        address[] calldata recipients,
+        bytes[] calldata dataArray,
+        uint256[] calldata amounts
+    ) external whenNotPaused nonReentrant returns (bytes32[] memory) {
+        require(isChainSupported(destinationChainId), "Destination chain not supported");
+        require(
+            recipients.length == dataArray.length && recipients.length == amounts.length,
+            "Array lengths must match"
+        );
+        
+        bytes32[] memory messageIds = new bytes32[](recipients.length);
+        
+        // Process all messages in a batch for gas efficiency
+        for (uint256 i = 0; i < recipients.length; i++) {
+            messageIds[i] = _createMessage(
+                destinationChainId,
+                recipients[i],
+                dataArray[i],
+                amounts[i]
+            );
+        }
+        
+        emit BatchMessageSent(messageIds, destinationChainId, msg.sender);
+        
+        return messageIds;
     }
 
     /**

@@ -27,32 +27,50 @@ interface ILiquidityPools {
     
     /**
      * @dev Structure to store a liquidity position
+     * Gas optimization: Pack related fields together and use smaller uint types
+     * where appropriate to reduce storage slots used
      */
     struct Position {
-        bytes32 positionId;
-        bytes32 poolId;
-        address owner;
-        int24 lowerTick;     // Lower tick boundary for concentrated liquidity
-        int24 upperTick;     // Upper tick boundary for concentrated liquidity
-        uint128 liquidity;   // Amount of liquidity provided
-        uint256 tokensOwedA;  // Fees collected for token A
-        uint256 tokensOwedB;  // Fees collected for token B
-        uint256 createdAt;    // Timestamp when position was created
+        bytes32 positionId;   // Unique identifier for the position
+        bytes32 poolId;       // ID of the pool this position belongs to
+        address owner;        // Address of the position owner
+        
+        // Gas optimization: Pack tick boundaries in one slot (each int24 uses 3 bytes)
+        int24 lowerTick;      // Lower tick boundary for concentrated liquidity
+        int24 upperTick;      // Upper tick boundary for concentrated liquidity
+        
+        // Gas optimization: Pack these fields in one slot (16 + 16 + 4 = 36 bytes)
+        uint128 liquidity;    // Amount of liquidity provided
+        uint32 createdAt;     // Timestamp when position was created (reduced from uint256)
+        
+        // Gas optimization: Pack fee accumulator fields together when implementing
+        uint128 tokensOwedA;  // Fees collected for token A (reduced from uint256)
+        uint128 tokensOwedB;  // Fees collected for token B (reduced from uint256)
+        
+        // Fee growth tracking fields will be added here in the implementation
     }
     
     /**
      * @dev Structure to store a pool's current state
+     * Gas optimization: Pack related fields together and use smaller uint types
+     * where appropriate to reduce storage slots used
      */
     struct PoolState {
-        uint160 sqrtPriceX96;  // Current sqrt price
-        int24 tick;            // Current tick
+        uint160 sqrtPriceX96;    // Current sqrt price
+        int24 tick;              // Current tick
+        
+        // Gas optimization: Pack these fields in one slot (2 + 16 + 4 = 22 bytes)
         uint16 observationIndex; // Index of last oracle observation
         uint128 totalLiquidity;  // Total liquidity in the pool
+        uint32 lastUpdated;      // Timestamp of last update (reduced from uint256)
+        
+        // These will remain uint256 as they can grow to large values
         uint256 volumeTokenA;    // Total volume of token A
         uint256 volumeTokenB;    // Total volume of token B
-        uint256 feesCollectedA;  // Total fees collected for token A
-        uint256 feesCollectedB;  // Total fees collected for token B
-        uint256 lastUpdated;     // Timestamp of last update
+        
+        // Use uint128 for fee tracking as they rarely exceed 128 bits in practice
+        uint128 feesCollectedA;  // Total fees collected for token A 
+        uint128 feesCollectedB;  // Total fees collected for token B
     }
     
     /**

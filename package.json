@@ -2,5 +2,9 @@
   "dependencies": {
     "@mui/lab": "^7.0.0-beta.12",
     "recharts": "^2.15.3"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.12",
+    "hardhat": "^2.24.0"
   }
 }
