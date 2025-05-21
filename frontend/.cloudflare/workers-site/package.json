@@ -1,0 +1,12 @@
+{
+  "name": "quantera-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Workers for Quantera Platform",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@cloudflare/kv-asset-handler": "^0.3.0"
+  }
+} 
