@@ -326,7 +326,7 @@ const AboutPage: React.FC = () => {
           
           <NoticeBox isDarkMode={isDarkMode}>
             <Typography variant="h6" color="primary" gutterBottom>
-              Platform Status: Version 0.87
+              Platform Status: Version 0.94 (94% Complete)
             </Typography>
             <Typography variant="body2">
               The assets listed on this platform have not yet been fully custodied and are presented for demonstration purposes only. Quantera Finance is currently in development, and the platform features, assets, and functionalities shown may not reflect the final product. Investors should not make investment decisions based on the information presented without conducting proper due diligence.
@@ -485,7 +485,7 @@ const AboutPage: React.FC = () => {
             Roadmap & Vision
           </SectionTitle>
           <SectionDescription variant="body1">
-            Quantera is currently at Version 0.8.5 (85% complete) with the following focus areas:
+            Quantera is currently at Version 0.94 (94% complete) with the following focus areas:
           </SectionDescription>
           
           <CardContainer>
@@ -495,12 +495,17 @@ const AboutPage: React.FC = () => {
               sx={{ width: { xs: '100%', md: 'calc(50% - 16px)' } }}
             >
               <CardTitle variant="h5" color="primary">
-                Current Focus: Asset Creation & Management
+                Recent Achievements
               </CardTitle>
               <StyledList>
-                {currentFocusItems.map((item, index) => (
-                  <StyledListItem key={index}>{item}</StyledListItem>
-                ))}
+                <StyledListItem>Advanced analytics and ESG scoring dashboards</StyledListItem>
+                <StyledListItem>Comprehensive trade finance marketplace and trading interface</StyledListItem>
+                <StyledListItem>Portfolio management dashboard with cross-asset analytics</StyledListItem>
+                <StyledListItem>Real-time price tracking and transaction history</StyledListItem>
+                <StyledListItem>Custom Timeline and Grid components for robust UI/UX</StyledListItem>
+                <StyledListItem>Yield strategy marketplace and environmental impact metrics</StyledListItem>
+                <StyledListItem>WalletKit/WalletConnect integration and persistent sessions</StyledListItem>
+                <StyledListItem>Accessibility and testing improvements (Jest, Playwright, Axe)</StyledListItem>
               </StyledList>
             </FeatureCard>
             
@@ -510,12 +515,15 @@ const AboutPage: React.FC = () => {
               sx={{ width: { xs: '100%', md: 'calc(50% - 16px)' } }}
             >
               <CardTitle variant="h5" color="primary">
-                Future Developments
+                Current Focus & Next Steps
               </CardTitle>
               <StyledList>
-                {futureDevelopmentItems.map((item, index) => (
-                  <StyledListItem key={index}>{item}</StyledListItem>
-                ))}
+                <StyledListItem>Final integration testing across all modules</StyledListItem>
+                <StyledListItem>Comprehensive security audits and documentation</StyledListItem>
+                <StyledListItem>Testnet deployment and cross-chain testing</StyledListItem>
+                <StyledListItem>Partner onboarding and marketplace launch</StyledListItem>
+                <StyledListItem>Continuous UI/UX refinement and accessibility</StyledListItem>
+                <StyledListItem>Ongoing regulatory and compliance enhancements</StyledListItem>
               </StyledList>
             </FeatureCard>
           </CardContainer>
