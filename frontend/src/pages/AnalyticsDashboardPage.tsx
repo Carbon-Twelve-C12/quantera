@@ -37,6 +37,7 @@ import PerformanceChart from '../components/portfolio/PerformanceChart';
 import EnvironmentalImpactPanel from '../components/analytics/EnvironmentalImpactPanel';
 import YieldAnalyticsPanel from '../components/analytics/YieldAnalyticsPanel';
 import LiquidityAnalyticsPanel from '../components/analytics/LiquidityAnalyticsPanel';
+import RiskAnalyticsPanel from '../components/analytics/RiskAnalyticsPanel';
 
 // Register ChartJS components
 ChartJS.register(
@@ -261,9 +262,11 @@ const AnalyticsDashboardPage: React.FC = () => {
       
       {/* Risk Analysis Tab */}
       {activeTab === 'risk' && (
-        <Typography variant="h6" sx={{ textAlign: 'center', py: 8 }}>
-          Risk Analysis content will be implemented in the next iteration
-        </Typography>
+        <RiskAnalyticsPanel 
+          riskMetrics={platformMetrics.riskMetrics}
+          liquidityMetrics={platformMetrics.liquidityMetrics}
+          assetDistribution={platformMetrics.assetDistribution}
+        />
       )}
       
       {/* Environmental Impact Tab */}

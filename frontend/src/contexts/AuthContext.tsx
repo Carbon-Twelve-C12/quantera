@@ -12,6 +12,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
   token: string | null;
+  userAddress: string | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
@@ -23,6 +24,7 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   user: null,
   token: null,
+  userAddress: null,
   login: async () => {},
   logout: () => {},
   isLoading: false,
@@ -37,6 +39,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [userAddress, setUserAddress] = useState<string | null>('0x1234567890123456789012345678901234567890');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,16 +47,22 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   useEffect(() => {
     const storedToken = localStorage.getItem('auth_token');
     const storedUser = localStorage.getItem('auth_user');
+    const storedAddress = localStorage.getItem('auth_address');
     
     if (storedToken && storedUser) {
       try {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
         setIsAuthenticated(true);
+        
+        if (storedAddress) {
+          setUserAddress(storedAddress);
+        }
       } catch (err) {
         // Invalid stored user, clear storage
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_user');
+        localStorage.removeItem('auth_address');
       }
     }
     
@@ -87,14 +96,17 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       };
       
       const mockToken = 'mock_jwt_token';
+      const mockAddress = '0x1234567890123456789012345678901234567890';
       
       // Store in localStorage
       localStorage.setItem('auth_token', mockToken);
       localStorage.setItem('auth_user', JSON.stringify(mockUser));
+      localStorage.setItem('auth_address', mockAddress);
       
       // Update state
       setToken(mockToken);
       setUser(mockUser);
+      setUserAddress(mockAddress);
       setIsAuthenticated(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -108,10 +120,12 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     // Clear localStorage
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');
+    localStorage.removeItem('auth_address');
     
     // Reset state
     setToken(null);
     setUser(null);
+    setUserAddress(null);
     setIsAuthenticated(false);
   };
 
@@ -119,6 +133,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     isAuthenticated,
     user,
     token,
+    userAddress,
     login,
     logout,
     isLoading,

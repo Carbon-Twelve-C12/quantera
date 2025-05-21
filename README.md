@@ -2,9 +2,9 @@
 
 [![Website](https://img.shields.io/badge/Website-Quantera.finance-blue)](https://quantera.finance/)
 [![Contributors](https://img.shields.io/github/contributors/mjohnson518/vault)](https://github.com/mjohnson518/vault/graphs/contributors)
-[![Version](https://img.shields.io/badge/Version-0.87-green)]()
+[![Version](https://img.shields.io/badge/Version-0.94-green)]()
 
-## Version: 0.87 (87% Complete)
+## Version: 0.94 (94% Complete)
 
 ## Overview
 Quantera is an ecosystem for tokenizing any financial asset class. While initially focused on U.S. Treasury securities, the platform is architecturally designed for multi-asset support with superior liquidity solutions, yield optimization, and cross-chain interoperability. Leveraging Ethereum's capabilities, Quantera aims to become the leading tokenization platform globally, serving both institutional and individual investors. The platform provides specialized support for environmental assets and sustainable finance instruments, positioning Quantera at the forefront of Web3 sustainability solutions.
@@ -115,6 +115,26 @@ Quantera/
   - Fractional investment interface for trade finance assets with real-time settlement
   - Multi-asset type filtering for trade finance instruments
   - Comprehensive risk visualization and yield analytics for trade finance
+  - Advanced TradeFinanceTradingInterface with support for market, limit, and stop orders
+  - Real-time price tracking with visual indicators in trading interface
+  - Custom settlement currency selection for trade finance transactions
+  - Comprehensive trade order history tracking and management
+  - Detailed TradeFinanceAssetDetails component with investment interface and transaction timeline
+  - Custom Timeline components for transaction visualization
+  - Grid wrapper component for MUI v7 TypeScript compatibility
+  - Portfolio management dashboard with comprehensive asset overview
+  - Integrated Trade Finance assets into portfolio tracking and analytics 
+  - Dedicated Trade Finance portfolio tab with detailed analytics
+  - Interactive visualization for trade finance asset types and maturity distribution
+  - Geographic exposure analysis for trade finance investments
+  - Consolidated view of all asset classes in unified portfolio dashboard
+  - Advanced ESG scoring visualization with interactive drill-down capabilities
+  - Comprehensive SDG contribution tracking with visualization
+  - Environmental impact metrics dashboard with real-world equivalency displays
+  - Custom date utilities for consistent date handling across visualizations
+  - Multi-dimensional radar charts for ESG metrics comparison
+  - Interactive trend analysis with micro-charts embedded in metric cards
+  - Real-time equivalency calculations for environmental impact metrics
 
 - **Environmental Asset Integration**:
   - Updated asset class enum from "CARBON_CREDIT" to "ENVIRONMENTAL_ASSET" for broader inclusivity
@@ -131,7 +151,6 @@ Quantera/
   - TypeScript configuration with proper path mappings
 
 ### In Progress
-- **Portfolio Management Dashboard**: Real-time tracking of holdings with performance analytics
 - **ESG Impact Dashboard**: Comprehensive visualization of environmental and social impacts
 - **Analytics Platform**: Advanced data visualization and insights for all asset classes
 
@@ -139,7 +158,6 @@ Quantera/
 - Improve asset analytics and reporting capabilities
 - Implement comprehensive monitoring system
 - Conduct security audits and gas optimization
-- Complete Portfolio management dashboard
 - Design Analytics visualization components
 - Create ESG scoring and impact visualization dashboards
 
@@ -271,17 +289,19 @@ For more details, see our [Sustainable Finance Initiative](docs/sustainable_fina
 
 ## Timeline
 
-Based on our progress, we are currently in Week 13 of our Implementation Plan. The next major milestones are:
+Based on our progress, we are currently in Week 16 of our Implementation Plan. The next major milestones are:
 
-1. **Weeks 13-14**: Complete frontend interfaces for portfolio management dashboard and analytics
-2. **Weeks 14-15**: Implement cross-chain functionality and white-label solutions
-3. **Weeks 15-16**: Comprehensive testing, security audits, and deployment preparation 
-4. **Weeks 16-18**: Marketplace launch and partner onboarding
+1. **Week 16**: Comprehensive testing, security audits, and deployment preparation 
+2. **Weeks 17-18**: Marketplace launch and partner onboarding
 
 Previous milestones completed:
 - Backend services, API layer, and type system implementation
 - Frontend integration and WalletContext implementation with comprehensive WalletConnect support
 - Asset Creation wizard with support for all asset types
+- Trade Finance components including advanced trading interface and detailed asset analysis
+- Portfolio management dashboard with integrated cross-asset tracking and analytics
+- ESG scoring and impact visualization dashboards with interactive analytics
+- Advanced environmental impact measurement with real-world equivalency displays
 
 ## Competitive Positioning
 
@@ -301,9 +321,11 @@ With our continued implementation of AssetFactory, LiquidityPools, YieldOptimize
 
 7. **Environmental Impact Tracking**: Advanced capabilities for measuring, reporting, and verifying environmental impact.
 
-8. **Seamless Wallet Integration**: Robust wallet connection system with support for multiple providers, persistent connections, and graceful fallback mechanisms for a consistent user experience
+8. **Seamless Wallet Integration**: Robust wallet connection system with support for multiple providers, persistent connections, and graceful fallback mechanisms for a consistent user experience.
 
 9. **Complete Asset Creation**: Full-featured asset creation wizard supporting all asset classes with customizable fields.
+
+10. **Advanced Trade Finance Capabilities**: Comprehensive trading interfaces supporting market, limit and stop orders with real-time price tracking and detailed asset analysis for trade finance instruments.
 
 ## Development Setup
 
@@ -420,130 +442,3 @@ To run CI checks locally before pushing:
 
 2. Frontend tests:
    ```
-   cd frontend
-   npm run typecheck
-   npm run lint
-   npm test
-   npm run build
-   ```
-
-3. Backend tests:
-   ```
-   cd backend
-   cargo fmt --all -- --check
-   cargo clippy -- -D warnings
-   cargo test --all
-   ```
-
-## Enhanced Architecture
-- **Asset Factory**: Modular system for creating and managing tokenized assets
-- **Treasury Registry**: Central registry for all tokenized assets
-- **Asset Tokens**: ERC-1400 compatible tokens with advanced features
-- **Compliance Module**: Global regulatory framework adapters
-- **Trading Module**: Order book with AMM integration
-- **Liquidity Pools**: Advanced AMM with concentrated liquidity
-- **Yield Optimizer**: Strategy marketplace for yield maximization
-- **L2 Bridge**: Cross-chain integration for efficient trading
-- **Smart Account Templates**: Programmable account logic for asset management
-- **Environmental Asset System**: Specialized contracts for sustainability-focused assets
-- **Impact Tracker**: Measurement and verification of environmental impacts
-
-## Backend Services
-- **Alloy Integration**: Ethereum blockchain interaction with Pectra support
-- **Asset Management**: Lifecycle handling for all asset types
-- **Trading Service**: Order matching and execution
-- **Liquidity Service**: Pooled liquidity management
-- **Yield Service**: Strategy execution and optimization
-- **User Management**: Registration, verification, and portfolio tracking
-- **Authentication**: Secure wallet-based authentication
-- **API Layer**: Comprehensive RESTful API
-- **Environmental Verification Service**: Integration with certification standards
-- **Impact Analytics Service**: Environmental impact calculation and reporting
-- **L2Bridge Service**: Cross-chain asset transfer and management
-- **Smart Account Service**: Template management and account deployment
-- **Extensible Treasury Service**: TreasuryService now supports pluggable deployment and compliance logic for treasury token creation via the new `TokenDeployer` and `ComplianceChecker` interfaces. This enables easy integration of custom smart contract deployment and compliance/KYC/AML checks, with mock implementations provided for local development and testing.
-- **Improved Test Coverage**: The backend includes comprehensive unit tests for treasury creation, compliance enforcement, and token deployment logic, ensuring robust and secure asset management workflows.
-
-## License
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
-
-## Contributing
-We welcome contributions to the Quantera Platform! Here's how you can help:
-
-### Reporting Issues
-- Use the GitHub issue tracker to report bugs or suggest enhancements
-- Include detailed steps to reproduce the issue
-- Mention your environment (OS, browser version, etc.)
-
-### Development Process
-1. Fork the repository
-2. Create a new branch for your feature (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Code Guidelines
-- Follow the language-specific conventions listed in our style guides
-- Write tests for new features and ensure existing tests pass
-- Document your code according to language-specific documentation standards
-- Ensure your code passes all CI/CD checks before submitting a PR
-
-### Security
-- If you discover a security vulnerability, please send an email to hello@marcjohnson.xyz
-- Do NOT create public GitHub issues for security vulnerabilities
-
-## Contact
-For questions, suggestions, or collaboration opportunities, please email:
-hello@marcjohnson.xyz
-
-## Testing
-
-We have implemented a comprehensive testing strategy for the Quantera Platform:
-
-### Unit Testing
-- **Frontend Components**: Jest and React Testing Library for component testing
-- **React Hooks**: Specialized testing for custom hooks
-- **API Integration**: Mock testing for API endpoints
-- **Context Providers**: Full context testing with mock data
-
-### End-to-End Testing
-- **Playwright Framework**: Multi-browser testing (Chrome, Firefox, Safari)
-- **Mobile Simulation**: Testing responsive design on various device sizes
-- **User Flows**: Complete user journey testing
-
-### Accessibility Testing
-- **WCAG Compliance**: Tests against WCAG 2.1 AA standards
-- **Generated Reports**: HTML reports with detailed accessibility information
-- **Continuous Integration**: A11y tests integrated into CI/CD pipeline
-
-### Running Tests
-```bash
-# Unit tests
-npm test
-
-# Unit tests with coverage
-npm run test:coverage
-
-# TypeScript type checking
-npm run typecheck
-
-# ESLint code quality checks
-npm run lint
-
-# End-to-end tests
-npm run test:e2e
-
-# Accessibility tests
-npm run test:a11y
-```
-
-### Continuous Integration
-All tests are automatically run on pull requests and merges to main branch via GitHub Actions workflows. Our CI/CD pipeline includes:
-
-1. **Smart Contract Testing**: Security and functionality verification
-2. **Frontend Testing**: Unit tests, e2e tests, and accessibility checks 
-3. **Backend Testing**: API endpoint validation and integration tests
-
-Our goal is maintaining >95% test coverage across the codebase to ensure reliability, security, and maintainability.
-
-- **TreasuryService Extensibility**: Tests verify that the compliance checker and token deployer are invoked as expected, and that treasury creation is blocked if compliance fails. The architecture is designed for easy extension and robust testing.

@@ -6,6 +6,8 @@ import { TreasuryDetail, EnvironmentalAsset } from '../data/assetInterfaces';
 import { useTheme } from '../contexts/ThemeContext';
 import { useWallet } from '../contexts/WalletContext';
 import { Modal, Button, Form } from 'react-bootstrap';
+import TradeFinanceAssetDetails from '../components/tradeFinance/TradeFinanceAssetDetails';
+import { TradeFinanceProvider } from '../contexts/TradeFinanceContext';
 
 // Combined type for asset details
 type AssetDetail = TreasuryDetail | EnvironmentalAsset | RealEstateAsset | TradeFinanceAsset;
@@ -405,6 +407,16 @@ const AssetDetailPage: React.FC = () => {
         }}>{debug}</pre>
         <Link to="/marketplace" className="button primary">Return to Marketplace</Link>
       </div>
+    );
+  }
+
+  // Check if this is a trade finance asset, in which case we'll use our new component
+  if (isTradeFinance(asset)) {
+    // Map the treasury asset to a TradeFinanceAsset format for our new component
+    return (
+      <TradeFinanceProvider>
+        <TradeFinanceAssetDetails />
+      </TradeFinanceProvider>
     );
   }
   

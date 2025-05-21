@@ -1,22 +1,18 @@
 import React from 'react';
-import { Grid as MuiGrid, GridProps } from '@mui/material';
+import { Grid as MuiGrid, GridProps as MuiGridProps } from '@mui/material';
 
-// Creates a wrapper component for MUI Grid that accepts the same props
-// but removes TypeScript errors related to 'item' property
-const Grid: React.FC<any> = (props) => {
-  const { children, xs, sm, md, lg, xl, ...rest } = props;
-  
-  // Convert numeric width props to Grid's system
-  const gridProps: GridProps = {
-    ...rest,
-    ...(xs ? { xs } : {}),
-    ...(sm ? { sm } : {}),
-    ...(md ? { md } : {}),
-    ...(lg ? { lg } : {}),
-    ...(xl ? { xl } : {})
-  };
-  
-  return <MuiGrid {...gridProps}>{children}</MuiGrid>;
+// Create a type for our component that extends the MUI Grid props
+interface ExtendedGridProps extends MuiGridProps {
+  item?: boolean;
+}
+
+// Create a wrapper component that correctly passes props to MUI Grid
+const Grid: React.FC<ExtendedGridProps> = ({ children, item, ...props }) => {
+  return (
+    <MuiGrid {...(item ? { item: true } : {})} {...props}>
+      {children}
+    </MuiGrid>
+  );
 };
 
 export default Grid; 

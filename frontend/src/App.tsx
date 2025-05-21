@@ -10,7 +10,10 @@ import ContractExplorerPage from './pages/ContractExplorerPage';
 import YieldStrategyPage from './pages/YieldStrategyPage';
 import PortfolioPage from './pages/PortfolioPage';
 import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
+import ESGDashboardPage from './pages/ESGDashboardPage';
+import ESGScoringDashboardPage from './pages/ESGScoringDashboardPage';
 import EnvironmentalAssetPage from './pages/EnvironmentalAssetPage';
+import TradeFinancePage from './pages/TradeFinancePage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LiquidityPoolProvider } from './contexts/LiquidityPoolContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -83,7 +86,10 @@ const AppContent: React.FC = () => {
             <li><Link to="/liquidity">Liquidity Pools</Link></li>
             <li><Link to="/yield">Yield Strategy</Link></li>
             <li><Link to="/portfolio">Portfolio</Link></li>
+            <li><Link to="/trade-finance">Trade Finance</Link></li>
             <li><Link to="/analytics">Analytics</Link></li>
+            <li><Link to="/esg-dashboard">ESG Impact</Link></li>
+            <li><Link to="/esg-scoring">ESG Scoring</Link></li>
             <li><Link to="/compare">Compare</Link></li>
             <li><Link to="/create">Create Treasury</Link></li>
             {isAuthenticated ? (
@@ -113,10 +119,13 @@ const AppContent: React.FC = () => {
           <Route path="/marketplace" element={<MarketplacePage />} />
           <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/analytics" element={<AnalyticsDashboardPage />} />
+          <Route path="/esg-dashboard" element={<ESGDashboardPage />} />
+          <Route path="/esg-scoring" element={<ESGScoringDashboardPage />} />
           <Route path="/assets/:id" element={<AssetDetailPage />} />
           <Route path="/environmental/assets/:assetId" element={<EnvironmentalAssetPage />} />
           <Route path="/liquidity" element={<EnhancedLiquidityPoolPage />} />
           <Route path="/yield" element={<YieldStrategyPage />} />
+          <Route path="/trade-finance" element={<TradeFinancePage />} />
           <Route path="/compare" element={<TreasuryComparison />} />
           <Route path="/contracts" element={<ContractExplorerPage />} />
           <Route path="/create" element={
@@ -144,6 +153,8 @@ const Home: React.FC = () => (
       <Link to="/treasuries" className="button secondary">Browse Treasuries</Link>
       <Link to="/portfolio" className="button secondary">View Portfolio</Link>
       <Link to="/analytics" className="button secondary">Platform Analytics</Link>
+      <Link to="/esg-dashboard" className="button secondary">ESG & Impact</Link>
+      <Link to="/trade-finance" className="button secondary">Trade Finance</Link>
       <Link to="/liquidity" className="button secondary">Manage Liquidity</Link>
       <Link to="/create" className="button secondary">Create New Treasury</Link>
     </div>
