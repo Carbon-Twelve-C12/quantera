@@ -16,7 +16,9 @@ import {
   Paper,
   LinearProgress,
   Tooltip,
-  IconButton
+  IconButton,
+  Chip,
+  Divider
 } from '@mui/material';
 import Grid from '../../utils/mui-shims';
 import { Doughnut, Bar, Radar } from 'react-chartjs-2';
@@ -37,7 +39,7 @@ import {
 import { 
   PieChart as PieChartIcon,
   BarChart as BarChartIcon,
-  RadarChart as RadarChartIcon,
+  ShowChart as ShowChartIcon,
   Info as InfoIcon,
   Security as SecurityIcon,
   Warning as WarningIcon,
@@ -542,7 +544,7 @@ const RiskAnalyticsPanel: React.FC<RiskAnalyticsPanelProps> = ({
             Risk vs Yield
           </ToggleButton>
           <ToggleButton value="radar" aria-label="radar chart">
-            <RadarChartIcon sx={{ mr: 1 }} />
+            <ShowChartIcon sx={{ mr: 1 }} />
             Risk Profile
           </ToggleButton>
         </ToggleButtonGroup>

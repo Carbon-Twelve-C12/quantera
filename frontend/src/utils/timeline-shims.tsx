@@ -1,11 +1,14 @@
 import React from 'react';
 import { Box, BoxProps } from '@mui/material';
 
-interface TimelineProps extends BoxProps {
+interface TimelineProps {
   position?: 'alternate' | 'left' | 'right';
+  children?: React.ReactNode;
+  sx?: any;
+  className?: string;
 }
 
-export const Timeline: React.FC<TimelineProps> = ({ children, position = 'alternate', ...props }) => {
+export const Timeline: React.FC<TimelineProps> = ({ children, position = 'alternate', sx, className, ...rest }) => {
   return (
     <Box 
       sx={{ 
@@ -13,9 +16,10 @@ export const Timeline: React.FC<TimelineProps> = ({ children, position = 'altern
         flexDirection: 'column',
         padding: 0,
         margin: 0,
-        ...props.sx
+        ...sx
       }}
-      {...props}
+      className={className}
+      {...rest}
     >
       {children}
     </Box>

@@ -31,6 +31,7 @@ import EnhancedImpactDashboard, {
   TimeSeriesData,
   GeographyData
 } from '../components/common/EnhancedImpactDashboard';
+import { SDG_COLORS, SDG_NAMES } from '../components/analytics/EnhancedImpactDashboard';
 import {
   EmojiNature as EnvironmentalIcon,
   People as SocialIcon,
@@ -254,7 +255,7 @@ const mockGeographyData: GeographyData[] = [
 ];
 
 const ESGDashboardPage: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { user } = useAuth();
   const theme = useTheme();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

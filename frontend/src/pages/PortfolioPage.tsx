@@ -389,44 +389,44 @@ const PortfolioPage: React.FC = () => {
       {/* Overview Dashboard View */}
       {dashboardView === 'overview' && (
         <>
-          {/* Charts and Data */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} md={8}>
-              <PerformanceChart 
-                performanceHistory={portfolio.performanceHistory} 
-                title="Portfolio Performance"
-                height={300}
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <AssetAllocation 
-                assetAllocation={portfolio.assetAllocation} 
-                title="Asset Allocation"
-                height={300}
-              />
-            </Grid>
-          </Grid>
+      {/* Charts and Data */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} md={8}>
+          <PerformanceChart 
+            performanceHistory={portfolio.performanceHistory} 
+            title="Portfolio Performance"
+            height={300}
+          />
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <AssetAllocation 
+            assetAllocation={portfolio.assetAllocation} 
+            title="Asset Allocation"
+            height={300}
+          />
+        </Grid>
+      </Grid>
 
-          {/* Asset List */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12}>
-              <AssetList 
-                assets={portfolio.holdings} 
-                title="Your Assets"
-                activeFilter={activeFilter}
-                onFilterChange={setActiveFilter}
-              />
-            </Grid>
-          </Grid>
+      {/* Asset List */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12}>
+          <AssetList 
+            assets={portfolio.holdings} 
+            title="Your Assets"
+            activeFilter={activeFilter}
+            onFilterChange={setActiveFilter}
+          />
+        </Grid>
+      </Grid>
 
           {/* Trade Finance, Yield, and Transactions */}
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={4}>
-              <YieldDistributionCard 
-                yieldDistributions={yieldDistributions} 
-                title="Upcoming Yield Distributions"
-              />
-            </Grid>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={4}>
+          <YieldDistributionCard 
+            yieldDistributions={yieldDistributions} 
+            title="Upcoming Yield Distributions"
+          />
+        </Grid>
             <Grid item xs={12} md={4}>
               <TradeFinancePortfolioSection 
                 maxItems={3}
@@ -434,12 +434,12 @@ const PortfolioPage: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={4}>
-              <TransactionHistory 
-                transactions={transactions} 
-                title="Recent Transactions"
-              />
-            </Grid>
-          </Grid>
+          <TransactionHistory 
+            transactions={transactions} 
+            title="Recent Transactions"
+          />
+        </Grid>
+      </Grid>
         </>
       )}
 
@@ -767,33 +767,33 @@ const PortfolioPage: React.FC = () => {
       {dashboardView === 'environmental' && impactMetrics && (
         <Grid container spacing={3}>
           <Grid item xs={12}>
-            <Card sx={{ 
-              bgcolor: 'background.paper',
-              color: 'text.primary',
-              boxShadow: 1 
-            }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
+          <Card sx={{ 
+            bgcolor: 'background.paper',
+            color: 'text.primary',
+            boxShadow: 1 
+          }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
                   Environmental Impact Dashboard
-                </Typography>
-                
+              </Typography>
+              
                 <Box sx={{ mt: 3 }}>
                   <Grid container spacing={3}>
-                    <Grid item xs={12} md={4}>
-                      <Box sx={{ 
-                        textAlign: 'center', 
+                <Grid item xs={12} md={4}>
+                  <Box sx={{ 
+                    textAlign: 'center', 
                         p: 3,
-                        borderRadius: 2,
-                        bgcolor: 'rgba(16, 185, 129, 0.1)',
-                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
-                      }}>
+                    borderRadius: 2,
+                    bgcolor: 'rgba(16, 185, 129, 0.1)',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+                  }}>
                         <ForestIcon sx={{ color: '#10b981', fontSize: 48, mb: 1 }} />
                         <Typography variant="h4" gutterBottom>
-                          {impactMetrics.totalCarbonOffset.toFixed(1)} tons
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Carbon Offset (CO₂e)
-                        </Typography>
+                      {impactMetrics.totalCarbonOffset.toFixed(1)} tons
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Carbon Offset (CO₂e)
+                    </Typography>
                         <Box sx={{ mt: 2 }}>
                           <Typography variant="body2" color="text.secondary">
                             Equivalent to:
@@ -802,24 +802,24 @@ const PortfolioPage: React.FC = () => {
                             {(impactMetrics.totalCarbonOffset * 2.3).toFixed(0)} trees planted
                           </Typography>
                         </Box>
-                      </Box>
-                    </Grid>
-                    
-                    <Grid item xs={12} md={4}>
-                      <Box sx={{ 
-                        textAlign: 'center', 
+                  </Box>
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <Box sx={{ 
+                    textAlign: 'center', 
                         p: 3,
-                        borderRadius: 2,
-                        bgcolor: 'rgba(22, 163, 74, 0.1)',
-                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
-                      }}>
+                    borderRadius: 2,
+                    bgcolor: 'rgba(22, 163, 74, 0.1)',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+                  }}>
                         <ForestIcon sx={{ color: '#16a34a', fontSize: 48, mb: 1 }} />
                         <Typography variant="h4" gutterBottom>
-                          {impactMetrics.totalLandProtected.toFixed(1)} ha
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Land Area Protected
-                        </Typography>
+                      {impactMetrics.totalLandProtected.toFixed(1)} ha
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Land Area Protected
+                    </Typography>
                         <Box sx={{ mt: 2 }}>
                           <Typography variant="body2" color="text.secondary">
                             Equivalent to:
@@ -828,24 +828,24 @@ const PortfolioPage: React.FC = () => {
                             {(impactMetrics.totalLandProtected * 1.4).toFixed(1)} football fields
                           </Typography>
                         </Box>
-                      </Box>
-                    </Grid>
-                    
-                    <Grid item xs={12} md={4}>
-                      <Box sx={{ 
-                        textAlign: 'center', 
+                  </Box>
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <Box sx={{ 
+                    textAlign: 'center', 
                         p: 3,
-                        borderRadius: 2,
-                        bgcolor: 'rgba(14, 165, 233, 0.1)',
-                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
-                      }}>
+                    borderRadius: 2,
+                    bgcolor: 'rgba(14, 165, 233, 0.1)',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+                  }}>
                         <ForestIcon sx={{ color: '#0ea5e9', fontSize: 48, mb: 1 }} />
                         <Typography variant="h4" gutterBottom>
-                          {(impactMetrics.totalWaterSaved / 1000).toFixed(0)} kL
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Water Protected
-                        </Typography>
+                      {(impactMetrics.totalWaterSaved / 1000).toFixed(0)} kL
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Water Protected
+                    </Typography>
                         <Box sx={{ mt: 2 }}>
                           <Typography variant="body2" color="text.secondary">
                             Equivalent to:
@@ -854,10 +854,10 @@ const PortfolioPage: React.FC = () => {
                             {((impactMetrics.totalWaterSaved / 1000) / 2.5).toFixed(0)} households' yearly use
                           </Typography>
                         </Box>
-                      </Box>
-                    </Grid>
-                  </Grid>
-
+                  </Box>
+                </Grid>
+              </Grid>
+              
                   <Box sx={{ mt: 4 }}>
                     <Typography variant="h6" gutterBottom>
                       Sustainable Development Goals Impact
@@ -964,18 +964,18 @@ const PortfolioPage: React.FC = () => {
                 </Box>
                 
                 <Box sx={{ mt: 4, textAlign: 'center' }}>
-                  <Button 
+                <Button 
                     variant="contained" 
-                    color="success" 
-                    component={Link}
+                  color="success" 
+                  component={Link}
                     to="/environmental/marketplace"
                     size="large"
-                  >
+                >
                     Explore Environmental Assets
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
           </Grid>
         </Grid>
       )}

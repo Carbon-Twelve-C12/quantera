@@ -54,7 +54,7 @@ ChartJS.register(
 );
 
 // Define the SDG colors lookup
-const SDG_COLORS = {
+export const SDG_COLORS: Record<number, string> = {
   1: '#e5243b', // No Poverty
   2: '#dda63a', // Zero Hunger
   3: '#4c9f38', // Good Health and Well-being
@@ -75,7 +75,7 @@ const SDG_COLORS = {
 };
 
 // SDG full names
-const SDG_NAMES = {
+export const SDG_NAMES: Record<number, string> = {
   1: 'No Poverty',
   2: 'Zero Hunger',
   3: 'Good Health and Well-being',

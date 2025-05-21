@@ -14,8 +14,6 @@ import {
   Legend,
   ChartData
 } from 'chart.js';
-import { AssetDistribution } from '../../types/analyticsTypes';
-import { AssetClass } from '../../types/assetTypes';
 
 // Register ChartJS components
 ChartJS.register(
@@ -24,8 +22,22 @@ ChartJS.register(
   Legend
 );
 
+// Define the AssetClass enum directly since imports are failing
+enum AssetClass {
+  TREASURY = 'TREASURY',
+  REAL_ESTATE = 'REAL_ESTATE',
+  CORPORATE_BOND = 'CORPORATE_BOND',
+  ENVIRONMENTAL_ASSET = 'ENVIRONMENTAL_ASSET',
+  IP_RIGHT = 'IP_RIGHT',
+  INVOICE = 'INVOICE',
+  COMMODITY = 'COMMODITY',
+  INFRASTRUCTURE = 'INFRASTRUCTURE',
+  TRADE_FINANCE = 'TRADE_FINANCE',
+  CUSTOM = 'CUSTOM'
+}
+
 // Asset class colors
-const ASSET_COLORS = {
+const ASSET_COLORS: Record<AssetClass, string> = {
   [AssetClass.TREASURY]: '#3498db', // Blue
   [AssetClass.REAL_ESTATE]: '#e74c3c', // Red
   [AssetClass.ENVIRONMENTAL_ASSET]: '#2ecc71', // Green
@@ -39,7 +51,7 @@ const ASSET_COLORS = {
 };
 
 // Human-readable asset class names
-const ASSET_LABELS = {
+const ASSET_LABELS: Record<AssetClass, string> = {
   [AssetClass.TREASURY]: 'Treasury',
   [AssetClass.REAL_ESTATE]: 'Real Estate',
   [AssetClass.ENVIRONMENTAL_ASSET]: 'Environmental Assets',
@@ -51,6 +63,12 @@ const ASSET_LABELS = {
   [AssetClass.COMMODITY]: 'Commodities',
   [AssetClass.INFRASTRUCTURE]: 'Infrastructure',
 };
+
+interface AssetDistribution {
+  assetClass: AssetClass;
+  totalValue: number;
+  count: number;
+}
 
 interface DistributionChartProps {
   distribution: AssetDistribution[];
