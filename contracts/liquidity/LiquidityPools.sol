@@ -31,6 +31,19 @@ contract LiquidityPools is ILiquidityPools, AccessControl, ReentrancyGuard {
     bytes32 public constant FEE_MANAGER_ROLE = keccak256("FEE_MANAGER_ROLE");
     bytes32 public constant PROTOCOL_FEE_MANAGER_ROLE = keccak256("PROTOCOL_FEE_MANAGER_ROLE");
     
+    // Custom errors for gas efficiency
+    error InvalidFeeTier(uint24 feeTier, uint24 minFeeTier, uint24 maxFeeTier);
+    error PoolNotFound(bytes32 poolId);
+    error Unauthorized(address caller, bytes32 requiredRole);
+    error InvalidZeroAddress();
+    error InvalidTickRange(int24 lowerTick, int24 upperTick);
+    error InvalidTickSpacing(int24 tick, uint24 tickSpacing);
+    error InsufficientLiquidity(uint128 available, uint128 required);
+    error PriceLimitReached(uint160 price, uint160 limit);
+    error PositionNotFound(bytes32 positionId);
+    error NotPositionOwner(address caller, address owner);
+    error AmountTooLow(uint256 amount, uint256 minAmount);
+    
     // Asset factory reference
     IAssetFactory public immutable assetFactory;
     
@@ -88,6 +101,8 @@ contract LiquidityPools is ILiquidityPools, AccessControl, ReentrancyGuard {
     event BatchFeesCollected(address indexed owner, bytes32[] positionIds, uint256 totalAmount0, uint256 totalAmount1);
     event TickBitmapUpdated(bytes32 indexed poolId, int24 tick, bool initialized);
     event TickBitmapWordUpdated(bytes32 indexed poolId, int16 wordPos, uint256 word);
+    event ProtocolFeeUpdated(uint16 oldProtocolFee, uint16 newProtocolFee);
+    event ProtocolFeeRecipientUpdated(address oldFeeRecipient, address newFeeRecipient);
     
     /**
      * @dev Constructor
@@ -95,8 +110,13 @@ contract LiquidityPools is ILiquidityPools, AccessControl, ReentrancyGuard {
      * @param feeRecipient Address to receive protocol fees
      */
     constructor(address assetFactoryAddress, address feeRecipient) {
-        require(assetFactoryAddress != address(0), "LiquidityPools: asset factory address cannot be zero");
-        require(feeRecipient != address(0), "LiquidityPools: fee recipient address cannot be zero");
+        // Validate input parameters using custom errors for better gas efficiency
+        if (assetFactoryAddress == address(0)) {
+            revert InvalidZeroAddress();
+        }
+        if (feeRecipient == address(0)) {
+            revert InvalidZeroAddress();
+        }
         
         // Gas optimization: Use immutable for address that doesn't change
         assetFactory = IAssetFactory(assetFactoryAddress);
@@ -1150,6 +1170,7 @@ contract LiquidityPools is ILiquidityPools, AccessControl, ReentrancyGuard {
      * @param sqrtPriceLimitX96 Price limit for the swap
      * @return amount0 Amount of token A swapped
      * @return amount1 Amount of token B swapped
+     * @notice This function is protected against reentrancy
      */
     function swap(
         bytes32 poolId,
@@ -1161,13 +1182,25 @@ contract LiquidityPools is ILiquidityPools, AccessControl, ReentrancyGuard {
         int256 amount0,
         int256 amount1
     ) {
-        // Check input validity
-        require(amountSpecified != 0, "LiquidityPools: amount cannot be zero");
+        // --- CHECKS ---
+        
+        // Check input validity using custom errors
+        if (amountSpecified == 0) {
+            revert AmountTooLow(0, 1);
+        }
+        
+        if (recipient == address(0)) {
+            revert InvalidZeroAddress();
+        }
         
         // Gas optimization: Cache pool configuration and state
         PoolConfig memory config = _poolConfigs[poolId];
-        require(config.poolId == poolId, "LiquidityPools: pool does not exist");
-        require(config.active, "LiquidityPools: pool is not active");
+        if (config.poolId != poolId) {
+            revert PoolNotFound(poolId);
+        }
+        if (!config.active) {
+            revert PoolNotFound(poolId);
+        }
         
         // Cache pool state
         PoolState memory state = _poolStates[poolId];
@@ -1179,11 +1212,13 @@ contract LiquidityPools is ILiquidityPools, AccessControl, ReentrancyGuard {
         
         // Gas optimization: Validate price limit based on swap direction
         if (zeroForOne) {
-            require(sqrtPriceLimitX96 < state.sqrtPriceX96 && sqrtPriceLimitX96 > MIN_SQRT_RATIO, 
-                "LiquidityPools: invalid sqrt price limit");
+            if (sqrtPriceLimitX96 >= state.sqrtPriceX96 || sqrtPriceLimitX96 <= MIN_SQRT_RATIO) {
+                revert PriceLimitReached(sqrtPriceLimitX96, state.sqrtPriceX96);
+            }
         } else {
-            require(sqrtPriceLimitX96 > state.sqrtPriceX96 && sqrtPriceLimitX96 < MAX_SQRT_RATIO, 
-                "LiquidityPools: invalid sqrt price limit");
+            if (sqrtPriceLimitX96 <= state.sqrtPriceX96 || sqrtPriceLimitX96 >= MAX_SQRT_RATIO) {
+                revert PriceLimitReached(sqrtPriceLimitX96, state.sqrtPriceX96);
+            }
         }
         
         // Gas optimization: Use local variables to reduce storage reads
@@ -1196,11 +1231,7 @@ contract LiquidityPools is ILiquidityPools, AccessControl, ReentrancyGuard {
         address tokenIn = zeroForOne ? config.tokenA : config.tokenB;
         address tokenOut = zeroForOne ? config.tokenB : config.tokenA;
         
-        // Transfer tokens to the contract first if exact input
-        if (exactInput) {
-            uint256 amountIn = uint256(amountSpecified);
-            IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
-        }
+        // --- EFFECTS ---
         
         // Gas optimization: Cache current state variables
         uint160 currentSqrtPrice = state.sqrtPriceX96;
@@ -1270,20 +1301,7 @@ contract LiquidityPools is ILiquidityPools, AccessControl, ReentrancyGuard {
             }
         }
         
-        // If exact output, transfer necessary tokens from user
-        if (!exactInput && amountRemaining < 0) {
-            // For exact output, we've calculated how much input we need
-            int256 amountIn = zeroForOne ? -amount0 : -amount1;
-            IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), uint256(amountIn));
-        }
-        
-        // Transfer output tokens to recipient
-        int256 amountOut = zeroForOne ? amount1 : amount0;
-        if (amountOut > 0) {
-            IERC20(tokenOut).safeTransfer(recipient, uint256(amountOut));
-        }
-        
-        // Update pool state
+        // Update pool state before any external calls
         PoolState storage stateStorage = _poolStates[poolId];
         stateStorage.sqrtPriceX96 = currentSqrtPrice;
         stateStorage.tick = currentTick;
@@ -1301,6 +1319,26 @@ contract LiquidityPools is ILiquidityPools, AccessControl, ReentrancyGuard {
         } else {
             stateStorage.volumeTokenA += uint256(amount0);
             stateStorage.volumeTokenB += uint256(-amount1);
+        }
+        
+        // --- INTERACTIONS ---
+        
+        // Transfer tokens to the contract first if exact input
+        if (exactInput) {
+            uint256 amountIn = uint256(amountSpecified);
+            IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
+        }
+        // If exact output, transfer necessary tokens from user
+        else if (amountRemaining < 0) {
+            // For exact output, we've calculated how much input we need
+            int256 amountIn = zeroForOne ? -amount0 : -amount1;
+            IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), uint256(amountIn));
+        }
+        
+        // Transfer output tokens to recipient
+        int256 amountOut = zeroForOne ? amount1 : amount0;
+        if (amountOut > 0) {
+            IERC20(tokenOut).safeTransfer(recipient, uint256(amountOut));
         }
         
         emit Swap(
@@ -1396,6 +1434,88 @@ contract LiquidityPools is ILiquidityPools, AccessControl, ReentrancyGuard {
                 globalFeeGrowth1 += feeGrowth;
             }
         }
+    }
+    
+    /**
+     * @dev Changes the fee tier of a pool
+     * @param poolId ID of the pool
+     * @param newFeeTier New fee tier in basis points
+     * @return success Boolean indicating if the fee was changed successfully
+     * @notice Only FEE_MANAGER_ROLE or the pool owner can call this function
+     */
+    function setPoolFee(bytes32 poolId, uint24 newFeeTier) external override returns (bool success) {
+        // Validate input using custom error
+        if (newFeeTier == 0 || newFeeTier > 10000) {
+            revert InvalidFeeTier(newFeeTier, 1, 10000);
+        }
+        
+        // Get pool configuration
+        PoolConfig storage config = _poolConfigs[poolId];
+        if (config.poolId != poolId) {
+            revert PoolNotFound(poolId);
+        }
+        
+        // Security enhancement: Check for proper role or ownership
+        if (!hasRole(FEE_MANAGER_ROLE, msg.sender) && config.owner != msg.sender) {
+            revert Unauthorized(msg.sender, FEE_MANAGER_ROLE);
+        }
+        
+        // Update fee tier
+        uint24 oldFeeTier = config.feeTier;
+        config.feeTier = newFeeTier;
+        
+        // Emit event
+        emit FeeChanged(poolId, oldFeeTier, newFeeTier);
+        
+        return true;
+    }
+    
+    /**
+     * @dev Updates the protocol fee percentage
+     * @param newProtocolFee New protocol fee in basis points (e.g., 10 = 0.1%)
+     * @notice Only PROTOCOL_FEE_MANAGER_ROLE can call this function
+     */
+    function setProtocolFee(uint16 newProtocolFee) external {
+        // Check that caller has the appropriate role
+        if (!hasRole(PROTOCOL_FEE_MANAGER_ROLE, msg.sender)) {
+            revert Unauthorized(msg.sender, PROTOCOL_FEE_MANAGER_ROLE);
+        }
+        
+        // Validate the new fee is within reasonable bounds (max 5%)
+        if (newProtocolFee > 500) {
+            revert InvalidFeeTier(newProtocolFee, 0, 500);
+        }
+        
+        // Update the protocol fee
+        uint16 oldProtocolFee = protocolFee;
+        protocolFee = newProtocolFee;
+        
+        // Emit an event for the fee change
+        emit ProtocolFeeUpdated(oldProtocolFee, newProtocolFee);
+    }
+    
+    /**
+     * @dev Updates the protocol fee recipient address
+     * @param newFeeRecipient New address to receive protocol fees
+     * @notice Only PROTOCOL_FEE_MANAGER_ROLE can call this function
+     */
+    function setProtocolFeeRecipient(address newFeeRecipient) external {
+        // Check that caller has the appropriate role
+        if (!hasRole(PROTOCOL_FEE_MANAGER_ROLE, msg.sender)) {
+            revert Unauthorized(msg.sender, PROTOCOL_FEE_MANAGER_ROLE);
+        }
+        
+        // Validate the new recipient is not the zero address
+        if (newFeeRecipient == address(0)) {
+            revert InvalidZeroAddress();
+        }
+        
+        // Update the fee recipient
+        address oldFeeRecipient = protocolFeeRecipient;
+        protocolFeeRecipient = newFeeRecipient;
+        
+        // Emit an event for the recipient change
+        emit ProtocolFeeRecipientUpdated(oldFeeRecipient, newFeeRecipient);
     }
     
     // View functions

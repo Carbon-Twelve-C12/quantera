@@ -14,6 +14,11 @@ import "./L2BridgeGasOptimizer.sol";
  * @title L2Bridge
  * @dev Contract for bridging orders and trades between L1 and various L2 chains
  * with enhanced cross-chain capabilities and Pectra EIP support
+ * 
+ * Security Enhancements (v0.9.7):
+ * - Added custom errors for gas-efficient error handling
+ * - Enhanced input validation with specific error types
+ * - Improved access control for critical functions
  */
 contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     using Counters for Counters.Counter;
@@ -24,6 +29,25 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
     bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
+
+    // Custom errors for gas efficiency
+    error Unauthorized(address caller, bytes32 requiredRole);
+    error ChainAlreadyExists(uint64 chainId);
+    error ChainDoesNotExist(uint64 chainId);
+    error ChainNotSupported(uint64 chainId);
+    error InvalidZeroAddress(string paramName);
+    error ArrayLengthMismatch();
+    error MessageNotFound(bytes32 messageId);
+    error OrderAlreadyBridged(bytes32 orderId);
+    error TradeAlreadySettled(bytes32 tradeId);
+    error InvalidSignature(address recovered, address expected);
+    error OrderExpired(uint64 expiration, uint64 currentTime);
+    error InvalidAmount(uint256 amount);
+    error InvalidPrice(uint256 price);
+    error BuyerSellerSame(address user);
+    error MessageCannotBeRetried(bytes32 messageId, MessageStatus status);
+    error InvalidGasOptimizer(address gasOptimizer);
+    error InvalidDestinationChain(uint64 chainId);
 
     // Constants
     uint256 public constant GWEI = 1e9;
@@ -77,7 +101,9 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
 
     // Constructor
     constructor(address gasOptimizerAddress) {
-        require(gasOptimizerAddress != address(0), "Gas optimizer address cannot be zero");
+        if (gasOptimizerAddress == address(0)) {
+            revert InvalidZeroAddress("gasOptimizerAddress");
+        }
         
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(ADMIN_ROLE, msg.sender);
@@ -128,7 +154,15 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
         bool blobEnabled,
         uint64 maxMessageSize
     ) external onlyRole(ADMIN_ROLE) {
-        require(chains[chainId].chainId == 0, "Chain already exists");
+        // Use custom error for validation
+        if (chains[chainId].chainId != 0) {
+            revert ChainAlreadyExists(chainId);
+        }
+        
+        // Validate address parameters
+        if (bridgeAddress == address(0)) {
+            revert InvalidZeroAddress("bridgeAddress");
+        }
         
         L2ChainInfo storage chain = chains[chainId];
         chain.chainId = chainId;
@@ -166,7 +200,15 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
         bool enabled,
         bool blobEnabled
     ) external onlyRole(ADMIN_ROLE) {
-        require(chains[chainId].chainId != 0, "Chain does not exist");
+        // Use custom error for validation
+        if (chains[chainId].chainId == 0) {
+            revert ChainDoesNotExist(chainId);
+        }
+        
+        // Validate address parameters
+        if (bridgeAddress == address(0)) {
+            revert InvalidZeroAddress("bridgeAddress");
+        }
         
         L2ChainInfo storage chain = chains[chainId];
         chain.bridgeAddress = bridgeAddress;
@@ -222,7 +264,9 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      * @return The L2ChainInfo for the specified chain
      */
     function getChainInfo(uint64 chainId) external view returns (L2ChainInfo memory) {
-        require(chains[chainId].chainId != 0, "Chain does not exist");
+        if (chains[chainId].chainId == 0) {
+            revert ChainDoesNotExist(chainId);
+        }
         return chains[chainId];
     }
 
@@ -283,7 +327,13 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
         bytes memory data,
         uint256 amount
     ) private returns (bytes32) {
-        require(isChainSupported(destinationChainId), "Destination chain not supported");
+        if (!isChainSupported(destinationChainId)) {
+            revert ChainNotSupported(destinationChainId);
+        }
+        
+        if (recipient == address(0)) {
+            revert InvalidZeroAddress("recipient");
+        }
         
         // Gas optimization: Generate messageId more efficiently
         _messageIdCounter.increment();
@@ -355,7 +405,10 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
         MessageStatus status,
         string calldata failureReason
     ) external onlyRole(RELAYER_ROLE) {
-        require(messages[messageId].messageId == messageId, "Message does not exist");
+        // Use custom error for validation
+        if (messages[messageId].messageId != messageId) {
+            revert MessageNotFound(messageId);
+        }
         
         // Gas optimization: Use storage pointer to avoid multiple SLOAD operations
         CrossChainMessage storage message = messages[messageId];
@@ -385,13 +438,20 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     function retryMessage(bytes32 messageId) external nonReentrant returns (bool) {
         CrossChainMessage storage message = messages[messageId];
         
-        // Gas optimization: Combine checks to reduce gas
-        require(
-            message.messageId == messageId && 
-            message.status == MessageStatus.FAILED &&
-            (message.sender == msg.sender || hasRole(OPERATOR_ROLE, msg.sender)),
-            "Cannot retry: invalid message, status, or unauthorized"
-        );
+        // Validate message exists
+        if (message.messageId != messageId) {
+            revert MessageNotFound(messageId);
+        }
+        
+        // Check message status
+        if (message.status != MessageStatus.FAILED) {
+            revert MessageCannotBeRetried(messageId, message.status);
+        }
+        
+        // Check authorization
+        if (message.sender != msg.sender && !hasRole(OPERATOR_ROLE, msg.sender)) {
+            revert Unauthorized(msg.sender, OPERATOR_ROLE);
+        }
         
         // Reset status to pending
         message.status = MessageStatus.PENDING;
@@ -411,7 +471,9 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      * @return The message status
      */
     function getMessageStatus(bytes32 messageId) external view returns (MessageStatus) {
-        require(messages[messageId].messageId == messageId, "Message does not exist");
+        if (messages[messageId].messageId != messageId) {
+            revert MessageNotFound(messageId);
+        }
         return messages[messageId].status;
     }
 
@@ -421,7 +483,9 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      * @return The message details
      */
     function getMessageDetails(bytes32 messageId) external view returns (CrossChainMessage memory) {
-        require(messages[messageId].messageId == messageId, "Message does not exist");
+        if (messages[messageId].messageId != messageId) {
+            revert MessageNotFound(messageId);
+        }
         return messages[messageId];
     }
 
@@ -497,11 +561,13 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
         bytes[] calldata dataArray,
         uint256[] calldata amounts
     ) external whenNotPaused nonReentrant returns (bytes32[] memory) {
-        require(isChainSupported(destinationChainId), "Destination chain not supported");
-        require(
-            recipients.length == dataArray.length && recipients.length == amounts.length,
-            "Array lengths must match"
-        );
+        if (!isChainSupported(destinationChainId)) {
+            revert ChainNotSupported(destinationChainId);
+        }
+        
+        if (recipients.length != dataArray.length || recipients.length != amounts.length) {
+            revert ArrayLengthMismatch();
+        }
         
         bytes32[] memory messageIds = new bytes32[](recipients.length);
         
@@ -555,10 +621,14 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
         returns (OrderBridgingResult memory) 
     {
         // Validate the chain
-        require(isChainSupported(request.destinationChainId), "Destination chain not supported");
+        if (!isChainSupported(request.destinationChainId)) {
+            revert ChainNotSupported(request.destinationChainId);
+        }
         
         // Check if the order has already been processed
-        require(messageIdByOrderId[request.order_id] == bytes32(0), "Order already bridged");
+        if (messageIdByOrderId[request.order_id] != bytes32(0)) {
+            revert OrderAlreadyBridged(request.order_id);
+        }
         
         // Validate the order
         _validateOrder(request);
@@ -660,10 +730,14 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
         returns (TradeSettlementResult memory) 
     {
         // Validate the chain
-        require(isChainSupported(request.destinationChainId), "Destination chain not supported");
+        if (!isChainSupported(request.destinationChainId)) {
+            revert ChainNotSupported(request.destinationChainId);
+        }
         
         // Check if the trade has already been processed
-        require(messageIdByTradeId[request.trade_id] == bytes32(0), "Trade already settled");
+        if (messageIdByTradeId[request.trade_id] != bytes32(0)) {
+            revert TradeAlreadySettled(request.trade_id);
+        }
         
         // Validate the trade
         _validateTrade(request);
@@ -779,7 +853,9 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
         uint64 destinationChainId,
         uint64 dataSize
     ) public view returns (bool) {
-        require(isChainSupported(destinationChainId), "Chain not supported");
+        if (!isChainSupported(destinationChainId)) {
+            revert ChainNotSupported(destinationChainId);
+        }
         
         // If blobs are not enabled for this chain, always use calldata
         if (!chains[destinationChainId].blob_enabled) {
@@ -808,7 +884,9 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      * @return True if blob data is enabled
      */
     function isBlobEnabled(uint64 chainId) external view returns (bool) {
-        require(isChainSupported(chainId), "Chain not supported");
+        if (!isChainSupported(chainId)) {
+            revert ChainNotSupported(chainId);
+        }
         return chains[chainId].blob_enabled;
     }
 
@@ -850,7 +928,9 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
         uint64 dataSize,
         bool useBlob
     ) internal view returns (L2GasEstimation memory) {
-        require(isChainSupported(destinationChainId), "Chain not supported");
+        if (!isChainSupported(destinationChainId)) {
+            revert ChainNotSupported(destinationChainId);
+        }
         
         L2ChainInfo memory chain = chains[destinationChainId];
         
@@ -892,7 +972,9 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      */
     function _validateOrder(OrderBridgingRequest calldata request) internal view {
         // Verify that the order has not expired
-        require(request.expiration > block.timestamp, "Order expired");
+        if (request.expiration <= block.timestamp) {
+            revert OrderExpired(request.expiration, uint64(block.timestamp));
+        }
         
         // Verify signature if needed (simplified - would be more complex in production)
         if (request.signature.length > 0) {
@@ -909,10 +991,19 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
             bytes32 signedHash = orderHash.toEthSignedMessageHash();
             address recoveredSigner = signedHash.recover(request.signature);
             
-            require(recoveredSigner == request.user, "Invalid signature");
+            if (recoveredSigner != request.user) {
+                revert InvalidSignature(recoveredSigner, request.user);
+            }
         }
         
-        // Additional validations as needed
+        // Additional validations
+        if (request.amount == 0) {
+            revert InvalidAmount(0);
+        }
+        
+        if (request.price == 0) {
+            revert InvalidPrice(0);
+        }
     }
 
     /**
@@ -920,14 +1011,18 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
      */
     function _validateTrade(TradeSettlementRequest calldata request) internal pure {
         // Ensure buyer and seller are not the same
-        require(request.buyer != request.seller, "Buyer and seller cannot be the same");
+        if (request.buyer == request.seller) {
+            revert BuyerSellerSame(request.buyer);
+        }
         
         // Ensure amount is positive
-        require(request.amount > 0, "Amount must be positive");
+        if (request.amount == 0) {
+            revert InvalidAmount(0);
+        }
         
         // Ensure price is positive
-        require(request.price > 0, "Price must be positive");
-        
-        // Additional validations as needed
+        if (request.price == 0) {
+            revert InvalidPrice(0);
+        }
     }
 } 

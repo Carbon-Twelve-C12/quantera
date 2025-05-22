@@ -326,7 +326,7 @@ const AboutPage: React.FC = () => {
           
           <NoticeBox isDarkMode={isDarkMode}>
             <Typography variant="h6" color="primary" gutterBottom>
-              Platform Status: Version 0.9.4
+              Platform Status: Version 0.9.8
             </Typography>
             <Typography variant="body2">
               The assets listed on this platform have not yet been fully custodied and are presented for demonstration purposes only. Quantera Finance is currently in development, and the platform features, assets, and functionalities shown may not reflect the final product. Investors should not make investment decisions based on the information presented without conducting proper due diligence.
@@ -498,14 +498,14 @@ const AboutPage: React.FC = () => {
                 Recent Achievements
               </CardTitle>
               <StyledList>
+                <StyledListItem>Standardized security patterns across all core contracts</StyledListItem>
+                <StyledListItem>Custom errors for gas-efficient error handling</StyledListItem>
+                <StyledListItem>Enhanced role-based access control in critical functions</StyledListItem>
+                <StyledListItem>Improved checks-effects-interactions pattern implementation</StyledListItem>
+                <StyledListItem>Comprehensive security guidelines documentation</StyledListItem>
                 <StyledListItem>Advanced analytics and ESG scoring dashboards</StyledListItem>
                 <StyledListItem>Comprehensive trade finance marketplace and trading interface</StyledListItem>
                 <StyledListItem>Portfolio management dashboard with cross-asset analytics</StyledListItem>
-                <StyledListItem>Real-time price tracking and transaction history</StyledListItem>
-                <StyledListItem>Custom Timeline and Grid components for robust UI/UX</StyledListItem>
-                <StyledListItem>Yield strategy marketplace and environmental impact metrics</StyledListItem>
-                <StyledListItem>WalletKit/WalletConnect integration and persistent sessions</StyledListItem>
-                <StyledListItem>Accessibility and testing improvements (Jest, Playwright, Axe)</StyledListItem>
               </StyledList>
             </FeatureCard>
             
@@ -518,11 +518,11 @@ const AboutPage: React.FC = () => {
                 Current Focus & Next Steps
               </CardTitle>
               <StyledList>
-                <StyledListItem>Final integration testing across all modules</StyledListItem>
-                <StyledListItem>Comprehensive security audits and documentation</StyledListItem>
-                <StyledListItem>Testnet deployment and cross-chain testing</StyledListItem>
+                <StyledListItem>Expand test coverage to 95%+ for all contracts</StyledListItem>
+                <StyledListItem>Perform cross-chain testing on testnet environments</StyledListItem>
+                <StyledListItem>Validate environmental asset verification mechanisms with third-party auditors</StyledListItem>
+                <StyledListItem>Complete external security audit</StyledListItem>
                 <StyledListItem>Partner onboarding and marketplace launch</StyledListItem>
-                <StyledListItem>Continuous UI/UX refinement and accessibility</StyledListItem>
                 <StyledListItem>Ongoing regulatory and compliance enhancements</StyledListItem>
               </StyledList>
             </FeatureCard>

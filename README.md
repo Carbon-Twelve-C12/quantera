@@ -2,9 +2,9 @@
 
 [![Website](https://img.shields.io/badge/Website-Quantera.finance-blue)](https://quantera.finance/)
 [![Contributors](https://img.shields.io/github/contributors/mjohnson518/vault)](https://github.com/mjohnson518/vault/graphs/contributors)
-[![Version](https://img.shields.io/badge/Version-0.9.4-green)]()
+[![Version](https://img.shields.io/badge/Version-0.9.8-green)]()
 
-## Version: 0.9.4
+## Version: 0.9.8
 
 ## Overview
 Quantera is an ecosystem for tokenizing any financial asset class. While initially focused on U.S. Treasury securities, the platform is architecturally designed for multi-asset support with superior liquidity solutions, yield optimization, and cross-chain interoperability. Leveraging Ethereum's capabilities, Quantera aims to become the leading tokenization platform globally, serving both institutional and individual investors. The platform provides specialized support for environmental assets and sustainable finance instruments, positioning Quantera at the forefront of Web3 sustainability solutions.
@@ -67,6 +67,14 @@ Quantera/
   - Comprehensive integration tests for AssetFactory and LiquidityPools interactions
   - Contract security audit preparation documentation
   - Contract optimization plan with detailed implementation schedule
+  - Standardized security patterns across all core contracts:
+    - Custom errors for gas-efficient error handling
+    - Enhanced role-based access control
+    - Improved checks-effects-interactions pattern implementation
+    - Robust input validation with specific error types
+    - Consistent delegation security in SmartAccountTemplates
+    - Enhanced yield harvesting security in YieldOptimizer
+  - Comprehensive security guidelines documentation for standardizing secure coding practices
 
 - **Backend Services**: 
   - Ethereum client with Pectra support
@@ -155,19 +163,21 @@ Quantera/
   - TypeScript configuration with proper path mappings
 
 ### Recently Completed
+- **Security Enhancement**: Implemented consistent security patterns across all core contracts
 - **Gas Optimization**: Enhanced L2Bridge contract with optimized message encoding and blob data handling
 - **Integration Testing**: Created comprehensive tests for contract interactions and asset lifecycles
-- **Security Preparation**: Developed detailed security audit preparation documentation
+- **Security Documentation**: Developed detailed security guidelines and standards for all contracts
 - **ESG Impact Dashboard**: Comprehensive visualization of environmental and social impacts
 - **Portfolio Management**: Complete dashboard with cross-asset visualization and analytics
 - **Trade Finance Components**: Advanced trading interface with real-time price tracking
 
 ### Next Steps
-- Conduct security audits with focus on cross-contract security
-- Complete optimization of remaining contracts based on established plan
-- Implement comprehensive monitoring system for production deployment
-- Deploy to testnet for cross-chain functionality validation
+- Expand test coverage to 95%+ for all contracts
+- Perform cross-chain testing on testnet environments
 - Validate environmental asset verification mechanisms with third-party auditors
+- Complete external security audit
+
+The platform is on track for a v1.0.0 release by end of Q3 2023.
 
 ## API Endpoints
 The platform exposes the following API endpoints:
