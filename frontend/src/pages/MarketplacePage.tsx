@@ -68,8 +68,20 @@ const MarketplacePage: React.FC = () => {
       change_24h: asset.change_24h,
     }));
 
+    // Add oil commodity asset
+    const oilCommodity: DisplayAsset = {
+      id: 'oil-commodity-001',
+      name: 'West Texas Intermediate Crude Oil',
+      description: 'Tokenized WTI Crude Oil futures. Each token represents one barrel of oil with delivery date in next quarter. Physical settlement available through authorized partners.',
+      price: '78.35',
+      image_url: '/images/assets/commodities/oil-barrel.jpg',
+      asset_type: 'commodity',
+      token_address: '0x7F5E835B94856329F97b8ED7Ec18C709F2E3b5D2',
+      change_24h: '+2.4%',
+    };
+
     // Combine all assets
-    const allAssets = [...treasuryAssets, ...environmentalAssets];
+    const allAssets = [...treasuryAssets, ...environmentalAssets, oilCommodity];
     setDisplayAssets(allAssets);
     setFilteredAssets(allAssets);
     setLoading(false);
@@ -138,6 +150,7 @@ const MarketplacePage: React.FC = () => {
       case 'biodiversitycredit': return 'Biodiversity Credit';
       case 'watercredit': return 'Water Credit';
       case 'renewableenergycertificate': return 'Renewable Energy Certificate';
+      case 'commodity': return 'Commodity';
       default: return type;
     }
   };
@@ -155,6 +168,7 @@ const MarketplacePage: React.FC = () => {
     { value: 'BiodiversityCredit', label: 'Biodiversity Credits' },
     { value: 'WaterCredit', label: 'Water Credits' },
     { value: 'RenewableEnergyCertificate', label: 'Renewable Energy Certificates' },
+    { value: 'commodity', label: 'Commodities' },
   ];
 
   // Fallback image for assets without images
@@ -171,7 +185,7 @@ const MarketplacePage: React.FC = () => {
       <div className="marketplace-header">
         <h1>Quantera Marketplace</h1>
         <p className="marketplace-description">
-          Browse and invest in tokenized financial products and environmental assets with transparent impact metrics.
+          Browse and invest in tokenized financial products, environmental assets, and commodities with transparent metrics.
         </p>
       </div>
 
@@ -190,16 +204,7 @@ const MarketplacePage: React.FC = () => {
           
           <div className="category-card">
             <div className="category-image">
-              <img src="/images/assets/trade-finance.jpg" alt="Trade Finance" onError={(e) => e.currentTarget.src = "/images/asset-placeholder.jpg"} />
-            </div>
-            <h3>Trade Finance</h3>
-            <p>Letters of credit, invoice receivables, and supply chain finance assets</p>
-            <Link to="/tradefinance/marketplace" className="category-link">Explore Trade Finance</Link>
-          </div>
-          
-          <div className="category-card">
-            <div className="category-image">
-              <img src="/images/assets/real-estate.jpg" alt="Real Estate" onError={(e) => e.currentTarget.src = "/images/asset-placeholder.jpg"} />
+              <img src="/images/assets/real-estate/buildings.jpg" alt="Real Estate" onError={(e) => e.currentTarget.src = "/images/asset-placeholder.jpg"} />
             </div>
             <h3>Real Estate</h3>
             <p>Fractional ownership in commercial and residential properties</p>
@@ -208,11 +213,20 @@ const MarketplacePage: React.FC = () => {
           
           <div className="category-card">
             <div className="category-image">
-              <img src="/images/assets/carbon-credit.jpg" alt="Environmental Assets" onError={(e) => e.currentTarget.src = "/images/asset-placeholder.jpg"} />
+              <img src="/images/assets/commodities/oil-barrel.jpg" alt="Commodities" onError={(e) => e.currentTarget.src = "/images/asset-placeholder.jpg"} />
             </div>
-            <h3>Environmental Assets</h3>
-            <p>Carbon credits, biodiversity credits and renewable energy certificates</p>
-            <Link to="/environmental/marketplace" className="category-link">View Environmental Assets</Link>
+            <h3>Commodities</h3>
+            <p>Tokenized physical commodities with one token per unit</p>
+            <Link to="/commodities/marketplace" className="category-link">Explore Commodities</Link>
+          </div>
+          
+          <div className="category-card">
+            <div className="category-image">
+              <img src="/images/assets/trade-finance/shipping.jpg" alt="Trade Finance" onError={(e) => e.currentTarget.src = "/images/asset-placeholder.jpg"} />
+            </div>
+            <h3>Trade Finance</h3>
+            <p>Letters of credit, invoice receivables, and supply chain finance assets</p>
+            <Link to="/tradefinance/marketplace" className="category-link">Explore Trade Finance</Link>
           </div>
         </div>
       </div>

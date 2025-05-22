@@ -118,6 +118,44 @@ export const treasuries = [
     ],
   },
   {
+    token_id: "moneymarket-prime-2023",
+    token_address: "0xD4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6",
+    name: "Prime Money Market Fund",
+    symbol: "PMMF-2023",
+    description: "A prime money market fund that invests in high-quality, short-term debt securities issued by corporations and banks. Offers higher yields than government money market funds while maintaining a high level of safety and liquidity.",
+    treasury_type: "moneymarket",
+    total_supply: "25000000",
+    yield_rate: 410, // 4.10% in basis points
+    maturity_date: NOW + (DAY * 1), // Daily liquidity
+    current_price: "1.00", // Money market funds maintain a stable NAV
+    status: "Active",
+    issuer: "Quantera Financial",
+    issuer_description: "Quantera Financial is a leading provider of money market funds and short-term investment solutions. The firm focuses on delivering competitive yields while maintaining high credit quality and liquidity.",
+    auction_date: NOW - (DAY * 1), // Daily auction
+    settlement_date: NOW, // Same-day settlement
+    face_value: "1.00",
+    minimum_bid: "1000.00",
+    issuance_size: "25000000000", // $25 billion
+    custody_fee: 0.18, // 0.18% per annum (expense ratio)
+    liquidity_rating: "Very High",
+    risk_rating: "AA",
+    historical_prices: [
+      { date: NOW - (DAY * 30), price: '1.00' },
+      { date: NOW - (DAY * 15), price: '1.00' },
+      { date: NOW, price: '1.00' },
+    ],
+    recent_trades: [
+      { date: NOW - (DAY * 1), quantity: '100000', price: '1.00', type: 'Buy' },
+      { date: NOW - (DAY * 1), quantity: '75000', price: '1.00', type: 'Sell' },
+    ],
+    similar_treasuries: ['tbill-3m-2023q4'],
+    documents: [
+      { name: 'Fund Prospectus', url: '#', type: 'PDF', size_kb: 475 },
+      { name: 'Holdings Report', url: '#', type: 'PDF', size_kb: 320 },
+      { name: 'Expense Disclosure', url: '#', type: 'PDF', size_kb: 185 },
+    ],
+  },
+  {
     token_id: "re-mixeduse-seattle-2023",
     token_address: "0x6789012345678901234567890123456789012345",
     name: "Harbor District Mixed-Use Development",
@@ -179,6 +217,55 @@ export const treasuries = [
     image_url: '/images/assets/harbor-district/mixed-use-development.jpg'
   },
   {
+    token_id: "commodity-wti-oil-2023",
+    token_address: "0xA7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6",
+    name: "West Texas Intermediate Crude Oil",
+    symbol: "WTI-OIL-2023",
+    description: "Tokenized WTI Crude Oil futures. Each token represents one barrel of oil with delivery date in next quarter. Physical settlement available through authorized partners.",
+    treasury_type: "commodity",
+    total_supply: "500000",
+    yield_rate: 0, // No fixed yield
+    maturity_date: NOW + (DAY * 90), // 90 days forward contract
+    current_price: "78.35",
+    status: "Active",
+    issuer: "Quantera Commodities",
+    issuer_description: "Quantera Commodities specializes in tokenizing physical commodities, providing investors with fractional ownership and settlement options.",
+    auction_date: NOW - (DAY * 15), // 15 days ago
+    settlement_date: NOW - (DAY * 13), // 13 days ago
+    face_value: "80.00", // Estimated settlement value
+    minimum_bid: "7835.00",
+    issuance_size: "39175000", // $39.175 million
+    custody_fee: 0.25, // 0.25% per annum
+    liquidity_rating: "High",
+    risk_rating: "BBB",
+    historical_prices: [
+      { date: NOW - (DAY * 30), price: '76.40' },
+      { date: NOW - (DAY * 15), price: '77.25' },
+      { date: NOW, price: '78.35' },
+    ],
+    recent_trades: [
+      { date: NOW - (DAY * 1), quantity: '500', price: '78.35', type: 'Buy' },
+      { date: NOW - (DAY * 2), quantity: '750', price: '78.10', type: 'Buy' },
+    ],
+    similar_treasuries: [],
+    documents: [
+      { name: 'Term Sheet', url: '#', type: 'PDF', size_kb: 1650 },
+      { name: 'Settlement Options', url: '#', type: 'PDF', size_kb: 1250 },
+      { name: 'Market Analysis', url: '#', type: 'PDF', size_kb: 1850 },
+    ],
+    commodity_details: {
+      asset_type: "PHYSICAL_COMMODITY",
+      physical_unit: "Barrel",
+      unit_count: 1,
+      storage_location: "Cushing, Oklahoma",
+      delivery_method: "Physical or Cash Settlement",
+      settlement_options: ["Physical Delivery", "Cash Settlement", "Roll Forward"],
+      certification: "API Certification",
+      quality_grade: "Light Sweet Crude"
+    },
+    image_url: '/images/assets/oil-barrel.jpg'
+  },
+  {
     token_id: "scf-taiwan-semiconductor-2023",
     token_address: "0x7890123456789012345678901234567890123456",
     name: "Taiwan Semiconductor Supply Chain Finance",
@@ -225,43 +312,5 @@ export const treasuries = [
       risk_rating: 2
     },
     image_url: '/images/assets/supply-chain-finance/taiwan-semiconductor.jpg'
-  },
-  {
-    token_id: "moneymarket-prime-2023",
-    token_address: "0xD4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6",
-    name: "Prime Money Market Fund",
-    symbol: "PMMF-2023",
-    description: "A prime money market fund that invests in high-quality, short-term debt securities issued by corporations and banks. Offers higher yields than government money market funds while maintaining a high level of safety and liquidity.",
-    treasury_type: "moneymarket",
-    total_supply: "25000000",
-    yield_rate: 410, // 4.10% in basis points
-    maturity_date: NOW + (DAY * 1), // Daily liquidity
-    current_price: "1.00", // Money market funds maintain a stable NAV
-    status: "Active",
-    issuer: "Quantera Financial",
-    issuer_description: "Quantera Financial is a leading provider of money market funds and short-term investment solutions. The firm focuses on delivering competitive yields while maintaining high credit quality and liquidity.",
-    auction_date: NOW - (DAY * 1), // Daily auction
-    settlement_date: NOW, // Same-day settlement
-    face_value: "1.00",
-    minimum_bid: "1000.00",
-    issuance_size: "25000000000", // $25 billion
-    custody_fee: 0.18, // 0.18% per annum (expense ratio)
-    liquidity_rating: "Very High",
-    risk_rating: "AA",
-    historical_prices: [
-      { date: NOW - (DAY * 30), price: '1.00' },
-      { date: NOW - (DAY * 15), price: '1.00' },
-      { date: NOW, price: '1.00' },
-    ],
-    recent_trades: [
-      { date: NOW - (DAY * 1), quantity: '100000', price: '1.00', type: 'Buy' },
-      { date: NOW - (DAY * 1), quantity: '75000', price: '1.00', type: 'Sell' },
-    ],
-    similar_treasuries: ['tbill-3m-2023q4'],
-    documents: [
-      { name: 'Fund Prospectus', url: '#', type: 'PDF', size_kb: 475 },
-      { name: 'Holdings Report', url: '#', type: 'PDF', size_kb: 320 },
-      { name: 'Expense Disclosure', url: '#', type: 'PDF', size_kb: 185 },
-    ],
   }
 ]; 

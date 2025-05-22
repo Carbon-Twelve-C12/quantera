@@ -38,11 +38,15 @@ const MarketplacePage = () => {
       price: treasury.current_price,
       faceValue: treasury.face_value,
       type: getTreasuryTypeLabel(treasury.treasury_type),
-      image: treasury.treasury_type === 'realestate' 
+      image: treasury.image_url || (treasury.treasury_type === 'commodity' && treasury.token_id === 'commodity-wti-oil-2023'
+        ? '/images/assets/commodities/oil-barrel.jpg'
+        : treasury.treasury_type === 'commodity'
+        ? '/images/assets/commodity.jpg'
+        : treasury.treasury_type === 'realestate' 
         ? '/images/assets/real-estate.jpg'
         : treasury.treasury_type === 'tradefinance'
         ? '/images/assets/trade-finance.jpg'
-        : `/images/treasury-${treasury.treasury_type}.jpg`,
+        : `/images/treasury-${treasury.treasury_type}.jpg`),
       treasury_details: treasury
     }));
 
@@ -107,6 +111,7 @@ const MarketplacePage = () => {
       case 'moneymarket': return 'Money Market';
       case 'realestate': return 'Real Estate';
       case 'tradefinance': return 'Trade Finance';
+      case 'commodity': return 'Commodity';
       default: return type;
     }
   };
@@ -120,6 +125,7 @@ const MarketplacePage = () => {
       case 'moneymarket': return 'Daily';
       case 'realestate': return '10 years';
       case 'tradefinance': return '180 days';
+      case 'commodity': return '90 days';
       default: return 'Varies';
     }
   };
@@ -145,6 +151,7 @@ const MarketplacePage = () => {
       case 'Money Market': return 'secondary';
       case 'Real Estate': return 'danger';
       case 'Trade Finance': return 'dark';
+      case 'Commodity': return 'warning';
       case 'Environmental': return 'success';
       default: return 'secondary';
     }
@@ -180,6 +187,7 @@ const MarketplacePage = () => {
             <option value="Money Market">Money Market</option>
             <option value="Real Estate">Real Estate</option>
             <option value="Trade Finance">Trade Finance</option>
+            <option value="Commodity">Commodities</option>
             <option value="Environmental">Environmental Assets</option>
           </Form.Select>
         </Col>
