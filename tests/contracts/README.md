@@ -1,123 +1,130 @@
-# Quantera Platform Contract Integration Tests
+# Quantera Platform Smart Contract Tests
 
-This directory contains integration tests for the Quantera Platform smart contracts.
+This directory contains all tests for the Quantera Platform smart contracts, including unit tests, integration tests, and tools for test coverage analysis.
 
-## Overview
+## Testing Structure
 
-Integration tests verify that different components of the system work together correctly. In this project, we test interactions between:
+The test suite is organized into the following components:
 
-- L2Bridge contract and SmartAccountTemplates
-- Bridging account templates across different L2 chains
-- Cross-chain account deployment and execution
-- Error handling and recovery
+- **Unit Tests**: Located in the `unit/` directory, these tests focus on individual contract functionality, including security features, access control, error handling, and business logic validation.
+- **Integration Tests**: Located in the `integration/` directory, these tests validate interactions between multiple contracts, ensuring they work together as expected in real-world scenarios.
+- **Mocks**: Located in the `mocks/` directory, these are mock implementations used for testing isolated functionality.
 
-## Setup
+## Test Categories
 
-1. Make sure you have Node.js (v14+) and npm installed
+The test suite focuses on these main categories:
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+### Security Testing
+- Role-based access control
+- Input validation
+- Error handling with custom errors
+- Checks-effects-interactions pattern
+- Reentrancy protection
+- Delegation security
 
-3. Create a `.env` file with required environment variables:
-   ```
-   MAINNET_RPC_URL=https://eth-mainnet.alchemyapi.io/v2/your-api-key
-   ARBITRUM_RPC_URL=https://arb-mainnet.g.alchemy.com/v2/your-api-key
-   OPTIMISM_RPC_URL=https://opt-mainnet.g.alchemy.com/v2/your-api-key
-   PRIVATE_KEY=your-private-key
-   ETHERSCAN_API_KEY=your-etherscan-api-key
-   ARBISCAN_API_KEY=your-arbiscan-api-key
-   OPTIMISM_API_KEY=your-optimism-etherscan-api-key
-   ```
+### Functional Testing
+- Core business logic
+- Parameter validation
+- State transitions
+- Event emissions
 
-   Note: For local testing, these environment variables are optional.
+### Integration Testing
+- Cross-contract interactions
+- End-to-end workflows
+- System-level functionality
+
+## Test Coverage Goals
+
+As part of our path to v1.0.0, we're targeting the following test coverage metrics:
+
+- **Statement Coverage**: 95%+
+- **Branch Coverage**: 90%+
+- **Function Coverage**: 100%
+- **Line Coverage**: 95%+
+
+Critical security features and core business logic should have 100% coverage.
 
 ## Running Tests
 
-### Local Development
+### All Tests
 
-1. Start a local Hardhat node:
-   ```bash
-   npx hardhat node
-   ```
+To run all tests:
 
-2. Run the integration tests:
-   ```bash
-   npx hardhat test integration/bridge_account_integration_test.js --network localhost
-   ```
+```bash
+npx hardhat test
+```
 
-### Running on Testnets
+### Unit Tests Only
 
-To run tests on public testnets (e.g., Goerli, Arbitrum Goerli, Optimism Goerli):
+To run only unit tests:
 
-1. Update the network configuration in `hardhat.config.js` to include testnet configurations
-2. Add appropriate RPC URLs and private keys to your `.env` file
-3. Run the tests on the desired network:
-   ```bash
-   npx hardhat test integration/bridge_account_integration_test.js --network goerli
-   ```
+```bash
+npx hardhat test unit/*.test.js
+```
+
+### Integration Tests Only
+
+To run only integration tests:
+
+```bash
+npx hardhat test integration/*.js
+```
+
+### Specific Test Files
+
+To run specific test files:
+
+```bash
+npx hardhat test unit/YieldOptimizer.test.js
+```
 
 ## Test Coverage
 
 To generate test coverage reports:
 
 ```bash
-npx hardhat coverage
+./test-coverage.sh
 ```
 
-The report will be available in the `coverage/` directory.
+This will run all tests and generate an HTML coverage report in the `coverage/` directory. Open `coverage/index.html` in your browser to view detailed coverage metrics.
 
-## Gas Analysis
+## Continuous Integration
 
-To analyze gas usage:
+Tests are automatically run as part of our CI/CD pipeline. The workflow configuration can be found in `.github/workflows/contract-testing.yml`.
+
+## Adding New Tests
+
+When adding new tests, follow these guidelines:
+
+1. **Place Tests Appropriately**: Unit tests go in `unit/`, integration tests in `integration/`.
+2. **Name Tests Descriptively**: Use the format `ContractName.test.js` for unit tests and descriptive names for integration tests.
+3. **Use Test Fixtures**: Leverage `loadFixture` to set up test environments efficiently.
+4. **Test Edge Cases**: Focus on boundary conditions and edge cases, especially for security-critical functions.
+5. **Validate Custom Errors**: Test that functions revert with the expected custom errors under failure conditions.
+6. **Check Access Control**: Verify that functions enforce proper role-based access control.
+7. **Verify Events**: Confirm that functions emit the expected events with the correct parameters.
+
+## Troubleshooting
+
+### Gas Limits
+
+If tests fail due to gas limits, you may need to adjust the gas configuration in `hardhat.config.js` or optimize your test setup.
+
+### Timeouts
+
+For complex tests that take longer to run, adjust the Mocha timeout in the test file:
+
+```javascript
+describe("Complex tests", function() {
+  this.timeout(60000); // 60 seconds
+  // Tests...
+});
+```
+
+### Node.js Heap Issues
+
+If you encounter Node.js heap issues when running large test suites, try increasing the Node.js memory limit:
 
 ```bash
-REPORT_GAS=true npx hardhat test integration/bridge_account_integration_test.js
-```
-
-## Debugging
-
-For more verbose output during tests:
-
-```bash
-npx hardhat test integration/bridge_account_integration_test.js --verbose
-```
-
-## Test Structure
-
-- `before`: Sets up the test environment by deploying contracts and configuring test data
-- `describe` blocks: Group related test cases together
-- `it` blocks: Individual test cases that verify specific behaviors
-
-## Key Test Scenarios
-
-1. **Cross-chain Template Deployment**:
-   - Creating a template on the source chain
-   - Verifying the template
-   - Bridging the template to L2 chains
-   - Updating message status
-   - Optimal data format calculation
-
-2. **Cross-chain Account Deployment**:
-   - Creating a deployment-ready template
-   - Deploying an account from the template
-   - Adding delegates to the account
-   - Bridging account execution instructions to L2
-   - Simulating account execution
-   - Gas estimation for L2 operations
-
-3. **Error Handling and Recovery**:
-   - Handling message failure
-   - Retrying failed messages
-
-## Adding New Integration Tests
-
-To add new integration tests:
-
-1. Create a new test file in the `integration/` directory
-2. Follow the pattern in existing tests:
-   - Deploy relevant contracts
-   - Set up test data
-   - Perform contract interactions
-   - Assert expected results 
+NODE_OPTIONS="--max-old-space-size=4096" npx hardhat test
+``` 

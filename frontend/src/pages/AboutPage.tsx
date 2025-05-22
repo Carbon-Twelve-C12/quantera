@@ -484,9 +484,9 @@ const AboutPage: React.FC = () => {
           <SectionTitle variant="h3" color="primary">
             Roadmap & Vision
           </SectionTitle>
-          <SectionDescription variant="body1">
-            Quantera is currently at Version 0.9.4 with the following focus areas:
-          </SectionDescription>
+                      <SectionDescription variant="body1">
+              Quantera is currently at Version 0.9.8 with the following focus areas:
+            </SectionDescription>
           
           <CardContainer>
             <FeatureCard 
@@ -503,6 +503,8 @@ const AboutPage: React.FC = () => {
                 <StyledListItem>Enhanced role-based access control in critical functions</StyledListItem>
                 <StyledListItem>Improved checks-effects-interactions pattern implementation</StyledListItem>
                 <StyledListItem>Comprehensive security guidelines documentation</StyledListItem>
+                <StyledListItem>Implemented extensive unit tests for key contracts</StyledListItem>
+                <StyledListItem>Created unified test framework with coverage reporting</StyledListItem>
                 <StyledListItem>Advanced analytics and ESG scoring dashboards</StyledListItem>
                 <StyledListItem>Comprehensive trade finance marketplace and trading interface</StyledListItem>
                 <StyledListItem>Portfolio management dashboard with cross-asset analytics</StyledListItem>
@@ -518,7 +520,8 @@ const AboutPage: React.FC = () => {
                 Current Focus & Next Steps
               </CardTitle>
               <StyledList>
-                <StyledListItem>Expand test coverage to 95%+ for all contracts</StyledListItem>
+                <StyledListItem>Implemented unit tests for YieldOptimizer, SmartAccountTemplates, and L2Bridge</StyledListItem>
+                <StyledListItem>Expand test coverage to remaining contracts to reach 95%+</StyledListItem>
                 <StyledListItem>Perform cross-chain testing on testnet environments</StyledListItem>
                 <StyledListItem>Validate environmental asset verification mechanisms with third-party auditors</StyledListItem>
                 <StyledListItem>Complete external security audit</StyledListItem>
