@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { TreasuryList, TreasuryDetail, CreateTreasury, TreasuryComparison } from './components';
 import Login from './components/Login';
-import MarketplacePage from './pages/MarketplacePage';
+import { MarketplacePage } from './pages/MarketplacePage';
 import AssetDetailPage from './pages/AssetDetailPage';
 import EnhancedLiquidityPoolPage from './pages/EnhancedLiquidityPoolPage';
 import AboutPage from './pages/AboutPage';
@@ -27,6 +27,7 @@ import WalletConnectButton from './components/common/WalletConnectButton';
 import './App.css';
 import './styles/marketplace.css';
 import './styles/assetDetail.css';
+import './styles/quantera-design-system.css';
 
 // Protected Route component
 interface ProtectedRouteProps {

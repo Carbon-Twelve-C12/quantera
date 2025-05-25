@@ -1,0 +1,9 @@
+/Users/marcjohnson/Desktop/Vault/backend/target/debug/deps/libserde_path_to_error-acab4eab8e3b2969.rmeta: /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/lib.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/de.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/path.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/ser.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/wrap.rs
+
+/Users/marcjohnson/Desktop/Vault/backend/target/debug/deps/serde_path_to_error-acab4eab8e3b2969.d: /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/lib.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/de.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/path.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/ser.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/wrap.rs
+
+/Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/lib.rs:
+/Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/de.rs:
+/Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/path.rs:
+/Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/ser.rs:
+/Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde_path_to_error-0.1.17/src/wrap.rs:

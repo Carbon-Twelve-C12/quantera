@@ -1,358 +1,457 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { treasuries as MOCK_TREASURIES } from '../data/mockTreasuriesData.js';
-import { environmentalAssets as MOCK_ENVIRONMENTAL_ASSETS } from '../data/mockEnvironmentalAssetsData.js';
+import { Box, Container, Typography, Grid, TextField, MenuItem, Chip, Button } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { Search, FilterList, TrendingUp } from '@mui/icons-material';
+import { Header } from '../components/common/Header';
+import { AssetCard } from '../components/marketplace/AssetCard';
+import { ProfessionalChart } from '../components/charts/ProfessionalChart';
+import '../styles/quantera-design-system.css';
 
-// Combined asset type for display
-interface DisplayAsset {
-  id: string;
-  name: string;
-  description: string;
-  price: string;
-  yield_rate?: number;
-  image_url: string;
-  asset_type: string;
-  token_address?: string;
-  maturity_date?: number;
-  status?: string;
-  change_24h?: string;
-}
+const PageContainer = styled(Box)({
+  minHeight: '100vh',
+  background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.02) 0%, rgba(63, 81, 181, 0.02) 100%)',
+});
 
-const MarketplacePage: React.FC = () => {
-  // State
-  const [displayAssets, setDisplayAssets] = useState<DisplayAsset[]>([]);
-  const [filteredAssets, setFilteredAssets] = useState<DisplayAsset[]>([]);
-  const [assetTypeFilter, setAssetTypeFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(true);
+const HeroSection = styled(Box)({
+  background: 'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)',
+  color: '#ffffff',
+  padding: '80px 0 60px',
+  position: 'relative',
+  overflow: 'hidden',
+  
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+  },
+});
 
-  // Load and combine assets on mount
-  useEffect(() => {
-    // Convert treasury data to display format
-    const treasuryAssets: DisplayAsset[] = MOCK_TREASURIES.map(treasury => ({
-      id: treasury.token_id || '',
-      name: treasury.name || '',
-      description: treasury.description.substring(0, 120) + '...',
-      price: treasury.current_price || '',
-      yield_rate: treasury.yield_rate,
-      image_url: treasury.treasury_type === 'tbill' 
-        ? '/images/assets/treasury-bill.jpg' 
-        : treasury.treasury_type === 'tnote' 
-        ? '/images/assets/treasury-note.jpg'
-        : treasury.treasury_type === 'tbond'
-        ? '/images/assets/treasury-bond.jpg'
-        : treasury.treasury_type === 'moneymarket'
-        ? '/images/assets/money-market-fund.jpg'
-        : treasury.treasury_type === 'realestate'
-        ? '/images/assets/real-estate.jpg'
-        : treasury.treasury_type === 'tradefinance'
-        ? '/images/assets/trade-finance.jpg'
-        : `/images/treasury-${treasury.treasury_type || 'default'}.jpg`,
-      asset_type: treasury.treasury_type || '',
-      token_address: treasury.token_address || '',
-      maturity_date: treasury.maturity_date,
-      status: treasury.status || '',
-    }));
+const HeroContent = styled(Container)({
+  position: 'relative',
+  zIndex: 1,
+  textAlign: 'center',
+});
 
-    // Convert environmental assets to display format
-    const environmentalAssets: DisplayAsset[] = MOCK_ENVIRONMENTAL_ASSETS.map(asset => ({
-      id: asset.asset_id,
-      name: asset.project_name,
-      description: asset.description.substring(0, 120) + '...',
-      price: asset.price_per_unit,
-      image_url: asset.image_url,
-      asset_type: asset.asset_type,
-      token_address: asset.security_details.contract_address,
-      change_24h: asset.change_24h,
-    }));
+const HeroTitle = styled(Typography)({
+  fontSize: '3.5rem',
+  fontWeight: 800,
+  marginBottom: '16px',
+  fontFamily: 'Inter, sans-serif',
+  letterSpacing: '-0.02em',
+  
+  '@media (max-width: 768px)': {
+    fontSize: '2.5rem',
+  },
+});
 
-    // Add oil commodity asset
-    const oilCommodity: DisplayAsset = {
-      id: 'oil-commodity-001',
-      name: 'West Texas Intermediate Crude Oil',
-      description: 'Tokenized WTI Crude Oil futures. Each token represents one barrel of oil with delivery date in next quarter. Physical settlement available through authorized partners.',
-      price: '78.35',
-      image_url: '/images/assets/commodities/oil-barrel.jpg',
-      asset_type: 'commodity',
-      token_address: '0x7F5E835B94856329F97b8ED7Ec18C709F2E3b5D2',
-      change_24h: '+2.4%',
-    };
+const HeroSubtitle = styled(Typography)({
+  fontSize: '1.25rem',
+  fontWeight: 400,
+  marginBottom: '32px',
+  opacity: 0.9,
+  maxWidth: '600px',
+  margin: '0 auto 32px',
+  lineHeight: 1.6,
+});
 
-    // Combine all assets
-    const allAssets = [...treasuryAssets, ...environmentalAssets, oilCommodity];
-    setDisplayAssets(allAssets);
-    setFilteredAssets(allAssets);
-    setLoading(false);
-  }, []);
+const StatsContainer = styled(Box)({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+  gap: '32px',
+  marginTop: '48px',
+});
 
-  // Filter and sort assets when filters change
-  useEffect(() => {
-    let result = [...displayAssets];
+const StatCard = styled(Box)({
+  textAlign: 'center',
+  padding: '24px',
+  background: 'rgba(255, 255, 255, 0.1)',
+  borderRadius: '16px',
+  backdropFilter: 'blur(10px)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+});
 
-    // Apply asset type filter
-    if (assetTypeFilter !== 'all') {
-      result = result.filter(asset => asset.asset_type.toLowerCase() === assetTypeFilter.toLowerCase());
-    }
+const StatValue = styled(Typography)({
+  fontSize: '2.5rem',
+  fontWeight: 700,
+  marginBottom: '8px',
+  fontFamily: 'Inter, sans-serif',
+});
 
-    // Apply search term
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter(
-        asset => 
-          asset.name.toLowerCase().includes(term) || 
-          asset.description.toLowerCase().includes(term)
-      );
-    }
+const StatLabel = styled(Typography)({
+  fontSize: '14px',
+  opacity: 0.8,
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  fontWeight: 500,
+});
 
-    // Apply sorting
-    result.sort((a, b) => {
-      if (sortBy === 'name') {
-        return sortOrder === 'asc' 
-          ? a.name.localeCompare(b.name)
-          : b.name.localeCompare(a.name);
-      } else if (sortBy === 'price') {
-        const priceA = parseFloat(a.price);
-        const priceB = parseFloat(b.price);
-        return sortOrder === 'asc' ? priceA - priceB : priceB - priceA;
-      } else if (sortBy === 'yield' && a.yield_rate && b.yield_rate) {
-        return sortOrder === 'asc' ? a.yield_rate - b.yield_rate : b.yield_rate - a.yield_rate;
+const ContentSection = styled(Container)({
+  padding: '60px 24px',
+});
+
+const SectionHeader = styled(Box)({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: '32px',
+  
+  '@media (max-width: 768px)': {
+    flexDirection: 'column',
+    gap: '16px',
+    alignItems: 'stretch',
+  },
+});
+
+const SectionTitle = styled(Typography)({
+  fontSize: '2rem',
+  fontWeight: 600,
+  color: '#263238',
+  fontFamily: 'Inter, sans-serif',
+});
+
+const FilterContainer = styled(Box)({
+  display: 'flex',
+  gap: '16px',
+  alignItems: 'center',
+  
+  '@media (max-width: 768px)': {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
+});
+
+const SearchField = styled(TextField)({
+  minWidth: '300px',
+  
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '12px',
+    background: '#ffffff',
+    
+    '&:hover .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#3f51b5',
+    },
+    
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#1a237e',
+    },
+  },
+  
+  '@media (max-width: 768px)': {
+    minWidth: 'auto',
+  },
+});
+
+const FilterSelect = styled(TextField)({
+  minWidth: '150px',
+  
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '12px',
+    background: '#ffffff',
+  },
+  
+  '@media (max-width: 768px)': {
+    minWidth: 'auto',
+  },
+});
+
+const ChartSection = styled(Box)({
+  marginBottom: '60px',
+});
+
+const AssetGrid = styled(Grid)({
+  marginTop: '32px',
+});
+
+// Sample data
+const marketStats = [
+  { value: '$2.4B', label: 'Total Value Locked' },
+  { value: '1,247', label: 'Active Assets' },
+  { value: '89,432', label: 'Verified Investors' },
+  { value: '24/7', label: 'Global Trading' },
+];
+
+const chartData = [
+  { name: 'Jan', value: 1200 },
+  { name: 'Feb', value: 1900 },
+  { name: 'Mar', value: 1600 },
+  { name: 'Apr', value: 2400 },
+  { name: 'May', value: 2100 },
+  { name: 'Jun', value: 2800 },
+];
+
+const sampleAssets = [
+  {
+    id: '1',
+    name: 'Manhattan Commercial Real Estate Portfolio',
+    description: 'Premium commercial properties in Manhattan financial district with long-term institutional tenants.',
+    type: 'Real Estate',
+    yield: '8.5%',
+    minInvestment: '$10,000',
+    totalValue: '$45.2M',
+    imageUrl: '/images/assets/real-estate/manhattan-commercial.jpg',
+    isCompliant: true,
+    riskLevel: 'medium' as const,
+    jurisdiction: 'US',
+    liquidity: 'High',
+    maturity: '5 years',
+    isAvailable: true,
+  },
+  {
+    id: '2',
+    name: 'Gold Mining Operations Token',
+    description: 'Tokenized ownership in sustainable gold mining operations across three continents.',
+    type: 'Commodities',
+    yield: '12.3%',
+    minInvestment: '$5,000',
+    totalValue: '$28.7M',
+    imageUrl: '/images/assets/commodities/gold-mining.jpg',
+    isCompliant: true,
+    riskLevel: 'high' as const,
+    jurisdiction: 'AU',
+    liquidity: 'Medium',
+    maturity: '3 years',
+    isAvailable: true,
+  },
+  {
+    id: '3',
+    name: 'US Treasury Notes 2024',
+    description: 'Government-backed treasury notes offering stable returns with full regulatory compliance.',
+    type: 'Treasury Notes',
+    yield: '4.2%',
+    minInvestment: '$1,000',
+    totalValue: '$125.8M',
+    imageUrl: '/images/assets/treasury-notes/us-treasury.jpg',
+    isCompliant: true,
+    riskLevel: 'low' as const,
+    jurisdiction: 'US',
+    liquidity: 'Very High',
+    maturity: '2 years',
+    isAvailable: true,
+  },
+  {
+    id: '4',
+    name: 'European Infrastructure Fund',
+    description: 'Diversified infrastructure investments across renewable energy and transportation projects.',
+    type: 'Infrastructure',
+    yield: '9.1%',
+    minInvestment: '$25,000',
+    totalValue: '$67.3M',
+    imageUrl: '/images/assets/infrastructure/european-infrastructure.jpg',
+    isCompliant: true,
+    riskLevel: 'medium' as const,
+    jurisdiction: 'EU',
+    liquidity: 'Medium',
+    maturity: '7 years',
+    isAvailable: true,
+  },
+  {
+    id: '5',
+    name: 'Tech Startup Equity Pool',
+    description: 'Curated portfolio of early-stage technology companies with high growth potential.',
+    type: 'Private Equity',
+    yield: '18.7%',
+    minInvestment: '$50,000',
+    totalValue: '$34.1M',
+    imageUrl: '/images/assets/private-equity/tech-startups.jpg',
+    isCompliant: true,
+    riskLevel: 'high' as const,
+    jurisdiction: 'US',
+    liquidity: 'Low',
+    maturity: '5-10 years',
+    isAvailable: false,
+  },
+  {
+    id: '6',
+    name: 'Rare Art Collection',
+    description: 'Fractionalized ownership of museum-quality contemporary art pieces from renowned artists.',
+    type: 'Art & Collectibles',
+    yield: '15.2%',
+    minInvestment: '$15,000',
+    totalValue: '$19.8M',
+    imageUrl: '/images/assets/art/contemporary-collection.jpg',
+    isCompliant: true,
+    riskLevel: 'high' as const,
+    jurisdiction: 'UK',
+    liquidity: 'Low',
+    maturity: 'Open-ended',
+    isAvailable: true,
+  },
+];
+
+const assetTypes = [
+  'All Types',
+  'Real Estate',
+  'Commodities',
+  'Treasury Notes',
+  'Infrastructure',
+  'Private Equity',
+  'Art & Collectibles',
+];
+
+const sortOptions = [
+  'Newest',
+  'Highest Yield',
+  'Lowest Risk',
+  'Highest Liquidity',
+  'Lowest Min. Investment',
+];
+
+export const MarketplacePage: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState('All Types');
+  const [sortBy, setSortBy] = useState('Newest');
+  const [favoriteAssets, setFavoriteAssets] = useState<Set<string>>(new Set());
+
+  const handleAssetInvest = (assetId: string) => {
+    console.log('Investing in asset:', assetId);
+    // Implementation for investment flow
+  };
+
+  const handleAssetFavorite = (assetId: string) => {
+    setFavoriteAssets(prev => {
+      const newFavorites = new Set(prev);
+      if (newFavorites.has(assetId)) {
+        newFavorites.delete(assetId);
+      } else {
+        newFavorites.add(assetId);
       }
-      return 0;
+      return newFavorites;
     });
-
-    setFilteredAssets(result);
-  }, [displayAssets, assetTypeFilter, sortBy, sortOrder, searchTerm]);
-
-  // Format date from timestamp
-  const formatDate = (timestamp?: number) => {
-    if (!timestamp) return 'N/A';
-    return new Date(timestamp * 1000).toLocaleDateString();
   };
 
-  // Format yield rate
-  const formatYield = (yieldRate?: number) => {
-    if (!yieldRate && yieldRate !== 0) return 'N/A';
-    return `${(yieldRate / 100).toFixed(2)}%`;
+  const handleAssetShare = (assetId: string) => {
+    console.log('Sharing asset:', assetId);
+    // Implementation for sharing functionality
   };
 
-  // Get asset type display name
-  const getAssetTypeDisplayName = (type: string): string => {
-    switch (type.toLowerCase()) {
-      case 'tbill': return 'Treasury Bill';
-      case 'tnote': return 'Treasury Note';
-      case 'tbond': return 'Treasury Bond';
-      case 'moneymarket': return 'Money Market Fund';
-      case 'realestate': return 'Real Estate';
-      case 'tradefinance': return 'Trade Finance';
-      case 'carboncredit': return 'Carbon Credit';
-      case 'biodiversitycredit': return 'Biodiversity Credit';
-      case 'watercredit': return 'Water Credit';
-      case 'renewableenergycertificate': return 'Renewable Energy Certificate';
-      case 'commodity': return 'Commodity';
-      default: return type;
-    }
+  const handleAssetDetails = (assetId: string) => {
+    console.log('Viewing asset details:', assetId);
+    // Implementation for navigation to asset details
   };
 
-  // Asset type options
-  const assetTypes = [
-    { value: 'all', label: 'All Types' },
-    { value: 'tbill', label: 'Treasury Bills' },
-    { value: 'tnote', label: 'Treasury Notes' },
-    { value: 'tbond', label: 'Treasury Bonds' },
-    { value: 'moneymarket', label: 'Money Market Funds' },
-    { value: 'realestate', label: 'Real Estate' },
-    { value: 'tradefinance', label: 'Trade Finance' },
-    { value: 'CarbonCredit', label: 'Carbon Credits' },
-    { value: 'BiodiversityCredit', label: 'Biodiversity Credits' },
-    { value: 'WaterCredit', label: 'Water Credits' },
-    { value: 'RenewableEnergyCertificate', label: 'Renewable Energy Certificates' },
-    { value: 'commodity', label: 'Commodities' },
-  ];
-
-  // Fallback image for assets without images
-  const fallbackImage = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.src = "/images/asset-placeholder.jpg";
-  };
-
-  if (loading) {
-    return <div className="loading">Loading marketplace assets...</div>;
-  }
+  const filteredAssets = sampleAssets.filter(asset => {
+    const matchesSearch = asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         asset.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = selectedType === 'All Types' || asset.type === selectedType;
+    return matchesSearch && matchesType;
+  });
 
   return (
-    <div className="marketplace">
-      <div className="marketplace-header">
-        <h1>Quantera Marketplace</h1>
-        <p className="marketplace-description">
-          Browse and invest in tokenized financial products, environmental assets, and commodities with transparent metrics.
-        </p>
-      </div>
-
-      {/* Featured Categories Section */}
-      <div className="featured-categories">
-        <h2>Featured Asset Categories</h2>
-        <div className="category-cards">
-          <div className="category-card">
-            <div className="category-image">
-              <img src="/images/assets/treasury-bill.jpg" alt="Treasury Securities" />
-            </div>
-            <h3>Treasury Securities</h3>
-            <p>Tokenized government securities with yield optimization</p>
-            <Link to="/marketplace" className="category-link">Browse Treasury Assets</Link>
-          </div>
+    <PageContainer>
+      <Header activeRoute="marketplace" />
+      
+      <HeroSection>
+        <HeroContent maxWidth="lg">
+          <HeroTitle>
+            Global Tokenization Marketplace
+          </HeroTitle>
+          <HeroSubtitle>
+            Access institutional-grade tokenized assets with full regulatory compliance. 
+            Invest in real estate, commodities, and alternative assets with unprecedented transparency.
+          </HeroSubtitle>
           
-          <div className="category-card">
-            <div className="category-image">
-              <img src="/images/assets/real-estate/buildings.jpg" alt="Real Estate" onError={(e) => e.currentTarget.src = "/images/asset-placeholder.jpg"} />
-            </div>
-            <h3>Real Estate</h3>
-            <p>Fractional ownership in commercial and residential properties</p>
-            <Link to="/realestate/marketplace" className="category-link">View Real Estate</Link>
-          </div>
-          
-          <div className="category-card">
-            <div className="category-image">
-              <img src="/images/assets/commodities/oil-barrel.jpg" alt="Commodities" onError={(e) => e.currentTarget.src = "/images/asset-placeholder.jpg"} />
-            </div>
-            <h3>Commodities</h3>
-            <p>Tokenized physical commodities with one token per unit</p>
-            <Link to="/commodities/marketplace" className="category-link">Explore Commodities</Link>
-          </div>
-          
-          <div className="category-card">
-            <div className="category-image">
-              <img src="/images/assets/trade-finance/shipping.jpg" alt="Trade Finance" onError={(e) => e.currentTarget.src = "/images/asset-placeholder.jpg"} />
-            </div>
-            <h3>Trade Finance</h3>
-            <p>Letters of credit, invoice receivables, and supply chain finance assets</p>
-            <Link to="/tradefinance/marketplace" className="category-link">Explore Trade Finance</Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="marketplace-filters">
-        <div className="filter-group">
-          <label htmlFor="asset-type">Asset Type</label>
-          <select 
-            id="asset-type" 
-            value={assetTypeFilter}
-            onChange={(e) => setAssetTypeFilter(e.target.value)}
-          >
-            {assetTypes.map((type) => (
-              <option key={type.value} value={type.value}>{type.label}</option>
+          <StatsContainer>
+            {marketStats.map((stat, index) => (
+              <StatCard key={index}>
+                <StatValue>{stat.value}</StatValue>
+                <StatLabel>{stat.label}</StatLabel>
+              </StatCard>
             ))}
-          </select>
-        </div>
-
-        <div className="filter-group">
-          <label htmlFor="sort-by">Sort By</label>
-          <select 
-            id="sort-by" 
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-          >
-            <option value="name">Name</option>
-            <option value="price">Price</option>
-            <option value="yield">Yield</option>
-          </select>
-        </div>
-
-        <div className="filter-group">
-          <label htmlFor="sort-order">Order</label>
-          <select 
-            id="sort-order" 
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-          >
-            <option value="asc">Ascending</option>
-            <option value="desc">Descending</option>
-          </select>
-        </div>
-
-        <div className="filter-group search-group">
-          <label htmlFor="search">Search</label>
-          <input
-            id="search"
-            type="text"
-            placeholder="Search assets..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+          </StatsContainer>
+        </HeroContent>
+      </HeroSection>
+      
+      <ContentSection maxWidth="xl">
+        <ChartSection>
+          <ProfessionalChart
+            title="Market Performance"
+            subtitle="Total value locked across all tokenized assets"
+            data={chartData}
+            dataKey="value"
+            xAxisKey="name"
+            height={300}
+            type="area"
+            color="#1a237e"
+            metrics={{
+              current: '$2.4B',
+              change: '+12.5%',
+              changeType: 'positive',
+              period: '30 days',
+            }}
           />
-        </div>
-      </div>
-
-      <div className="assets-stats">
-        <p>Showing {filteredAssets.length} of {displayAssets.length} assets</p>
-      </div>
-
-      <div className="assets-grid">
-        {filteredAssets.length > 0 ? (
-          filteredAssets.map((asset) => (
-            <Link to={`/assets/${asset.id}`} key={asset.id} className="asset-card">
-              <div className="asset-image-container">
-                <img 
-                  src={asset.image_url} 
-                  alt={asset.name} 
-                  className="asset-image" 
-                  onError={fallbackImage}
-                />
-                <div className={`asset-type-badge ${asset.asset_type.toLowerCase().replace('_', '-')}`}>
-                  {getAssetTypeDisplayName(asset.asset_type)}
-                </div>
-              </div>
-              <div className="asset-content">
-                <h3 className="asset-name">{asset.name}</h3>
-                <p className="asset-description">{asset.description}</p>
-                <div className="asset-details">
-                  <div className="detail-row">
-                    <span className="detail-label">Price:</span>
-                    <span className="detail-value">${asset.price}</span>
-                  </div>
-                  
-                  {asset.yield_rate !== undefined && (
-                    <div className="detail-row">
-                      <span className="detail-label">Yield:</span>
-                      <span className="detail-value yield">{formatYield(asset.yield_rate)}</span>
-                    </div>
-                  )}
-                  
-                  {asset.change_24h && (
-                    <div className="detail-row">
-                      <span className="detail-label">24h Change:</span>
-                      <span className={`detail-value ${asset.change_24h.startsWith('+') ? 'positive' : 'negative'}`}>
-                        {asset.change_24h}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {asset.maturity_date && (
-                    <div className="detail-row">
-                      <span className="detail-label">Maturity:</span>
-                      <span className="detail-value">{formatDate(asset.maturity_date)}</span>
-                    </div>
-                  )}
-                  
-                  {asset.status && (
-                    <div className="detail-row">
-                      <span className="detail-label">Status:</span>
-                      <span className={`detail-value status-${asset.status.toLowerCase()}`}>
-                        {asset.status}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Link>
-          ))
-        ) : (
-          <div className="no-results">
-            <p>No assets found matching your filters. Try adjusting your search criteria.</p>
-          </div>
+        </ChartSection>
+        
+        <SectionHeader>
+          <SectionTitle>Featured Assets</SectionTitle>
+          
+          <FilterContainer>
+            <SearchField
+              placeholder="Search assets..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: <Search sx={{ color: '#607d8b', mr: 1 }} />,
+              }}
+            />
+            
+            <FilterSelect
+              select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              label="Asset Type"
+            >
+              {assetTypes.map((type) => (
+                <MenuItem key={type} value={type}>
+                  {type}
+                </MenuItem>
+              ))}
+            </FilterSelect>
+            
+            <FilterSelect
+              select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              label="Sort By"
+            >
+              {sortOptions.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option}
+                </MenuItem>
+              ))}
+            </FilterSelect>
+          </FilterContainer>
+        </SectionHeader>
+        
+        <AssetGrid container spacing={3}>
+          {filteredAssets.map((asset) => (
+            <Grid item xs={12} sm={6} lg={4} key={asset.id}>
+              <AssetCard
+                asset={asset}
+                onInvest={handleAssetInvest}
+                onFavorite={handleAssetFavorite}
+                onShare={handleAssetShare}
+                onViewDetails={handleAssetDetails}
+                isFavorited={favoriteAssets.has(asset.id)}
+              />
+            </Grid>
+          ))}
+        </AssetGrid>
+        
+        {filteredAssets.length === 0 && (
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <Typography variant="h6" sx={{ color: '#607d8b', mb: 2 }}>
+              No assets found matching your criteria
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#607d8b' }}>
+              Try adjusting your search terms or filters
+            </Typography>
+          </Box>
         )}
-      </div>
-    </div>
+      </ContentSection>
+    </PageContainer>
   );
-};
-
-export default MarketplacePage; 
+}; 

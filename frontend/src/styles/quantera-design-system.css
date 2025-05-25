@@ -1,0 +1,552 @@
+/* Quantera Design System v1.0 - WEF Report Inspired */
+/* Professional tokenization platform visual identity */
+
+:root {
+  /* Primary Brand Colors - WEF Inspired */
+  --quantera-deep-blue: #1a237e;        /* Professional blue */
+  --quantera-electric-purple: #3f51b5;   /* Modern sophistication */
+  --quantera-accent-teal: #00bcd4;       /* Innovation accent */
+  
+  /* Supporting Colors */
+  --quantera-gradient-start: #1a237e;
+  --quantera-gradient-end: #3f51b5;
+  --quantera-success: #4caf50;
+  --quantera-warning: #ff9800;
+  --quantera-error: #f44336;
+  
+  /* Neutral Palette */
+  --quantera-dark: #263238;
+  --quantera-medium: #607d8b;
+  --quantera-light: #eceff1;
+  --quantera-white: #ffffff;
+  
+  /* Data Visualization Colors */
+  --quantera-chart-1: #1a237e;
+  --quantera-chart-2: #3f51b5;
+  --quantera-chart-3: #00bcd4;
+  --quantera-chart-4: #4caf50;
+  --quantera-chart-5: #ff9800;
+  
+  /* Typography Scale */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  --text-hero: 3.5rem;      /* 56px */
+  --text-h1: 2.5rem;        /* 40px */
+  --text-h2: 2rem;          /* 32px */
+  --text-h3: 1.5rem;        /* 24px */
+  --text-body-large: 1.125rem; /* 18px */
+  --text-body: 1rem;        /* 16px */
+  --text-small: 0.875rem;   /* 14px */
+  --text-caption: 0.75rem;  /* 12px */
+  
+  /* Spacing Scale */
+  --space-xs: 0.25rem;      /* 4px */
+  --space-sm: 0.5rem;       /* 8px */
+  --space-md: 1rem;         /* 16px */
+  --space-lg: 1.5rem;       /* 24px */
+  --space-xl: 2rem;         /* 32px */
+  --space-2xl: 3rem;        /* 48px */
+  --space-3xl: 4rem;        /* 64px */
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(26, 35, 126, 0.04);
+  --shadow-md: 0 4px 24px rgba(26, 35, 126, 0.08);
+  --shadow-lg: 0 8px 40px rgba(26, 35, 126, 0.12);
+  --shadow-xl: 0 16px 64px rgba(26, 35, 126, 0.16);
+  
+  /* Transitions */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Typography System */
+.quantera-typography {
+  font-family: var(--font-primary);
+  line-height: 1.6;
+  color: var(--quantera-dark);
+}
+
+.quantera-text-hero {
+  font-size: var(--text-hero);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.quantera-text-h1 {
+  font-size: var(--text-h1);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.quantera-text-h2 {
+  font-size: var(--text-h2);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.quantera-text-h3 {
+  font-size: var(--text-h3);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.quantera-text-body-large {
+  font-size: var(--text-body-large);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.quantera-text-body {
+  font-size: var(--text-body);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.quantera-text-small {
+  font-size: var(--text-small);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.quantera-text-caption {
+  font-size: var(--text-caption);
+  font-weight: 500;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Professional Card Design */
+.quantera-card {
+  background: var(--quantera-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(26, 35, 126, 0.08);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.quantera-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.quantera-card-elevated {
+  box-shadow: var(--shadow-lg);
+}
+
+.quantera-card-elevated:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-4px);
+}
+
+/* Professional Gradient Backgrounds */
+.quantera-gradient-primary {
+  background: linear-gradient(135deg, var(--quantera-deep-blue) 0%, var(--quantera-electric-purple) 100%);
+}
+
+.quantera-gradient-subtle {
+  background: linear-gradient(135deg, rgba(26, 35, 126, 0.03) 0%, rgba(63, 81, 181, 0.03) 100%);
+}
+
+.quantera-gradient-overlay {
+  background: linear-gradient(135deg, rgba(26, 35, 126, 0.9) 0%, rgba(63, 81, 181, 0.9) 100%);
+}
+
+/* Data Visualization Containers */
+.quantera-chart-container {
+  background: var(--quantera-white);
+  border-radius: var(--radius-xl);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(26, 35, 126, 0.06);
+  position: relative;
+}
+
+.quantera-chart-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--quantera-gradient-primary);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+/* Professional Button System */
+.quantera-btn {
+  font-family: var(--font-primary);
+  font-weight: 600;
+  font-size: var(--text-body);
+  border-radius: var(--radius-md);
+  padding: 12px 24px;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+.quantera-btn-primary {
+  background: var(--quantera-gradient-primary);
+  color: var(--quantera-white);
+  box-shadow: var(--shadow-sm);
+}
+
+.quantera-btn-primary:hover {
+  background: linear-gradient(135deg, #0d47a1 0%, #303f9f 100%);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.quantera-btn-secondary {
+  background: transparent;
+  color: var(--quantera-deep-blue);
+  border: 2px solid var(--quantera-deep-blue);
+}
+
+.quantera-btn-secondary:hover {
+  background: var(--quantera-deep-blue);
+  color: var(--quantera-white);
+  transform: translateY(-1px);
+}
+
+.quantera-btn-outline {
+  background: transparent;
+  color: var(--quantera-medium);
+  border: 1px solid var(--quantera-medium);
+}
+
+.quantera-btn-outline:hover {
+  background: var(--quantera-medium);
+  color: var(--quantera-white);
+}
+
+.quantera-btn-ghost {
+  background: transparent;
+  color: var(--quantera-deep-blue);
+  border: none;
+}
+
+.quantera-btn-ghost:hover {
+  background: rgba(26, 35, 126, 0.05);
+}
+
+.quantera-btn-large {
+  padding: 16px 32px;
+  font-size: var(--text-body-large);
+}
+
+.quantera-btn-small {
+  padding: 8px 16px;
+  font-size: var(--text-small);
+}
+
+/* Input System */
+.quantera-input {
+  font-family: var(--font-primary);
+  font-size: var(--text-body);
+  padding: 12px 16px;
+  border: 2px solid rgba(26, 35, 126, 0.1);
+  border-radius: var(--radius-md);
+  background: var(--quantera-white);
+  transition: all var(--transition-normal);
+  width: 100%;
+}
+
+.quantera-input:focus {
+  outline: none;
+  border-color: var(--quantera-electric-purple);
+  box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.1);
+}
+
+.quantera-input::placeholder {
+  color: var(--quantera-medium);
+}
+
+/* Badge System */
+.quantera-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: var(--text-small);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.quantera-badge-primary {
+  background: var(--quantera-gradient-primary);
+  color: var(--quantera-white);
+}
+
+.quantera-badge-success {
+  background: var(--quantera-success);
+  color: var(--quantera-white);
+}
+
+.quantera-badge-warning {
+  background: var(--quantera-warning);
+  color: var(--quantera-white);
+}
+
+.quantera-badge-error {
+  background: var(--quantera-error);
+  color: var(--quantera-white);
+}
+
+.quantera-badge-neutral {
+  background: var(--quantera-light);
+  color: var(--quantera-dark);
+}
+
+/* Status Indicators */
+.quantera-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--text-small);
+  font-weight: 500;
+}
+
+.quantera-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.quantera-status-online .quantera-status-dot {
+  background: var(--quantera-success);
+}
+
+.quantera-status-warning .quantera-status-dot {
+  background: var(--quantera-warning);
+}
+
+.quantera-status-offline .quantera-status-dot {
+  background: var(--quantera-error);
+}
+
+/* Loading States */
+.quantera-loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(26, 35, 126, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--quantera-electric-purple);
+  animation: quantera-spin 1s ease-in-out infinite;
+}
+
+@keyframes quantera-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Utility Classes */
+.quantera-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+}
+
+.quantera-flex {
+  display: flex;
+}
+
+.quantera-flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantera-flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quantera-grid {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.quantera-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.quantera-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.quantera-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Responsive Grid */
+@media (max-width: 768px) {
+  .quantera-grid-2,
+  .quantera-grid-3,
+  .quantera-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .quantera-grid-3,
+  .quantera-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Spacing Utilities */
+.quantera-mt-xs { margin-top: var(--space-xs); }
+.quantera-mt-sm { margin-top: var(--space-sm); }
+.quantera-mt-md { margin-top: var(--space-md); }
+.quantera-mt-lg { margin-top: var(--space-lg); }
+.quantera-mt-xl { margin-top: var(--space-xl); }
+
+.quantera-mb-xs { margin-bottom: var(--space-xs); }
+.quantera-mb-sm { margin-bottom: var(--space-sm); }
+.quantera-mb-md { margin-bottom: var(--space-md); }
+.quantera-mb-lg { margin-bottom: var(--space-lg); }
+.quantera-mb-xl { margin-bottom: var(--space-xl); }
+
+.quantera-p-xs { padding: var(--space-xs); }
+.quantera-p-sm { padding: var(--space-sm); }
+.quantera-p-md { padding: var(--space-md); }
+.quantera-p-lg { padding: var(--space-lg); }
+.quantera-p-xl { padding: var(--space-xl); }
+
+/* Professional Table Styles */
+.quantera-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--quantera-white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.quantera-table th {
+  background: var(--quantera-gradient-subtle);
+  padding: var(--space-md);
+  text-align: left;
+  font-weight: 600;
+  color: var(--quantera-dark);
+  border-bottom: 1px solid rgba(26, 35, 126, 0.1);
+}
+
+.quantera-table td {
+  padding: var(--space-md);
+  border-bottom: 1px solid rgba(26, 35, 126, 0.05);
+}
+
+.quantera-table tr:hover {
+  background: rgba(26, 35, 126, 0.02);
+}
+
+/* Professional Modal Styles */
+.quantera-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(26, 35, 126, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.quantera-modal {
+  background: var(--quantera-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+  position: relative;
+}
+
+.quantera-modal-header {
+  padding: var(--space-xl);
+  border-bottom: 1px solid rgba(26, 35, 126, 0.1);
+}
+
+.quantera-modal-body {
+  padding: var(--space-xl);
+}
+
+.quantera-modal-footer {
+  padding: var(--space-xl);
+  border-top: 1px solid rgba(26, 35, 126, 0.1);
+  display: flex;
+  gap: var(--space-md);
+  justify-content: flex-end;
+}
+
+/* Accessibility */
+.quantera-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus States */
+.quantera-btn:focus,
+.quantera-input:focus {
+  outline: 2px solid var(--quantera-electric-purple);
+  outline-offset: 2px;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --quantera-white: #1a1a1a;
+    --quantera-light: #2a2a2a;
+    --quantera-dark: #ffffff;
+    --quantera-medium: #b0b0b0;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .quantera-card {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+  
+  .quantera-btn {
+    background: none !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+  }
+} 

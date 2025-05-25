@@ -1,36 +1,29 @@
 [workspace]
 members = [
-    "ethereum_client",
-    "treasury_service",
-    "trading_service",
-    "user_service",
-    "api_service",
+    "src",
+    # "ethereum_client", # Temporarily disabled due to alloy version conflicts
 ]
+resolver = "2"
 
 [workspace.dependencies]
-tokio = { version = "1.26.0", features = ["full"] }
-serde = { version = "1.0.159", features = ["derive"] }
-serde_json = "1.0.95"
-thiserror = "1.0.40"
-anyhow = "1.0.70"
-tracing = "0.1.37"
-tracing-subscriber = "0.3.16"
-dotenv = "0.15.0"
-reqwest = { version = "0.11.16", features = ["json"] }
-chrono = { version = "0.4.24", features = ["serde"] }
-async-trait = "0.1.68"
-warp = "0.3.5"
-jsonwebtoken = "8.3.0"
-futures = "0.3.28"
-hex = "0.4.3"
-rand = "0.8.5"
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+chrono = { version = "0.4", features = ["serde"] }
+async-trait = "0.1"
+futures = "0.3"
+rand = "0.8"
+reqwest = { version = "0.11", features = ["json"] }
 
-# Alloy framework dependencies 
-# These are placeholders for the Pectra-compatible versions
-alloy-primitives = "0.3.1"
-alloy-sol-types = "0.3.1"
-alloy-provider = "0.3.1"
-alloy-signer = "0.3.1"
-alloy-contract = "0.3.1"
-alloy-json-rpc = "0.3.1"
-alloy-network = "0.3.1" 
+# Alloy framework for Ethereum (latest versions)
+alloy-primitives = "0.8"
+alloy-sol-types = "0.8"
+alloy-provider = "0.3"
+alloy-signer = "0.3"
+alloy-contract = "0.3"
+alloy-json-rpc = "0.3"
+alloy-network = "0.3" 
