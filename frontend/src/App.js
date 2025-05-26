@@ -29,6 +29,7 @@ const AnalyticsDashboardPage = lazy(() => import('./pages/AnalyticsDashboardPage
 const MarketplacePage = lazy(() => import('./pages/MarketplacePage'));
 const EnvironmentalMarketplacePage = lazy(() => import('./pages/EnvironmentalMarketplacePage'));
 const AssetDetailPage = lazy(() => import('./pages/AssetDetailPage'));
+const PlatformPage = lazy(() => import('./pages/PlatformPage').then(module => ({ default: module.PlatformPage })));
 
 // Loading component for suspense fallback
 const LoadingFallback = () => (
@@ -82,6 +83,9 @@ function App() {
                         <Route path="/contracts" element={<ContractExplorerPage />} />
                         
                         <Route path="/analytics" element={<AnalyticsDashboardPage />} />
+                        
+                        {/* Documentation Route */}
+                        <Route path="/docs" element={<PlatformPage />} />
                         
                         <Route path="*" element={
                           <Container className="py-5 text-center">

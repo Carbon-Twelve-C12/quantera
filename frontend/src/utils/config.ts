@@ -5,8 +5,8 @@
 // WalletKit configuration
 export const WALLET_CONFIG = {
   projectId: 'quantera-platform', // Replace with your actual Reown project ID in production
-  appName: 'Quantera Platform',
-  appDescription: 'Asset Tokenization Ecosystem',
+  appName: 'Quantera',
+  appDescription: 'Tokenized Financial Products',
   appUrl: 'https://quantera.finance',
   appIcon: 'https://quantera.finance/logo.png'
 };

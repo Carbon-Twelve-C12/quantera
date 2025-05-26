@@ -16,8 +16,7 @@ const HomePage = () => {
                 Tokenized Financial Products
               </h1>
               <p className="lead mb-4">
-                The Quantera Platform brings financial products to the Ethereum 
-                blockchain, enabling fractional ownership, instant settlement, and 24/7 liquidity.
+                Quantera brings financial products to Ethereum, enabling fractional ownership, instant settlement, and 24/7 liquidity.
               </p>
               <div className="d-flex gap-3">
                 <Button as={Link} to="/marketplace" variant="light" size="lg">
@@ -89,7 +88,7 @@ const HomePage = () => {
       {/* CTA Section */}
       <div className="py-5 bg-primary-light">
         <Container className="text-center">
-          <h2 className="mb-3">Ready to get started?</h2>
+          <h2 className="mb-3">Get started</h2>
           <p className="lead mb-4">
             Connect your wallet and start exploring tokenized financial products today.
           </p>

@@ -1,0 +1,51 @@
+{
+  "bridges": {
+    "chainlink_ccip": {
+      "enabled": true,
+      "supportedChains": ["ethereum_sepolia", "polygon_mumbai", "avalanche_fuji"],
+      "routerAddresses": {
+        "ethereum_sepolia": "0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59",
+        "polygon_mumbai": "0x1035CabC275068e0F4b745A29CEDf38E13aF41b1",
+        "avalanche_fuji": "0xF694E193200268f9a4868e4Aa017A0118C9a8177"
+      }
+    },
+    "layerzero": {
+      "enabled": true,
+      "supportedChains": ["ethereum_sepolia", "polygon_mumbai", "arbitrum_sepolia", "optimism_sepolia"],
+      "endpointAddresses": {
+        "ethereum_sepolia": "0xae92d5aD7583AD66E49A0c67BAd18F6ba52dDDc1",
+        "polygon_mumbai": "0xf69186dfBa60DdB133E91E9A4B5673624293d8F8",
+        "arbitrum_sepolia": "0x6098e96a28E02f27B1e6BD381f870F1C8Bd169d3",
+        "optimism_sepolia": "0x55370E0fBB5f5b8dAeD978BA1c075a499eB107B8"
+      }
+    },
+    "wormhole": {
+      "enabled": false,
+      "supportedChains": [],
+      "reason": "Testnet not available for all target chains"
+    }
+  },
+  "bridgeRoutes": [
+    {
+      "from": "ethereum_sepolia",
+      "to": "polygon_mumbai",
+      "protocol": "chainlink_ccip",
+      "estimatedTime": "10-15 minutes",
+      "fee": "0.001 ETH"
+    },
+    {
+      "from": "ethereum_sepolia",
+      "to": "avalanche_fuji",
+      "protocol": "chainlink_ccip",
+      "estimatedTime": "10-15 minutes",
+      "fee": "0.001 ETH"
+    },
+    {
+      "from": "polygon_mumbai",
+      "to": "arbitrum_sepolia",
+      "protocol": "layerzero",
+      "estimatedTime": "5-10 minutes",
+      "fee": "0.0005 MATIC"
+    }
+  ]
+}

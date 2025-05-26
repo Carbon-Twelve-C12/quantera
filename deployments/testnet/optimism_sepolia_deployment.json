@@ -1,0 +1,22 @@
+{
+  "network": "optimism_sepolia",
+  "chainId": ,
+  "timestamp": "2025-05-26T08:24:38.3NZ",
+  "contracts": {
+    "ComplianceAwareToken": "0x57a31ad057805b385eaa66fbe9d3cec791b776e0",
+    "SettlementAssetManager": "0xa42b474701664c3620ef427ef9bb42d328514305",
+    "LiquidityPoolOptimizer": "0xc572473d37e430341808a7a614db8e408432d5d9",
+    "DynamicFeeStructure": "0x10c65a5f9f601ab6bf36b0e659e3681a2358fe39",
+    "PrimeBrokerage": "0xf459716199112dc7fae613b17c7baf1f86864924",
+    "UniversalBridge": "0xa15538685d2cd4b5f5c2bdf862937054e4a62556"
+  },
+  "gasUsed": {
+    "total": ,
+    "ComplianceAwareToken": ,
+    "SettlementAssetManager": ,
+    "LiquidityPoolOptimizer": ,
+    "DynamicFeeStructure": ,
+    "PrimeBrokerage": ,
+    "UniversalBridge": 
+  }
+}

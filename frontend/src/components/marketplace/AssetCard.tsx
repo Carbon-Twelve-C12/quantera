@@ -1,7 +1,7 @@
 import React from 'react';
-import { Card, CardMedia, CardContent, Typography, Box, Chip, Button, IconButton, Tooltip } from '@mui/material';
+import { Card, CardMedia, CardContent, Typography, Box, Chip, Button } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { TrendingUp, Shield, Favorite, FavoriteBorder, Share, Info } from '@mui/icons-material';
+import { TrendingUp, Shield, Globe, Star, BarChart3 } from 'lucide-react';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   background: '#ffffff',
@@ -11,7 +11,9 @@ const StyledCard = styled(Card)(({ theme }) => ({
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
-  cursor: 'pointer',
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
   
   '&:hover': {
     boxShadow: '0 8px 40px rgba(26, 35, 126, 0.12)',
@@ -26,7 +28,6 @@ const StyledCard = styled(Card)(({ theme }) => ({
     right: 0,
     height: '4px',
     background: 'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)',
-    zIndex: 1,
   },
 }));
 
@@ -37,60 +38,40 @@ const AssetImage = styled(CardMedia)({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.1) 100%)',
-  },
-});
-
-const AssetImageOverlay = styled(Box)({
-  position: 'absolute',
-  top: 16,
-  left: 16,
-  right: 16,
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'flex-start',
-  zIndex: 2,
 });
 
 const AssetType = styled(Chip)(({ theme }) => ({
+  position: 'absolute',
+  top: 16,
+  right: 16,
   background: 'rgba(255, 255, 255, 0.95)',
   color: '#1a237e',
   fontWeight: 600,
   fontSize: '12px',
   backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(255, 255, 255, 0.2)',
+  border: '1px solid rgba(26, 35, 126, 0.1)',
 }));
 
-const ActionButtons = styled(Box)({
+const FavoriteButton = styled(Box)({
+  position: 'absolute',
+  top: 16,
+  left: 16,
+  background: 'rgba(255, 255, 255, 0.95)',
+  borderRadius: '50%',
+  width: 36,
+  height: 36,
   display: 'flex',
-  gap: '8px',
-});
-
-const OverlayButton = styled(IconButton)({
-  background: 'rgba(255, 255, 255, 0.9)',
-  color: '#1a237e',
-  width: '36px',
-  height: '36px',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
   backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(255, 255, 255, 0.2)',
+  border: '1px solid rgba(26, 35, 126, 0.1)',
+  transition: 'all 0.3s ease',
   
   '&:hover': {
-    background: 'rgba(255, 255, 255, 1)',
-    transform: 'scale(1.1)',
+    background: '#1a237e',
+    color: '#ffffff',
   },
-});
-
-const CardContentStyled = styled(CardContent)({
-  padding: '24px',
-  paddingBottom: '24px !important',
 });
 
 const AssetTitle = styled(Typography)({
@@ -120,20 +101,15 @@ const AssetDescription = styled(Typography)({
 
 const MetricContainer = styled(Box)({
   display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
+  gridTemplateColumns: 'repeat(2, 1fr)',
   gap: '16px',
   marginBottom: '16px',
-  padding: '16px',
-  background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.02) 0%, rgba(63, 81, 181, 0.02) 100%)',
-  borderRadius: '12px',
-  border: '1px solid rgba(26, 35, 126, 0.05)',
 });
 
 const Metric = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'center',
-  textAlign: 'center',
+  alignItems: 'flex-start',
 });
 
 const MetricLabel = styled(Typography)({
@@ -142,87 +118,112 @@ const MetricLabel = styled(Typography)({
   fontWeight: 500,
   marginBottom: '4px',
   textTransform: 'uppercase',
-  letterSpacing: '0.05em',
+  letterSpacing: '0.5px',
 });
 
 const MetricValue = styled(Typography)({
   fontSize: '16px',
   fontWeight: 700,
   color: '#1a237e',
-  fontFamily: 'Inter, sans-serif',
-});
-
-const ComplianceSection = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between',
+  gap: '4px',
+});
+
+const ComplianceContainer = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
   marginBottom: '16px',
-  padding: '12px',
-  background: 'rgba(76, 175, 80, 0.05)',
-  borderRadius: '8px',
-  border: '1px solid rgba(76, 175, 80, 0.1)',
+  flexWrap: 'wrap',
 });
 
-const ComplianceInfo = styled(Box)({
+const ComplianceBadge = styled(Box)<{ type: 'compliant' | 'verified' | 'institutional' }>(({ type }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
-});
-
-const ComplianceText = styled(Typography)({
-  fontSize: '14px',
-  color: '#4caf50',
+  gap: '4px',
+  padding: '4px 8px',
+  borderRadius: '6px',
+  fontSize: '12px',
   fontWeight: 600,
-  fontFamily: 'Inter, sans-serif',
+  ...(type === 'compliant' && {
+    backgroundColor: '#e8f5e8',
+    color: '#2e7d32',
+  }),
+  ...(type === 'verified' && {
+    backgroundColor: '#e3f2fd',
+    color: '#1976d2',
+  }),
+  ...(type === 'institutional' && {
+    backgroundColor: '#fff3e0',
+    color: '#f57c00',
+  }),
+}));
+
+const RiskIndicator = styled(Box)<{ level: 'low' | 'medium' | 'high' }>(({ level }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '4px',
+  padding: '4px 8px',
+  borderRadius: '6px',
+  fontSize: '12px',
+  fontWeight: 600,
+  ...(level === 'low' && {
+    backgroundColor: '#e8f5e8',
+    color: '#2e7d32',
+  }),
+  ...(level === 'medium' && {
+    backgroundColor: '#fff3e0',
+    color: '#f57c00',
+  }),
+  ...(level === 'high' && {
+    backgroundColor: '#ffebee',
+    color: '#d32f2f',
+  }),
+}));
+
+const ActionContainer = styled(Box)({
+  display: 'flex',
+  gap: '8px',
+  marginTop: 'auto',
 });
 
 const InvestButton = styled(Button)({
   background: 'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)',
   color: '#ffffff',
-  borderRadius: '12px',
-  padding: '14px 24px',
+  borderRadius: '8px',
+  padding: '12px 24px',
   fontWeight: 600,
-  fontSize: '16px',
   textTransform: 'none',
-  width: '100%',
-  fontFamily: 'Inter, sans-serif',
-  boxShadow: '0 2px 8px rgba(26, 35, 126, 0.2)',
+  flex: 1,
   
   '&:hover': {
     background: 'linear-gradient(135deg, #0d47a1 0%, #303f9f 100%)',
     transform: 'translateY(-1px)',
-    boxShadow: '0 4px 16px rgba(26, 35, 126, 0.3)',
-  },
-  
-  '&:disabled': {
-    background: '#eceff1',
-    color: '#607d8b',
-    transform: 'none',
-    boxShadow: 'none',
   },
 });
 
-const RiskIndicator = styled(Box)<{ risk: 'low' | 'medium' | 'high' }>(({ risk }) => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  padding: '4px 8px',
-  borderRadius: '12px',
-  fontSize: '12px',
+const SecondaryButton = styled(Button)({
+  background: 'transparent',
+  color: '#1a237e',
+  border: '2px solid #1a237e',
+  borderRadius: '8px',
+  padding: '10px 20px',
   fontWeight: 600,
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-  ...(risk === 'low' && {
-    background: 'rgba(76, 175, 80, 0.1)',
-    color: '#4caf50',
-  }),
-  ...(risk === 'medium' && {
-    background: 'rgba(255, 152, 0, 0.1)',
-    color: '#ff9800',
-  }),
-  ...(risk === 'high' && {
-    background: 'rgba(244, 67, 54, 0.1)',
-    color: '#f44336',
-  }),
+  textTransform: 'none',
+  
+  '&:hover': {
+    backgroundColor: 'rgba(26, 35, 126, 0.04)',
+  },
+});
+
+const LiquidityScore = styled(Box)<{ score: number }>(({ score }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '4px',
+  fontSize: '14px',
+  fontWeight: 600,
+  color: score >= 80 ? '#4caf50' : score >= 60 ? '#ff9800' : '#f44336',
 }));
 
 interface AssetCardProps {
@@ -236,159 +237,158 @@ interface AssetCardProps {
     totalValue: string;
     imageUrl?: string;
     isCompliant: boolean;
+    isVerified?: boolean;
+    isInstitutional?: boolean;
     riskLevel: 'low' | 'medium' | 'high';
-    jurisdiction: string;
-    liquidity: string;
+    liquidityScore: number;
+    jurisdiction?: string;
     maturity?: string;
-    isAvailable: boolean;
+    rating?: string;
   };
   onInvest: (assetId: string) => void;
-  onFavorite?: (assetId: string) => void;
-  onShare?: (assetId: string) => void;
   onViewDetails?: (assetId: string) => void;
-  isFavorited?: boolean;
+  onToggleFavorite?: (assetId: string) => void;
+  isFavorite?: boolean;
 }
 
 export const AssetCard: React.FC<AssetCardProps> = ({ 
   asset, 
   onInvest, 
-  onFavorite, 
-  onShare, 
   onViewDetails,
-  isFavorited = false 
+  onToggleFavorite,
+  isFavorite = false,
 }) => {
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent card click when clicking on buttons
-    if ((e.target as HTMLElement).closest('button')) {
-      return;
+  const formatCurrency = (value: string) => {
+    const num = parseFloat(value.replace(/[^0-9.-]+/g, ''));
+    if (num >= 1000000) {
+      return `$${(num / 1000000).toFixed(1)}M`;
+    } else if (num >= 1000) {
+      return `$${(num / 1000).toFixed(1)}K`;
     }
-    if (onViewDetails) {
-      onViewDetails(asset.id);
-    }
+    return value;
   };
 
-  const handleFavoriteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onFavorite) {
-      onFavorite(asset.id);
+  const getRiskIcon = (level: string) => {
+    switch (level) {
+      case 'low': return <Shield size={14} />;
+      case 'medium': return <BarChart3 size={14} />;
+      case 'high': return <TrendingUp size={14} />;
+      default: return <Shield size={14} />;
     }
-  };
-
-  const handleShareClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onShare) {
-      onShare(asset.id);
-    }
-  };
-
-  const handleInvestClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onInvest(asset.id);
   };
 
   return (
-    <StyledCard onClick={handleCardClick}>
-      <AssetImage 
-        image={asset.imageUrl} 
-        title={asset.name}
-        sx={{
-          backgroundImage: asset.imageUrl ? `url(${asset.imageUrl})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <AssetImageOverlay>
-          <AssetType label={asset.type} />
-          <ActionButtons>
-            <Tooltip title="Add to favorites">
-              <OverlayButton onClick={handleFavoriteClick}>
-                {isFavorited ? <Favorite /> : <FavoriteBorder />}
-              </OverlayButton>
-            </Tooltip>
-            <Tooltip title="Share asset">
-              <OverlayButton onClick={handleShareClick}>
-                <Share />
-              </OverlayButton>
-            </Tooltip>
-          </ActionButtons>
-        </AssetImageOverlay>
-        
+    <StyledCard>
+      <AssetImage image={asset.imageUrl} title={asset.name}>
+        <FavoriteButton onClick={() => onToggleFavorite?.(asset.id)}>
+          <Star size={18} fill={isFavorite ? '#1a237e' : 'none'} />
+        </FavoriteButton>
+        <AssetType label={asset.type} />
         {!asset.imageUrl && (
           <Box sx={{ 
-            fontSize: '48px', 
-            color: 'rgba(26, 35, 126, 0.3)',
-            fontWeight: 700,
-            zIndex: 1,
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%',
+            color: '#607d8b',
           }}>
-            {asset.name.charAt(0)}
+            <BarChart3 size={48} />
           </Box>
         )}
       </AssetImage>
       
-      <CardContentStyled>
+      <CardContent sx={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <AssetTitle>{asset.name}</AssetTitle>
         <AssetDescription>{asset.description}</AssetDescription>
         
         <MetricContainer>
           <Metric>
             <MetricLabel>APY</MetricLabel>
-            <MetricValue>{asset.yield}</MetricValue>
+            <MetricValue>
+              {asset.yield}
+              <TrendingUp size={16} color="#4caf50" />
+            </MetricValue>
           </Metric>
           <Metric>
             <MetricLabel>Min. Investment</MetricLabel>
-            <MetricValue>{asset.minInvestment}</MetricValue>
+            <MetricValue>{formatCurrency(asset.minInvestment)}</MetricValue>
           </Metric>
           <Metric>
             <MetricLabel>Total Value</MetricLabel>
-            <MetricValue>{asset.totalValue}</MetricValue>
+            <MetricValue>{formatCurrency(asset.totalValue)}</MetricValue>
+          </Metric>
+          <Metric>
+            <MetricLabel>Liquidity</MetricLabel>
+            <LiquidityScore score={asset.liquidityScore}>
+              {asset.liquidityScore}%
+              <BarChart3 size={14} />
+            </LiquidityScore>
           </Metric>
         </MetricContainer>
+
+        {(asset.maturity || asset.rating) && (
+          <MetricContainer sx={{ gridTemplateColumns: 'repeat(2, 1fr)', mb: 2 }}>
+            {asset.maturity && (
+              <Metric>
+                <MetricLabel>Maturity</MetricLabel>
+                <MetricValue sx={{ fontSize: '14px' }}>{asset.maturity}</MetricValue>
+              </Metric>
+            )}
+            {asset.rating && (
+              <Metric>
+                <MetricLabel>Rating</MetricLabel>
+                <MetricValue sx={{ fontSize: '14px' }}>{asset.rating}</MetricValue>
+              </Metric>
+            )}
+          </MetricContainer>
+        )}
         
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <RiskIndicator risk={asset.riskLevel}>
-            {asset.riskLevel} Risk
+        <ComplianceContainer>
+          {asset.isCompliant && (
+            <ComplianceBadge type="compliant">
+              <Shield size={12} />
+              Compliant
+            </ComplianceBadge>
+          )}
+          {asset.isVerified && (
+            <ComplianceBadge type="verified">
+              <Globe size={12} />
+              Verified
+            </ComplianceBadge>
+          )}
+          {asset.isInstitutional && (
+            <ComplianceBadge type="institutional">
+              <Star size={12} />
+              Institutional
+            </ComplianceBadge>
+          )}
+          <RiskIndicator level={asset.riskLevel}>
+            {getRiskIcon(asset.riskLevel)}
+            {asset.riskLevel.charAt(0).toUpperCase() + asset.riskLevel.slice(1)} Risk
           </RiskIndicator>
-          <Typography variant="caption" sx={{ color: '#607d8b', fontWeight: 500 }}>
-            Liquidity: {asset.liquidity}
-          </Typography>
-        </Box>
-        
-        {asset.isCompliant && (
-          <ComplianceSection>
-            <ComplianceInfo>
-              <Shield sx={{ fontSize: 16, color: '#4caf50' }} />
-              <ComplianceText>Regulatory Compliant</ComplianceText>
-            </ComplianceInfo>
-            <Tooltip title={`Compliant in ${asset.jurisdiction}`}>
-              <IconButton size="small" sx={{ color: '#4caf50' }}>
-                <Info fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </ComplianceSection>
+        </ComplianceContainer>
+
+        {asset.jurisdiction && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="caption" sx={{ color: '#607d8b', display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Globe size={12} />
+              Jurisdiction: {asset.jurisdiction}
+            </Typography>
+          </Box>
         )}
         
-        <InvestButton 
-          onClick={handleInvestClick}
-          disabled={!asset.isAvailable}
-        >
-          {asset.isAvailable ? 'Invest Now' : 'Currently Unavailable'}
-        </InvestButton>
-        
-        {asset.maturity && (
-          <Typography 
-            variant="caption" 
-            sx={{ 
-              display: 'block', 
-              textAlign: 'center', 
-              color: '#607d8b', 
-              mt: 1,
-              fontWeight: 500,
-            }}
-          >
-            Maturity: {asset.maturity}
-          </Typography>
-        )}
-      </CardContentStyled>
+        <ActionContainer>
+          <InvestButton onClick={() => onInvest(asset.id)}>
+            Invest Now
+          </InvestButton>
+          {onViewDetails && (
+            <SecondaryButton onClick={() => onViewDetails(asset.id)}>
+              Details
+            </SecondaryButton>
+          )}
+        </ActionContainer>
+      </CardContent>
     </StyledCard>
   );
 }; 

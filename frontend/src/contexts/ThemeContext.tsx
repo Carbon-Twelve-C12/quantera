@@ -1,5 +1,5 @@
 /**
- * Quantera Platform - Version 0.8.0 (80% Complete)
+ * Quantera Platform 
  * Theme context for managing light/dark mode across the application
  */
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';

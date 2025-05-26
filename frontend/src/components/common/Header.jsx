@@ -86,6 +86,7 @@ const Header = () => {
     { label: 'Marketplace', path: '/marketplace' },
     { label: 'Trading', path: '/trading' },
     { label: 'Portfolio', path: '/portfolio' },
+    { label: 'Documentation', path: '/docs' },
   ];
   
   const environmentalNavigationItems = [

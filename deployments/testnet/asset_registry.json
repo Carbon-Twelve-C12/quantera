@@ -1,0 +1,63 @@
+{
+  "assets": [
+    {
+      "assetId": "QTT-001",
+      "name": "Manhattan Commercial Real Estate",
+      "symbol": "MCRE",
+      "assetType": "Real Estate",
+      "totalSupply": "1000000000000000000000000",
+      "deployments": {
+        "ethereum_sepolia": {
+          "address": "0x742d35Cc6634C0532925a3b8D4C9db96C4b5Da5e",
+          "blockNumber": 4567890,
+          "transactionHash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+        },
+        "polygon_mumbai": {
+          "address": "0x8ba1f109551bD432803012645Hac136c22C501e",
+          "blockNumber": 3456789,
+          "transactionHash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+        },
+        "avalanche_fuji": {
+          "address": "0x9cb2f109551bD432803012645Hac136c22C501f",
+          "blockNumber": 2345678,
+          "transactionHash": "0xfedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321"
+        }
+      },
+      "compliance": {
+        "standard": "ERC-3643",
+        "jurisdictions": ["US", "EU"],
+        "minimumInvestment": "1000000000000000000000",
+        "accreditedOnly": true
+      }
+    },
+    {
+      "assetId": "QTT-002",
+      "name": "Gold Mining Operations Token",
+      "symbol": "GMOT",
+      "assetType": "Commodities",
+      "totalSupply": "500000000000000000000000",
+      "deployments": {
+        "ethereum_sepolia": {
+          "address": "0x123d35Cc6634C0532925a3b8D4C9db96C4b5Da5e",
+          "blockNumber": 4567891,
+          "transactionHash": "0x2345678901bcdef2345678901bcdef2345678901bcdef2345678901bcdef"
+        },
+        "arbitrum_sepolia": {
+          "address": "0x456a1f109551bD432803012645Hac136c22C501e",
+          "blockNumber": 1234567,
+          "transactionHash": "0xbcdef2345678901bcdef2345678901bcdef2345678901bcdef2345678901"
+        }
+      },
+      "compliance": {
+        "standard": "ERC-1400",
+        "jurisdictions": ["AU", "CA"],
+        "minimumInvestment": "5000000000000000000000",
+        "accreditedOnly": false
+      }
+    }
+  ],
+  "bridgeTransactions": [],
+  "totalAssets": 2,
+  "totalNetworks": 5,
+  "lastUpdated": "$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")"
+}

@@ -173,6 +173,7 @@ export const Header: React.FC<HeaderProps> = ({ activeRoute = 'marketplace', onN
     { label: 'Marketplace', route: 'marketplace' },
     { label: 'Portfolio', route: 'portfolio' },
     { label: 'Analytics', route: 'analytics' },
+    { label: 'Documentation', route: 'docs' },
     { label: 'Institutional', route: 'institutional' },
   ];
 

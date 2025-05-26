@@ -43,6 +43,7 @@ const Header = () => {
     { title: 'Yield', path: '/yield', icon: <TrendingUpIcon /> },
     { title: 'Create Asset', path: '/assets/create', icon: <DescriptionIcon /> },
     { title: 'Contract Explorer', path: '/contracts', icon: <DescriptionIcon /> },
+    { title: 'Documentation', path: '/docs', icon: <DescriptionIcon /> },
     { title: 'About', path: '/about', icon: <InfoIcon /> }
   ];
 

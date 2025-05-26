@@ -1,0 +1,116 @@
+{
+  "monitoring": {
+    "networks": {
+      "ethereum_sepolia": {
+        "rpcEndpoint": "https://sepolia.infura.io/v3/YOUR_KEY",
+        "blockTime": 12,
+        "monitoredContracts": [
+          "ComplianceAwareToken",
+          "SettlementAssetManager",
+          "LiquidityPoolOptimizer",
+          "UniversalBridge"
+        ]
+      },
+      "polygon_mumbai": {
+        "rpcEndpoint": "https://polygon-mumbai.g.alchemy.com/v2/YOUR_KEY",
+        "blockTime": 2,
+        "monitoredContracts": [
+          "ComplianceAwareToken",
+          "SettlementAssetManager",
+          "LiquidityPoolOptimizer"
+        ]
+      }
+    },
+    "metrics": {
+      "transactionMetrics": {
+        "successRate": {
+          "threshold": 0.95,
+          "alertOnBelow": true
+        },
+        "averageGasUsed": {
+          "threshold": 500000,
+          "alertOnAbove": true
+        },
+        "confirmationTime": {
+          "threshold": 30000,
+          "alertOnAbove": true
+        }
+      },
+      "bridgeMetrics": {
+        "transferSuccessRate": {
+          "threshold": 0.98,
+          "alertOnBelow": true
+        },
+        "averageTransferTime": {
+          "threshold": 900000,
+          "alertOnAbove": true
+        },
+        "bridgeFees": {
+          "threshold": 0.01,
+          "alertOnAbove": true
+        }
+      },
+      "complianceMetrics": {
+        "checkAccuracy": {
+          "threshold": 0.99,
+          "alertOnBelow": true
+        },
+        "processingTime": {
+          "threshold": 5000,
+          "alertOnAbove": true
+        }
+      }
+    },
+    "alerts": {
+      "channels": ["email", "slack", "webhook"],
+      "escalation": {
+        "level1": "5 minutes",
+        "level2": "15 minutes",
+        "level3": "30 minutes"
+      }
+    }
+  },
+  "analytics": {
+    "dashboards": [
+      {
+        "name": "Cross-Chain Overview",
+        "widgets": [
+          "total_transactions",
+          "success_rate",
+          "average_fees",
+          "network_distribution"
+        ]
+      },
+      {
+        "name": "Bridge Performance",
+        "widgets": [
+          "transfer_volume",
+          "transfer_times",
+          "bridge_utilization",
+          "fee_analysis"
+        ]
+      },
+      {
+        "name": "Compliance Analytics",
+        "widgets": [
+          "compliance_checks",
+          "jurisdiction_distribution",
+          "rejection_reasons",
+          "processing_times"
+        ]
+      }
+    ],
+    "reports": {
+      "daily": {
+        "enabled": true,
+        "recipients": ["dev-team@quantera.finance"],
+        "metrics": ["transaction_volume", "success_rates", "gas_usage"]
+      },
+      "weekly": {
+        "enabled": true,
+        "recipients": ["management@quantera.finance"],
+        "metrics": ["performance_summary", "cost_analysis", "user_adoption"]
+      }
+    }
+  }
+}

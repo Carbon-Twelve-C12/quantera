@@ -1,0 +1,22 @@
+{
+  "network": "ethereum_sepolia",
+  "chainId": ,
+  "timestamp": "2025-05-26T08:24:38.3NZ",
+  "contracts": {
+    "ComplianceAwareToken": "0x95a4d54cc4a30b67d1c5f764fd66f4c2c4dfcd23",
+    "SettlementAssetManager": "0x4a27ca808c381a84bbed54994786c2762a07992b",
+    "LiquidityPoolOptimizer": "0x6bf188bd63095fdbc9663bdcbefeb9a4c0f1d7d0",
+    "DynamicFeeStructure": "0x0eb96b15d280aafef06071fb1f0cea184a0a550e",
+    "PrimeBrokerage": "0xa8b473ce34c947411582b14ce55652981a4872a5",
+    "UniversalBridge": "0x1921e7fa5cc3bb7d9921218ff5f107619c6ce31f"
+  },
+  "gasUsed": {
+    "total": ,
+    "ComplianceAwareToken": ,
+    "SettlementAssetManager": ,
+    "LiquidityPoolOptimizer": ,
+    "DynamicFeeStructure": ,
+    "PrimeBrokerage": ,
+    "UniversalBridge": 
+  }
+}

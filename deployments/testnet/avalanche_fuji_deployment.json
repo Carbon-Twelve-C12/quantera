@@ -1,0 +1,22 @@
+{
+  "network": "avalanche_fuji",
+  "chainId": ,
+  "timestamp": "2025-05-26T08:24:38.3NZ",
+  "contracts": {
+    "ComplianceAwareToken": "0x3f2fd16794c3f6ee123d4d4525e74df111abd7c4",
+    "SettlementAssetManager": "0xdb9f43ce9d0bb6c8e7846f9cef29595667492e00",
+    "LiquidityPoolOptimizer": "0x1d48d232d3077c6ffb79e44fccaee93be73023b9",
+    "DynamicFeeStructure": "0xa5e0be20fc98d1d3e14c754a13e2d44f21df08f2",
+    "PrimeBrokerage": "0x5c6bab744cc49422b840ed14f43fb115bd8f512d",
+    "UniversalBridge": "0x097c91fa8198858e0a44256af5047b46ed2e859e"
+  },
+  "gasUsed": {
+    "total": ,
+    "ComplianceAwareToken": ,
+    "SettlementAssetManager": ,
+    "LiquidityPoolOptimizer": ,
+    "DynamicFeeStructure": ,
+    "PrimeBrokerage": ,
+    "UniversalBridge": 
+  }
+}

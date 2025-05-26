@@ -1,8 +1,8 @@
 import React from 'react';
 import { Box, Paper, Typography, IconButton, Menu, MenuItem } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { MoreVert, TrendingUp, TrendingDown, Remove } from '@mui/icons-material';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area, BarChart, Bar } from 'recharts';
+import { MoreVertical, Download, Maximize2 } from 'lucide-react';
 
 const ChartContainer = styled(Paper)(({ theme }) => ({
   background: '#ffffff',
@@ -12,11 +12,6 @@ const ChartContainer = styled(Paper)(({ theme }) => ({
   border: '1px solid rgba(26, 35, 126, 0.06)',
   position: 'relative',
   overflow: 'hidden',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  
-  '&:hover': {
-    boxShadow: '0 4px 24px rgba(26, 35, 126, 0.08)',
-  },
   
   '&::before': {
     content: '""',
@@ -26,7 +21,6 @@ const ChartContainer = styled(Paper)(({ theme }) => ({
     right: 0,
     height: '4px',
     background: 'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)',
-    borderRadius: '16px 16px 0 0',
   },
 }));
 
@@ -37,71 +31,65 @@ const ChartHeader = styled(Box)({
   marginBottom: '24px',
 });
 
-const ChartTitleSection = styled(Box)({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '4px',
-});
-
 const ChartTitle = styled(Typography)({
   fontSize: '20px',
   fontWeight: 600,
   color: '#263238',
+  marginBottom: '8px',
   fontFamily: 'Inter, sans-serif',
-  lineHeight: 1.3,
 });
 
 const ChartSubtitle = styled(Typography)({
   fontSize: '14px',
   color: '#607d8b',
   fontFamily: 'Inter, sans-serif',
-  lineHeight: 1.4,
 });
 
-const ChartMetrics = styled(Box)({
+const MetricDisplay = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  gap: '16px',
-  marginTop: '8px',
+  gap: '24px',
+  marginBottom: '16px',
 });
 
 const MetricItem = styled(Box)({
   display: 'flex',
-  alignItems: 'center',
-  gap: '4px',
-});
-
-const MetricValue = styled(Typography)({
-  fontSize: '16px',
-  fontWeight: 700,
-  color: '#1a237e',
-  fontFamily: 'Inter, sans-serif',
+  flexDirection: 'column',
 });
 
 const MetricLabel = styled(Typography)({
   fontSize: '12px',
   color: '#607d8b',
   fontWeight: 500,
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
+  marginBottom: '4px',
 });
 
-const ChartActions = styled(Box)({
+const MetricValue = styled(Typography)({
+  fontSize: '18px',
+  fontWeight: 700,
+  color: '#1a237e',
+});
+
+const ChangeIndicator = styled(Typography)<{ positive: boolean }>(({ positive }) => ({
+  fontSize: '14px',
+  fontWeight: 600,
+  color: positive ? '#4caf50' : '#f44336',
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
-});
+  gap: '4px',
+}));
 
 const ActionButton = styled(IconButton)({
   color: '#607d8b',
   padding: '8px',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   
   '&:hover': {
+    backgroundColor: 'rgba(26, 35, 126, 0.04)',
     color: '#1a237e',
-    backgroundColor: 'rgba(26, 35, 126, 0.05)',
   },
 });
+
+export type ChartType = 'line' | 'area' | 'bar';
 
 interface ProfessionalChartProps {
   title: string;
@@ -111,17 +99,14 @@ interface ProfessionalChartProps {
   xAxisKey: string;
   height?: number;
   color?: string;
-  type?: 'line' | 'area' | 'bar';
-  showGrid?: boolean;
-  showTooltip?: boolean;
-  metrics?: {
-    current?: string | number;
-    change?: string | number;
-    changeType?: 'positive' | 'negative' | 'neutral';
-    period?: string;
-  };
+  type?: ChartType;
+  currentValue?: string;
+  changeValue?: string;
+  changePercentage?: number;
+  showMetrics?: boolean;
+  showActions?: boolean;
   onExport?: () => void;
-  onFullscreen?: () => void;
+  onMaximize?: () => void;
 }
 
 export const ProfessionalChart: React.FC<ProfessionalChartProps> = ({
@@ -133,20 +118,22 @@ export const ProfessionalChart: React.FC<ProfessionalChartProps> = ({
   height = 300,
   color = '#1a237e',
   type = 'line',
-  showGrid = true,
-  showTooltip = true,
-  metrics,
+  currentValue,
+  changeValue,
+  changePercentage,
+  showMetrics = true,
+  showActions = true,
   onExport,
-  onFullscreen,
+  onMaximize,
 }) => {
-  const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setMenuAnchor(event.currentTarget);
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
   };
 
   const handleMenuClose = () => {
-    setMenuAnchor(null);
+    setAnchorEl(null);
   };
 
   const customTooltip = ({ active, payload, label }: any) => {
@@ -159,30 +146,13 @@ export const ProfessionalChart: React.FC<ProfessionalChartProps> = ({
             borderRadius: '8px',
             boxShadow: '0 8px 32px rgba(26, 35, 126, 0.15)',
             border: '1px solid rgba(26, 35, 126, 0.1)',
-            minWidth: '120px',
           }}
         >
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              color: '#263238', 
-              fontWeight: 600,
-              marginBottom: '4px',
-              fontSize: '12px',
-            }}
-          >
+          <Typography variant="body2" sx={{ color: '#263238', fontWeight: 600, mb: 1 }}>
             {label}
           </Typography>
           {payload.map((entry: any, index: number) => (
-            <Typography 
-              key={index}
-              variant="body2" 
-              sx={{ 
-                color: entry.color || color, 
-                fontWeight: 500,
-                fontSize: '14px',
-              }}
-            >
+            <Typography key={index} variant="body2" sx={{ color: entry.color, fontWeight: 500 }}>
               {`${entry.name}: ${typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}`}
             </Typography>
           ))}
@@ -192,55 +162,31 @@ export const ProfessionalChart: React.FC<ProfessionalChartProps> = ({
     return null;
   };
 
-  const getChangeIcon = (changeType?: string) => {
-    switch (changeType) {
-      case 'positive':
-        return <TrendingUp sx={{ fontSize: 16, color: '#4caf50' }} />;
-      case 'negative':
-        return <TrendingDown sx={{ fontSize: 16, color: '#f44336' }} />;
-      default:
-        return <Remove sx={{ fontSize: 16, color: '#607d8b' }} />;
-    }
-  };
-
-  const getChangeColor = (changeType?: string) => {
-    switch (changeType) {
-      case 'positive':
-        return '#4caf50';
-      case 'negative':
-        return '#f44336';
-      default:
-        return '#607d8b';
-    }
-  };
-
   const renderChart = () => {
     const commonProps = {
       data,
       margin: { top: 5, right: 30, left: 20, bottom: 5 },
     };
 
-    const axisProps = {
+    const commonAxisProps = {
       axisLine: false,
       tickLine: false,
-      tick: { fill: '#607d8b', fontSize: 12, fontFamily: 'Inter, sans-serif' },
+      tick: { fill: '#607d8b', fontSize: 12 },
     };
-
-    const gridProps = showGrid ? {
-      strokeDasharray: "3 3",
-      stroke: "rgba(26, 35, 126, 0.1)",
-      horizontal: true,
-      vertical: false,
-    } : {};
 
     switch (type) {
       case 'area':
         return (
           <AreaChart {...commonProps}>
-            {showGrid && <CartesianGrid {...gridProps} />}
-            <XAxis dataKey={xAxisKey} {...axisProps} />
-            <YAxis {...axisProps} />
-            {showTooltip && <Tooltip content={customTooltip} />}
+            <CartesianGrid 
+              strokeDasharray="3 3" 
+              stroke="rgba(26, 35, 126, 0.1)" 
+              horizontal={true}
+              vertical={false}
+            />
+            <XAxis dataKey={xAxisKey} {...commonAxisProps} />
+            <YAxis {...commonAxisProps} />
+            <Tooltip content={customTooltip} />
             <Area
               type="monotone"
               dataKey={dataKey}
@@ -248,7 +194,7 @@ export const ProfessionalChart: React.FC<ProfessionalChartProps> = ({
               strokeWidth={3}
               fill={`${color}20`}
               dot={{ fill: color, strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6, fill: color, strokeWidth: 2 }}
+              activeDot={{ r: 6, fill: color }}
             />
           </AreaChart>
         );
@@ -256,10 +202,15 @@ export const ProfessionalChart: React.FC<ProfessionalChartProps> = ({
       case 'bar':
         return (
           <BarChart {...commonProps}>
-            {showGrid && <CartesianGrid {...gridProps} />}
-            <XAxis dataKey={xAxisKey} {...axisProps} />
-            <YAxis {...axisProps} />
-            {showTooltip && <Tooltip content={customTooltip} />}
+            <CartesianGrid 
+              strokeDasharray="3 3" 
+              stroke="rgba(26, 35, 126, 0.1)" 
+              horizontal={true}
+              vertical={false}
+            />
+            <XAxis dataKey={xAxisKey} {...commonAxisProps} />
+            <YAxis {...commonAxisProps} />
+            <Tooltip content={customTooltip} />
             <Bar
               dataKey={dataKey}
               fill={color}
@@ -268,20 +219,25 @@ export const ProfessionalChart: React.FC<ProfessionalChartProps> = ({
           </BarChart>
         );
       
-      default:
+      default: // line
         return (
           <LineChart {...commonProps}>
-            {showGrid && <CartesianGrid {...gridProps} />}
-            <XAxis dataKey={xAxisKey} {...axisProps} />
-            <YAxis {...axisProps} />
-            {showTooltip && <Tooltip content={customTooltip} />}
+            <CartesianGrid 
+              strokeDasharray="3 3" 
+              stroke="rgba(26, 35, 126, 0.1)" 
+              horizontal={true}
+              vertical={false}
+            />
+            <XAxis dataKey={xAxisKey} {...commonAxisProps} />
+            <YAxis {...commonAxisProps} />
+            <Tooltip content={customTooltip} />
             <Line
               type="monotone"
               dataKey={dataKey}
               stroke={color}
               strokeWidth={3}
               dot={{ fill: color, strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6, fill: color, strokeWidth: 2 }}
+              activeDot={{ r: 6, fill: color }}
             />
           </LineChart>
         );
@@ -291,84 +247,61 @@ export const ProfessionalChart: React.FC<ProfessionalChartProps> = ({
   return (
     <ChartContainer>
       <ChartHeader>
-        <ChartTitleSection>
+        <Box>
           <ChartTitle>{title}</ChartTitle>
           {subtitle && <ChartSubtitle>{subtitle}</ChartSubtitle>}
-          
-          {metrics && (
-            <ChartMetrics>
-              {metrics.current && (
-                <MetricItem>
-                  <Box>
-                    <MetricValue>{metrics.current}</MetricValue>
-                    <MetricLabel>Current</MetricLabel>
-                  </Box>
-                </MetricItem>
-              )}
-              
-              {metrics.change && (
-                <MetricItem>
-                  {getChangeIcon(metrics.changeType)}
-                  <Box>
-                    <MetricValue sx={{ color: getChangeColor(metrics.changeType) }}>
-                      {metrics.change}
-                    </MetricValue>
-                    <MetricLabel>{metrics.period || 'Change'}</MetricLabel>
-                  </Box>
-                </MetricItem>
-              )}
-            </ChartMetrics>
-          )}
-        </ChartTitleSection>
+        </Box>
         
-        <ChartActions>
-          <ActionButton onClick={handleMenuOpen}>
-            <MoreVert />
-          </ActionButton>
-        </ChartActions>
+        {showActions && (
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <ActionButton onClick={onMaximize}>
+              <Maximize2 size={18} />
+            </ActionButton>
+            <ActionButton onClick={handleMenuClick}>
+              <MoreVertical size={18} />
+            </ActionButton>
+          </Box>
+        )}
       </ChartHeader>
+
+      {showMetrics && (currentValue || changeValue) && (
+        <MetricDisplay>
+          {currentValue && (
+            <MetricItem>
+              <MetricLabel>Current Value</MetricLabel>
+              <MetricValue>{currentValue}</MetricValue>
+            </MetricItem>
+          )}
+          {changeValue && (
+            <MetricItem>
+              <MetricLabel>Change</MetricLabel>
+              <ChangeIndicator positive={(changePercentage || 0) >= 0}>
+                {changeValue}
+                {changePercentage !== undefined && ` (${changePercentage > 0 ? '+' : ''}${changePercentage.toFixed(2)}%)`}
+              </ChangeIndicator>
+            </MetricItem>
+          )}
+        </MetricDisplay>
+      )}
       
       <ResponsiveContainer width="100%" height={height}>
         {renderChart()}
       </ResponsiveContainer>
-      
+
       <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
         onClose={handleMenuClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        PaperProps={{
-          sx: {
-            background: '#ffffff',
-            borderRadius: '8px',
-            boxShadow: '0 4px 24px rgba(26, 35, 126, 0.08)',
-            border: '1px solid rgba(26, 35, 126, 0.08)',
-            minWidth: '160px',
-          },
-        }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        {onFullscreen && (
-          <MenuItem onClick={() => { onFullscreen(); handleMenuClose(); }}>
-            View Fullscreen
-          </MenuItem>
-        )}
-        {onExport && (
-          <MenuItem onClick={() => { onExport(); handleMenuClose(); }}>
-            Export Data
-          </MenuItem>
-        )}
-        <MenuItem onClick={handleMenuClose}>
-          Share Chart
+        <MenuItem onClick={() => { onExport?.(); handleMenuClose(); }}>
+          <Download size={16} style={{ marginRight: 8 }} />
+          Export Data
         </MenuItem>
-        <MenuItem onClick={handleMenuClose}>
-          Download Image
+        <MenuItem onClick={() => { onMaximize?.(); handleMenuClose(); }}>
+          <Maximize2 size={16} style={{ marginRight: 8 }} />
+          Fullscreen
         </MenuItem>
       </Menu>
     </ChartContainer>

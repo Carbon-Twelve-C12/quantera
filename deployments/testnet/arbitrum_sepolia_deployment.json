@@ -1,0 +1,22 @@
+{
+  "network": "arbitrum_sepolia",
+  "chainId": ,
+  "timestamp": "2025-05-26T08:24:38.3NZ",
+  "contracts": {
+    "ComplianceAwareToken": "0xbf942f80925a2e56ecfbc5c7cd309660d93548e7",
+    "SettlementAssetManager": "0xcf3be92fbefbe9a091f9704025bd15d156bb5e6b",
+    "LiquidityPoolOptimizer": "0x978f62f185d44659c68852046e497ff1bd6a5100",
+    "DynamicFeeStructure": "0xee11ba96067a7e2d9d20e79734a0e736b3820879",
+    "PrimeBrokerage": "0xd99b36ff5eef3a69cd85e43f1f61045aa134d7c9",
+    "UniversalBridge": "0xfbcc9ea7526267456e3c5712e0c61245bc850ec1"
+  },
+  "gasUsed": {
+    "total": ,
+    "ComplianceAwareToken": ,
+    "SettlementAssetManager": ,
+    "LiquidityPoolOptimizer": ,
+    "DynamicFeeStructure": ,
+    "PrimeBrokerage": ,
+    "UniversalBridge": 
+  }
+}

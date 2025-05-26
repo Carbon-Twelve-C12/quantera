@@ -194,11 +194,13 @@ const sampleAssets = [
     totalValue: '$45.2M',
     imageUrl: '/images/assets/real-estate/manhattan-commercial.jpg',
     isCompliant: true,
+    isVerified: true,
+    isInstitutional: true,
     riskLevel: 'medium' as const,
+    liquidityScore: 85,
     jurisdiction: 'US',
-    liquidity: 'High',
     maturity: '5 years',
-    isAvailable: true,
+    rating: 'A+',
   },
   {
     id: '2',
@@ -210,11 +212,12 @@ const sampleAssets = [
     totalValue: '$28.7M',
     imageUrl: '/images/assets/commodities/gold-mining.jpg',
     isCompliant: true,
+    isVerified: true,
     riskLevel: 'high' as const,
+    liquidityScore: 65,
     jurisdiction: 'AU',
-    liquidity: 'Medium',
     maturity: '3 years',
-    isAvailable: true,
+    rating: 'B+',
   },
   {
     id: '3',
@@ -226,11 +229,13 @@ const sampleAssets = [
     totalValue: '$125.8M',
     imageUrl: '/images/assets/treasury-notes/us-treasury.jpg',
     isCompliant: true,
+    isVerified: true,
+    isInstitutional: true,
     riskLevel: 'low' as const,
+    liquidityScore: 95,
     jurisdiction: 'US',
-    liquidity: 'Very High',
     maturity: '2 years',
-    isAvailable: true,
+    rating: 'AAA',
   },
   {
     id: '4',
@@ -242,11 +247,13 @@ const sampleAssets = [
     totalValue: '$67.3M',
     imageUrl: '/images/assets/infrastructure/european-infrastructure.jpg',
     isCompliant: true,
+    isVerified: true,
+    isInstitutional: true,
     riskLevel: 'medium' as const,
+    liquidityScore: 70,
     jurisdiction: 'EU',
-    liquidity: 'Medium',
     maturity: '7 years',
-    isAvailable: true,
+    rating: 'A',
   },
   {
     id: '5',
@@ -258,11 +265,12 @@ const sampleAssets = [
     totalValue: '$34.1M',
     imageUrl: '/images/assets/private-equity/tech-startups.jpg',
     isCompliant: true,
+    isVerified: false,
     riskLevel: 'high' as const,
+    liquidityScore: 35,
     jurisdiction: 'US',
-    liquidity: 'Low',
     maturity: '5-10 years',
-    isAvailable: false,
+    rating: 'B',
   },
   {
     id: '6',
@@ -274,11 +282,12 @@ const sampleAssets = [
     totalValue: '$19.8M',
     imageUrl: '/images/assets/art/contemporary-collection.jpg',
     isCompliant: true,
+    isVerified: true,
     riskLevel: 'high' as const,
+    liquidityScore: 45,
     jurisdiction: 'UK',
-    liquidity: 'Low',
     maturity: 'Open-ended',
-    isAvailable: true,
+    rating: 'B+',
   },
 ];
 
@@ -376,12 +385,11 @@ export const MarketplacePage: React.FC = () => {
             height={300}
             type="area"
             color="#1a237e"
-            metrics={{
-              current: '$2.4B',
-              change: '+12.5%',
-              changeType: 'positive',
-              period: '30 days',
-            }}
+            currentValue="$2.4B"
+            changeValue="+$300M"
+            changePercentage={12.5}
+            showMetrics={true}
+            showActions={true}
           />
         </ChartSection>
         
@@ -432,10 +440,9 @@ export const MarketplacePage: React.FC = () => {
               <AssetCard
                 asset={asset}
                 onInvest={handleAssetInvest}
-                onFavorite={handleAssetFavorite}
-                onShare={handleAssetShare}
+                onToggleFavorite={handleAssetFavorite}
                 onViewDetails={handleAssetDetails}
-                isFavorited={favoriteAssets.has(asset.id)}
+                isFavorite={favoriteAssets.has(asset.id)}
               />
             </Grid>
           ))}

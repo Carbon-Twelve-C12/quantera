@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } f
 import { TreasuryList, TreasuryDetail, CreateTreasury, TreasuryComparison } from './components';
 import Login from './components/Login';
 import { MarketplacePage } from './pages/MarketplacePage';
+import { PlatformPage } from './pages/PlatformPage';
 import AssetDetailPage from './pages/AssetDetailPage';
 import EnhancedLiquidityPoolPage from './pages/EnhancedLiquidityPoolPage';
 import AboutPage from './pages/AboutPage';
@@ -77,10 +78,11 @@ const AppContent: React.FC = () => {
   return (
     <>
       <header className="app-header">
-        <h1>Quantera Treasury Platform</h1>
+        <h1>Quantera</h1>
         <nav className="main-nav">
           <ul>
             <li><Link to="/">Home</Link></li>
+            <li><Link to="/docs">Documentation</Link></li>
             <li><Link to="/about">About</Link></li>
             <li><Link to="/treasuries">Treasuries</Link></li>
             <li><Link to="/marketplace">Marketplace</Link></li>
@@ -92,7 +94,7 @@ const AppContent: React.FC = () => {
             <li><Link to="/esg-dashboard">ESG Impact</Link></li>
             <li><Link to="/esg-scoring">ESG Scoring</Link></li>
             <li><Link to="/compare">Compare</Link></li>
-            <li><Link to="/create">Create Treasury</Link></li>
+            <li><Link to="/create">Create Asset</Link></li>
             {isAuthenticated ? (
               <>
                 <li className="user-info">
@@ -122,6 +124,7 @@ const AppContent: React.FC = () => {
           <Route path="/analytics" element={<AnalyticsDashboardPage />} />
           <Route path="/esg-dashboard" element={<ESGDashboardPage />} />
           <Route path="/esg-scoring" element={<ESGScoringDashboardPage />} />
+          <Route path="/docs" element={<PlatformPage />} />
           <Route path="/assets/:id" element={<AssetDetailPage />} />
           <Route path="/environmental/assets/:assetId" element={<EnvironmentalAssetPage />} />
           <Route path="/liquidity" element={<EnhancedLiquidityPoolPage />} />
@@ -138,7 +141,7 @@ const AppContent: React.FC = () => {
       </main>
       
       <footer className="app-footer">
-        <p>© 2023 Quantera - Tokenized Treasury Platform</p>
+        <p>© 2025 Quantera - Tokenized Financial Products</p>
       </footer>
     </>
   );
@@ -147,13 +150,14 @@ const AppContent: React.FC = () => {
 // Simple home page component
 const Home: React.FC = () => (
   <div className="home-page">
-    <h2>Welcome to Quantera Treasury Platform</h2>
-    <p>A secure platform for tokenized treasury management</p>
+    <h2>Welcome to Quantera</h2>
+    <p>A next generation platform for tokenized financial products</p>
     <div className="home-actions">
       <Link to="/marketplace" className="button primary">Browse Marketplace</Link>
       <Link to="/treasuries" className="button secondary">Browse Treasuries</Link>
       <Link to="/portfolio" className="button secondary">View Portfolio</Link>
       <Link to="/analytics" className="button secondary">Platform Analytics</Link>
+      <Link to="/docs" className="button secondary">Documentation</Link>
       <Link to="/esg-dashboard" className="button secondary">ESG & Impact</Link>
       <Link to="/trade-finance" className="button secondary">Trade Finance</Link>
       <Link to="/liquidity" className="button secondary">Manage Liquidity</Link>

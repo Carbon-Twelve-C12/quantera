@@ -1,0 +1,22 @@
+{
+  "network": "polygon_mumbai",
+  "chainId": ,
+  "timestamp": "2025-05-26T08:24:38.3NZ",
+  "contracts": {
+    "ComplianceAwareToken": "0x108c8b294bf70daec8b97bad9d91cf1b303f3944",
+    "SettlementAssetManager": "0x93b0d53b36f8f90f117d4a5ea052c373a4c02f2e",
+    "LiquidityPoolOptimizer": "0x9a696a336cf92b83a7919747c366047424d2da6d",
+    "DynamicFeeStructure": "0x80dee3da62a5aad528ab56949a5457c7e799805e",
+    "PrimeBrokerage": "0xc9bdf38183f78b58694b1ff7cec4a7afa6b86262",
+    "UniversalBridge": "0xaba4f2af972052fb674100dab6952ae6a3c08421"
+  },
+  "gasUsed": {
+    "total": ,
+    "ComplianceAwareToken": ,
+    "SettlementAssetManager": ,
+    "LiquidityPoolOptimizer": ,
+    "DynamicFeeStructure": ,
+    "PrimeBrokerage": ,
+    "UniversalBridge": 
+  }
+}

@@ -158,7 +158,7 @@ function LandingPage() {
     <div className="container mt-5">
       <h1>Quantera Platform</h1>
       <p className="lead">
-        An Ethereum-based platform for tokenizing securities.
+        An Ethereum-based platform for tokenized financial products.
       </p>
     </div>
   );
