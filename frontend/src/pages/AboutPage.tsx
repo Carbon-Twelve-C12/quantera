@@ -412,14 +412,14 @@ const AboutPage: React.FC = () => {
           
           <NoticeBox isDarkMode={isDarkMode}>
             <Typography variant="h6" color="primary" gutterBottom>
-              Platform Status: Version 1.0.0 - Advanced Liquidity Solutions Completed
+              Platform Status: Version 1.1.0 
             </Typography>
             <Typography variant="body2">
-              Quantera has successfully reached Version 1.0.0 with the integration of Advanced Liquidity Solutions. 
-              Our institutional-grade liquidity optimization platform now features multi-strategy optimization (6-12% APY targets), 
-              dynamic fee structures, real-time market analytics, and a professional dashboard with comprehensive portfolio management. 
-              The platform is ready for institutional deployment with advanced compliance frameworks, custody solutions, 
-              and professional-grade risk management tools implemented for qualified investors.
+              Quantera has successfully reached Version 1.1.0 with the completion of our documentation. Our institutional-grade liquidity optimization platform features 
+              multi-strategy optimization (6-12% APY targets), dynamic fee structures, real-time market analytics, 
+              and a professional dashboard with comprehensive portfolio management. The platform is ready for 
+              institutional deployment with advanced compliance frameworks, custody solutions, and professional-grade 
+              risk management tools implemented for qualified investors.
             </Typography>
           </NoticeBox>
         </Container>
@@ -597,7 +597,7 @@ const AboutPage: React.FC = () => {
               size="large"
               href="/assets/create"
             >
-              Explore Platform
+              Create Asset
             </Button>
           </Box>
         </Container>
@@ -610,7 +610,7 @@ const AboutPage: React.FC = () => {
             Roadmap & Vision
           </SectionTitle>
           <SectionDescription variant="body1">
-            Quantera is currently at Version 0.9.8 with prime brokerage services implemented and the following focus areas:
+            Quantera is currently at Version 0.9.8 with the following focus areas:
           </SectionDescription>
           
           <CardContainer>

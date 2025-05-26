@@ -31,6 +31,16 @@ const EnvironmentalMarketplacePage = lazy(() => import('./pages/EnvironmentalMar
 const AssetDetailPage = lazy(() => import('./pages/AssetDetailPage'));
 const PlatformPage = lazy(() => import('./pages/PlatformPage').then(module => ({ default: module.PlatformPage })));
 
+// Documentation pages
+const OverviewPage = lazy(() => import('./pages/docs/OverviewPage').then(module => ({ default: module.OverviewPage })));
+const SmartContractsPage = lazy(() => import('./pages/docs/SmartContractsPage').then(module => ({ default: module.SmartContractsPage })));
+const PlatformFeaturesPage = lazy(() => import('./pages/docs/PlatformFeaturesPage').then(module => ({ default: module.PlatformFeaturesPage })));
+const MarketplaceGuidePage = lazy(() => import('./pages/docs/MarketplaceGuidePage').then(module => ({ default: module.MarketplaceGuidePage })));
+const AssetCreationDocsPage = lazy(() => import('./pages/docs/AssetCreationPage').then(module => ({ default: module.AssetCreationPage })));
+const PortfolioManagementPage = lazy(() => import('./pages/docs/PortfolioManagementPage').then(module => ({ default: module.PortfolioManagementPage })));
+const YieldLiquidityPage = lazy(() => import('./pages/docs/YieldLiquidityPage').then(module => ({ default: module.YieldLiquidityPage })));
+const PlaceholderPage = lazy(() => import('./pages/docs/PlaceholderPage').then(module => ({ default: module.PlaceholderPage })));
+
 // Loading component for suspense fallback
 const LoadingFallback = () => (
   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
@@ -86,6 +96,16 @@ function App() {
                         
                         {/* Documentation Route */}
                         <Route path="/docs" element={<PlatformPage />} />
+                        
+                        {/* Documentation sub-routes */}
+                        <Route path="/docs/overview" element={<OverviewPage />} />
+                        <Route path="/docs/smart-contracts" element={<SmartContractsPage />} />
+                        <Route path="/docs/platform-features" element={<PlatformFeaturesPage />} />
+                        <Route path="/docs/marketplace-guide" element={<MarketplaceGuidePage />} />
+                        <Route path="/docs/asset-creation" element={<AssetCreationDocsPage />} />
+                        <Route path="/docs/portfolio-management" element={<PortfolioManagementPage />} />
+                        <Route path="/docs/yield-liquidity" element={<YieldLiquidityPage />} />
+                        <Route path="/docs/placeholder" element={<PlaceholderPage />} />
                         
                         <Route path="*" element={
                           <Container className="py-5 text-center">

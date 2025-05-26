@@ -93,10 +93,10 @@ const createAppTheme = (mode) => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  // Check local storage for theme preference or default to 'light'
+  // Check local storage for theme preference or default to 'dark'
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
-    return savedTheme || 'light';
+    return savedTheme || 'dark';
   });
 
   const muiTheme = createAppTheme(theme);

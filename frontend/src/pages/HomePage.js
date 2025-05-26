@@ -8,14 +8,14 @@ const HomePage = () => {
   return (
     <>
       {/* Hero Section */}
-      <div className="bg-primary text-white py-5">
+      <div className="py-5" style={{ backgroundColor: '#1E2885', color: '#ffffff' }}>
         <Container>
           <Row className="align-items-center">
             <Col lg={6} className="mb-4 mb-lg-0">
-              <h1 className="display-4 fw-bold mb-3">
+              <h1 className="display-4 fw-bold mb-3" style={{ color: '#ffffff' }}>
                 Tokenized Financial Products
               </h1>
-              <p className="lead mb-4">
+              <p className="lead mb-4" style={{ color: '#ffffff' }}>
                 Quantera brings financial products to Ethereum, enabling fractional ownership, instant settlement, and 24/7 liquidity.
               </p>
               <div className="d-flex gap-3">

@@ -332,47 +332,13 @@ export const EnterprisePage: React.FC = () => {
         <Container maxWidth="lg">
           <HeroContent>
             <HeroTitle>
-              Enterprise-Grade Asset Tokenization
+              Tokenized Financial Products
             </HeroTitle>
             <HeroSubtitle>
-              The world's first enterprise tokenization platform. 
+              The world's first enterprise-grade tokenization platform. 
               Delivering regulatory compliance, multi-chain interoperability, and enterprise services at scale.
             </HeroSubtitle>
             
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<Download />}
-                sx={{
-                  background: '#ffffff',
-                  color: '#1a237e',
-                  fontWeight: 600,
-                  padding: '12px 32px',
-                  '&:hover': {
-                    background: 'rgba(255, 255, 255, 0.9)',
-                  },
-                }}
-              >
-                Download Documentation
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                sx={{
-                  borderColor: '#ffffff',
-                  color: '#ffffff',
-                  fontWeight: 600,
-                  padding: '12px 32px',
-                  '&:hover': {
-                    borderColor: '#ffffff',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                  },
-                }}
-              >
-                Schedule Demo
-              </Button>
-            </Box>
 
             <StatsContainer>
               <StatItem>

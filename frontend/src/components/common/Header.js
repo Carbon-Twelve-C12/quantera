@@ -50,7 +50,7 @@ const Header = () => {
   const drawer = (
     <Box onClick={toggleDrawer} sx={{ textAlign: 'center', width: 250 }}>
       <Typography variant="h6" sx={{ my: 2 }}>
-        <span style={{ color: muiTheme.palette.primary.main }}>Q</span>uantera Platform
+        <span style={{ color: '#1E2885' }}>Q</span>uantera 
       </Typography>
       <List>
         {navItems.map((item) => (
@@ -72,10 +72,12 @@ const Header = () => {
 
   return (
     <AppBar 
-      position="static" 
+      position="sticky" 
       sx={{ 
-        backgroundColor: 'var(--navbar-bg)',
-        color: 'var(--navbar-text)'
+        backgroundColor: '#000000',
+        color: '#ffffff',
+        top: 0,
+        zIndex: 1100
       }}
       elevation={1}
     >
@@ -83,7 +85,7 @@ const Header = () => {
         <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <IconButton
-              sx={{ color: 'var(--navbar-text)', p: { xs: 0.5, sm: 1 } }}
+              sx={{ color: '#ffffff', p: { xs: 0.5, sm: 1 } }}
               aria-label="open menu"
               edge="start"
               onClick={toggleDrawer}
@@ -98,11 +100,11 @@ const Header = () => {
               sx={{
                 ml: 1,
                 fontWeight: 700,
-                color: 'var(--navbar-text)',
+                color: '#ffffff',
                 textDecoration: 'none',
               }}
             >
-              <span style={{ color: muiTheme.palette.primary.light }}>Q</span>uantera Platform
+              <span style={{ color: '#1E2885', fontWeight: 'bold' }}>Q</span>uantera
             </Typography>
           </Box>
 
@@ -146,10 +148,10 @@ const Header = () => {
               size="small"
               sx={{
                 ml: 1,
-                color: 'var(--navbar-text)',
-                borderColor: 'var(--navbar-text)',
+                color: '#ffffff',
+                borderColor: '#ffffff',
                 '&:hover': {
-                  borderColor: muiTheme.palette.primary.light,
+                  borderColor: '#ffffff',
                   backgroundColor: 'rgba(255, 255, 255, 0.08)',
                 }
               }}

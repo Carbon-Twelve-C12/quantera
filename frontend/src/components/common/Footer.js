@@ -12,8 +12,8 @@ const Footer = () => {
       sx={{
         py: 5,
         mt: 8,
-        backgroundColor: 'var(--footer-bg)',
-        color: 'var(--footer-text)',
+        backgroundColor: '#000000 !important',
+        color: '#ffffff',
         borderTop: 1,
         borderColor: 'rgba(255, 255, 255, 0.1)'
       }}
@@ -31,7 +31,7 @@ const Footer = () => {
                 fontSize: '1.25rem'
               }}
             >
-              <span style={{ color: muiTheme.palette.primary.light }}>Q</span>uantera Platform
+              <span style={{ color: '#1E2885', fontWeight: 'bold' }}>Q</span>uantera
             </Typography>
             <Typography 
               variant="body2" 
@@ -55,7 +55,7 @@ const Footer = () => {
             }}>
               <IconButton 
                 component={MuiLink} 
-                href="https://github.com/mjohnson518/vault" 
+                href="https://github.com/mjohnson518/quantera" 
                 sx={{ 
                   color: 'var(--footer-text)',
                   '&:hover': {
@@ -67,34 +67,7 @@ const Footer = () => {
               >
                 <FaGithub size={20} />
               </IconButton>
-              <IconButton 
-                component={MuiLink} 
-                href="#" 
-                sx={{ 
-                  color: 'var(--footer-text)',
-                  '&:hover': {
-                    color: muiTheme.palette.primary.light,
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)'
-                  }
-                }}
-                size="small"
-              >
-                <FaTwitter size={20} />
-              </IconButton>
-              <IconButton 
-                component={MuiLink} 
-                href="#" 
-                sx={{ 
-                  color: 'var(--footer-text)',
-                  '&:hover': {
-                    color: muiTheme.palette.primary.light,
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)'
-                  }
-                }}
-                size="small"
-              >
-                <FaDiscord size={20} />
-              </IconButton>
+
             </Box>
           </Grid>
           
