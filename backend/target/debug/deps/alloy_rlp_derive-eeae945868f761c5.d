@@ -1,9 +1,0 @@
-/Users/marcjohnson/Desktop/Vault/backend/target/debug/deps/liballoy_rlp_derive-eeae945868f761c5.dylib: /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/lib.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/de.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/en.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/utils.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/../README.md
-
-/Users/marcjohnson/Desktop/Vault/backend/target/debug/deps/alloy_rlp_derive-eeae945868f761c5.d: /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/lib.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/de.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/en.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/utils.rs /Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/../README.md
-
-/Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/lib.rs:
-/Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/de.rs:
-/Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/en.rs:
-/Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/utils.rs:
-/Users/marcjohnson/.cargo/registry/src/index.crates.io-6f17d22bba15001f/alloy-rlp-derive-0.3.12/src/../README.md:

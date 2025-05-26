@@ -49,4 +49,70 @@ Thumbs.db
 frontend/node_modules/
 frontend/.cache/
 frontend/node_modules/.cache/
-frontend/node_modules/.cache/default-development/ 
+frontend/node_modules/.cache/default-development/
+
+# Build artifacts and temporary files
+**/target/
+**/build/
+**/dist/
+**/.next/
+**/.nuxt/
+**/.output/
+**/.vercel/
+**/.netlify/
+
+# Makefiles (build artifacts and temporary files)
+Makefile
+makefile
+*.makefile
+**/Makefile
+**/makefile
+**/*.makefile
+
+# Rust build artifacts
+**/target/
+**/*.rs.bk
+**/Cargo.lock
+**/.cargo/
+
+# Solidity build artifacts
+**/artifacts/
+**/cache/
+**/typechain/
+**/typechain-types/
+
+# Python build artifacts
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.Python
+**/pip-log.txt
+**/pip-delete-this-directory.txt
+**/.tox/
+**/.coverage
+**/.pytest_cache/
+
+# Additional temporary and build files
+**/*.tmp
+**/*.temp
+**/*.log
+**/*.pid
+**/*.seed
+**/*.pid.lock
+**/.nyc_output
+**/.grunt
+**/bower_components
+**/.lock-wscript
+**/coverage/
+**/.nyc_output/
+**/.cache/
+**/.parcel-cache/
+**/.next/
+**/out/
+**/.nuxt/
+**/.vuepress/dist/
+**/.serverless/
+**/.fusebox/
+**/.dynamodb/
+**/.tern-port 
