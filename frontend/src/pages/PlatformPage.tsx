@@ -342,7 +342,7 @@ export const PlatformPage: React.FC = () => {
                 padding: '12px 24px',
                 textTransform: 'none',
               }}
-              onClick={() => window.open('https://github.com/mjohnson518/quantera', '_blank')}
+              onClick={() => window.open('https://github.com/Carbon-Twelve-C12/quantera', '_blank')}
             >
               GitHub Repository
             </Button>

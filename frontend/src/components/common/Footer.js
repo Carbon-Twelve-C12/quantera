@@ -55,7 +55,7 @@ const Footer = () => {
             }}>
               <IconButton 
                 component={MuiLink} 
-                href="https://github.com/mjohnson518/quantera" 
+                href="https://github.com/Carbon-Twelve-C12/quantera" 
                 sx={{ 
                   color: 'var(--footer-text)',
                   '&:hover': {

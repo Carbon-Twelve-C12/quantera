@@ -1,7 +1,7 @@
 # Quantera Platform - Asset Tokenization Ecosystem
 
 [![Website](https://img.shields.io/badge/Website-Quantera.finance-blue)](https://quantera.finance/)
-[![Contributors](https://img.shields.io/github/contributors/mjohnson518/vault)](https://github.com/mjohnson518/vault/graphs/contributors)
+[![Contributors](https://img.shields.io/github/contributors/Carbon-Twelve-C12/quantera)](https://github.com/Carbon-Twelve-C12/quantera/graphs/contributors)
 [![Version](https://img.shields.io/badge/Version-1.3.0-green)]()
 [![Security](https://img.shields.io/badge/Security-Enterprise%20Grade-brightgreen)]()
 
@@ -492,8 +492,8 @@ With our complete implementation of AssetFactory, LiquidityPools, YieldOptimizer
 ### Getting Started
 1. Clone the repository
    ```
-   git clone https://github.com/mjohnson518/vault.git
-   cd vault
+   git clone https://github.com/Carbon-Twelve-C12/quantera.git
+   cd quantera
    ```
 
 2. Install backend dependencies
@@ -593,4 +593,9 @@ To run CI checks locally before pushing:
    ```
 
 2. Frontend tests:
-   ```# Testing repository transfer
+   ```
+   cd frontend
+   npm run lint
+   npm run test
+   npm run build
+   ```
