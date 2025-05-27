@@ -264,9 +264,8 @@ export const PlatformPage: React.FC = () => {
               Quantera Documentation
             </HeroTitle>
             <HeroSubtitle>
-              Welcome to the official Quantera documentation. This guide provides comprehensive 
-              information about Quantera, a next-generation asset tokenization platform with 
-              focus on compliance, security, and cross-chain interoperability.
+              Welcome to the official Quantera documentation. This resource hub provides
+              information about the feautres of the Quantera asset tokenization platform.
             </HeroSubtitle>
             
             <GetStartedButton

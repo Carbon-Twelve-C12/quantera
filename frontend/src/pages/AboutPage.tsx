@@ -30,8 +30,8 @@ const Section = styled.section<{ isDarkMode?: boolean; isAlternate?: boolean }>`
 
 const Hero = styled.div<{ isDarkMode?: boolean }>`
   background: ${props => props.isDarkMode ? 
-    'linear-gradient(135deg, #1A237E 0%, #303F9F 100%)' : 
-    'linear-gradient(135deg, #1A5276 0%, #3498DB 100%)'};
+    'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)' : 
+    'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)'};
   color: white;
   padding: 5rem 0;
   text-align: center;
@@ -91,8 +91,8 @@ const FeatureCard = styled(Paper)<{ isDarkMode?: boolean }>`
   }
 `;
 
-const CardTitle = styled(Typography)`
-  color: #3498DB;
+const CardTitle = styled(Typography)<{ isDarkMode?: boolean }>`
+  color: ${props => props.isDarkMode ? '#3498DB' : '#1a237e'};
   font-weight: 600;
   margin-bottom: 1rem;
 `;
@@ -113,8 +113,8 @@ const NoticeBox = styled(Box)<{ isDarkMode?: boolean }>`
 
 const HighlightBox = styled(Box)<{ isDarkMode?: boolean }>`
   background: ${props => props.isDarkMode ? 
-    'linear-gradient(135deg, #1A237E 0%, #303F9F 100%)' : 
-    'linear-gradient(135deg, #1A5276 0%, #3498DB 100%)'};
+    'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)' : 
+    'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)'};
   color: white;
   padding: 2rem;
   border-radius: 12px;
@@ -130,14 +130,14 @@ const StyledList = styled(List)`
   list-style-type: none;
 `;
 
-const StyledListItem = styled(ListItem)`
+const StyledListItem = styled(ListItem)<{ isDarkMode?: boolean }>`
   display: flex;
   padding: 0.4rem 0;
   margin-left: 0;
   align-items: center;
   &:before {
     content: "•";
-    color: #3498DB;
+    color: ${props => props.isDarkMode ? '#3498DB' : '#1a237e'};
     font-weight: bold;
     display: inline-block; 
     width: 1em;
@@ -394,7 +394,9 @@ const AboutPage: React.FC = () => {
       {/* About Section */}
       <Section isDarkMode={isDarkMode} isAlternate>
         <Container maxWidth="lg">
-          <SectionTitle variant="h3" color="primary">
+          <SectionTitle variant="h3" sx={{ 
+            color: isDarkMode ? '#3498DB' : '#1a237e' 
+          }}>
             About Quantera
           </SectionTitle>
           
@@ -413,7 +415,10 @@ const AboutPage: React.FC = () => {
           </Box>
           
           <NoticeBox isDarkMode={isDarkMode}>
-            <Typography variant="h6" color="primary" gutterBottom>
+            <Typography variant="h6" sx={{ 
+              color: isDarkMode ? '#3498DB' : '#1a237e',
+              marginBottom: '8px'
+            }}>
               Platform Status: Version 1.3.0 - Enterprise Security Ready
             </Typography>
             <Typography variant="body2">
@@ -429,7 +434,9 @@ const AboutPage: React.FC = () => {
       {/* Institutional Advantages */}
       <Section isDarkMode={isDarkMode}>
         <Container maxWidth="lg">
-          <SectionTitle variant="h3" color="primary">
+          <SectionTitle variant="h3" sx={{ 
+            color: isDarkMode ? '#3498DB' : '#1a237e' 
+          }}>
             Institutional Advantages
           </SectionTitle>
           <SectionDescription variant="body1">
@@ -443,13 +450,13 @@ const AboutPage: React.FC = () => {
                 elevation={3} 
                 isDarkMode={isDarkMode} 
                 sx={{ 
-                  border: '2px solid #3498DB',
+                  border: `2px solid ${isDarkMode ? '#3498DB' : '#1a237e'}`,
                   background: isDarkMode ? 
-                    'linear-gradient(135deg, rgba(26, 35, 126, 0.1) 0%, rgba(63, 81, 181, 0.1) 100%)' :
+                    'linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(63, 81, 181, 0.1) 100%)' :
                     'linear-gradient(135deg, rgba(26, 35, 126, 0.02) 0%, rgba(63, 81, 181, 0.02) 100%)'
                 }}
               >
-                <CardTitle variant="h5" color="primary">
+                <CardTitle variant="h5" isDarkMode={isDarkMode}>
                   {advantage.title}
                 </CardTitle>
                 <CardContent variant="body2">
@@ -464,7 +471,9 @@ const AboutPage: React.FC = () => {
       {/* Core Features Section */}
       <Section isDarkMode={isDarkMode} isAlternate>
         <Container maxWidth="lg">
-          <SectionTitle variant="h3" color="primary">
+          <SectionTitle variant="h3" sx={{ 
+            color: isDarkMode ? '#3498DB' : '#1a237e' 
+          }}>
             Core Platform Features
           </SectionTitle>
           <SectionDescription variant="body1">
@@ -474,7 +483,7 @@ const AboutPage: React.FC = () => {
           <CardContainer>
             {features.map((feature, index) => (
               <FeatureCard key={index} elevation={2} isDarkMode={isDarkMode}>
-                <CardTitle variant="h5" color="primary">
+                <CardTitle variant="h5" isDarkMode={isDarkMode}>
                   {feature.title}
                 </CardTitle>
                 <CardContent variant="body2">
@@ -489,7 +498,9 @@ const AboutPage: React.FC = () => {
       {/* Key Benefits Section */}
       <Section isDarkMode={isDarkMode}>
         <Container maxWidth="lg">
-          <SectionTitle variant="h3" color="primary">
+          <SectionTitle variant="h3" sx={{ 
+            color: isDarkMode ? '#3498DB' : '#1a237e' 
+          }}>
             The Quantera Advantage
           </SectionTitle>
           <SectionDescription variant="body1">
@@ -503,10 +514,10 @@ const AboutPage: React.FC = () => {
                 elevation={3} 
                 isDarkMode={isDarkMode} 
                 sx={{ 
-                  border: '1px solid #3498DB'
+                  border: `1px solid ${isDarkMode ? '#3498DB' : '#1a237e'}`
                 }}
               >
-                <CardTitle variant="h5" color="primary">
+                <CardTitle variant="h5" isDarkMode={isDarkMode}>
                   {benefit.title}
                 </CardTitle>
                 <CardContent variant="body2">
@@ -521,7 +532,9 @@ const AboutPage: React.FC = () => {
       {/* Technical Architecture Section */}
       <Section isDarkMode={isDarkMode} isAlternate>
         <Container maxWidth="lg">
-          <SectionTitle variant="h3" color="primary">
+          <SectionTitle variant="h3" sx={{ 
+            color: isDarkMode ? '#3498DB' : '#1a237e' 
+          }}>
             Technical Architecture
           </SectionTitle>
           <SectionDescription variant="body1">
@@ -531,7 +544,7 @@ const AboutPage: React.FC = () => {
           <CardContainer>
             {architecture.map((item, index) => (
               <FeatureCard key={index} elevation={2} isDarkMode={isDarkMode}>
-                <CardTitle variant="h5" color="primary">
+                <CardTitle variant="h5" isDarkMode={isDarkMode}>
                   {item.title}
                 </CardTitle>
                 <CardContent variant="body2">
@@ -546,7 +559,9 @@ const AboutPage: React.FC = () => {
       {/* Use Cases Section */}
       <Section isDarkMode={isDarkMode}>
         <Container maxWidth="lg">
-          <SectionTitle variant="h3" color="primary">
+          <SectionTitle variant="h3" sx={{ 
+            color: isDarkMode ? '#3498DB' : '#1a237e' 
+          }}>
             Institutional Use Cases
           </SectionTitle>
           <SectionDescription variant="body1">
@@ -556,7 +571,7 @@ const AboutPage: React.FC = () => {
           <CardContainer>
             {useCases.map((useCase, index) => (
               <FeatureCard key={index} elevation={2} isDarkMode={isDarkMode}>
-                <CardTitle variant="h5" color="primary">
+                <CardTitle variant="h5" isDarkMode={isDarkMode}>
                   {useCase.title}
                 </CardTitle>
                 <CardContent variant="body2">
@@ -571,7 +586,9 @@ const AboutPage: React.FC = () => {
       {/* Financial Products Section */}
       <Section isDarkMode={isDarkMode} isAlternate>
         <Container maxWidth="lg">
-          <SectionTitle variant="h3" color="primary">
+          <SectionTitle variant="h3" sx={{ 
+            color: isDarkMode ? '#3498DB' : '#1a237e' 
+          }}>
             Financial Products
           </SectionTitle>
           <SectionDescription variant="body1">
@@ -581,7 +598,7 @@ const AboutPage: React.FC = () => {
           <CardContainer>
             {financialProducts.map((product, index) => (
               <FeatureCard key={index} elevation={2} isDarkMode={isDarkMode}>
-                <CardTitle variant="h5" color="primary">
+                <CardTitle variant="h5" isDarkMode={isDarkMode}>
                   {product.title}
                 </CardTitle>
                 <CardContent variant="body2">
@@ -607,7 +624,9 @@ const AboutPage: React.FC = () => {
       {/* Roadmap Section */}
       <Section isDarkMode={isDarkMode}>
         <Container maxWidth="lg">
-          <SectionTitle variant="h3" color="primary">
+          <SectionTitle variant="h3" sx={{ 
+            color: isDarkMode ? '#3498DB' : '#1a237e' 
+          }}>
             Platform Status & Vision
           </SectionTitle>
           <SectionDescription variant="body1">
@@ -620,12 +639,12 @@ const AboutPage: React.FC = () => {
               isDarkMode={isDarkMode} 
               sx={{ width: { xs: '100%', md: 'calc(50% - 16px)' } }}
             >
-              <CardTitle variant="h5" color="primary">
+              <CardTitle variant="h5" isDarkMode={isDarkMode}>
                 Current Capabilities (v1.3.0)
               </CardTitle>
               <StyledList>
                 {currentFocusItems.map((item, index) => (
-                  <StyledListItem key={index}>{item}</StyledListItem>
+                  <StyledListItem key={index} isDarkMode={isDarkMode}>{item}</StyledListItem>
                 ))}
               </StyledList>
             </FeatureCard>
@@ -635,12 +654,12 @@ const AboutPage: React.FC = () => {
               isDarkMode={isDarkMode} 
               sx={{ width: { xs: '100%', md: 'calc(50% - 16px)' } }}
             >
-              <CardTitle variant="h5" color="primary">
+              <CardTitle variant="h5" isDarkMode={isDarkMode}>
                 Future Development
               </CardTitle>
               <StyledList>
                 {futureDevelopmentItems.map((item, index) => (
-                  <StyledListItem key={index}>{item}</StyledListItem>
+                  <StyledListItem key={index} isDarkMode={isDarkMode}>{item}</StyledListItem>
                 ))}
               </StyledList>
             </FeatureCard>
