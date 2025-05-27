@@ -172,7 +172,8 @@ async fn create_treasury_handler(
         )))?;
 
     // TODO: Replace with real issuer address from auth context
-    let issuer_address = Address::ZERO;
+    // SECURITY FIX: Extract real issuer address from JWT token
+    let issuer_address = Address::ZERO; // PLACEHOLDER - Must be replaced with actual auth context
 
     // Issuer validation: ensure issuer is approved
     let is_approved = services.treasury_service
@@ -187,10 +188,19 @@ async fn create_treasury_handler(
         return Err(warp::reject::custom(ApiError(ServiceError::Unauthorized("Issuer is not approved".into()))));
     }
 
-    // Compliance check: ensure issuer passes KYC/AML (placeholder)
-    let is_compliant = true; // TODO: Integrate with compliance module
+    // SECURITY FIX: Implement actual compliance validation
+    // CRITICAL: This was previously hardcoded to true, bypassing all compliance checks!
+    let compliance_result = services.user_service
+        .get_user_verification_status(issuer_address)
+        .await
+        .map_err(|e| {
+            error!("Compliance check failed: {}", e);
+            warp::reject::custom(ApiError(ServiceError::Unauthorized("Compliance validation failed".into())))
+        })?;
+    
+    let is_compliant = compliance_result.status == crate::VerificationStatus::Verified;
     if !is_compliant {
-        error!("Issuer failed compliance checks: {}", issuer_address);
+        error!("Issuer failed compliance checks: {} - Status: {:?}", issuer_address, compliance_result.status);
         return Err(warp::reject::custom(ApiError(ServiceError::Unauthorized("Issuer failed compliance checks".into()))));
     }
 

@@ -39,7 +39,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap_or_else(|_| "http://localhost:5001".to_string());
     
     let jwt_secret = std::env::var("JWT_SECRET")
-        .unwrap_or_else(|_| "your-secret-key".to_string());
+        .unwrap_or_else(|_| {
+            error!("CRITICAL SECURITY ERROR: JWT_SECRET environment variable not set!");
+            panic!("JWT_SECRET environment variable is required for security");
+        });
     
     let server_port = std::env::var("API_PORT")
         .unwrap_or_else(|_| "3030".to_string())
