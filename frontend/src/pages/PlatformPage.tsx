@@ -135,7 +135,7 @@ const CategoryDescription = styled(Typography)(({ theme }) => ({
 }));
 
 const ViewDocsButton = styled(Button)(({ theme }) => ({
-  color: '#1a237e',
+  color: theme.palette.mode === 'dark' ? '#ffffff' : '#1a237e',
   fontWeight: 600,
   textTransform: 'none',
   fontSize: '0.875rem',
@@ -143,7 +143,7 @@ const ViewDocsButton = styled(Button)(({ theme }) => ({
   
   '&:hover': {
     background: theme.palette.mode === 'dark' 
-      ? 'rgba(26, 35, 126, 0.2)' 
+      ? 'rgba(255, 255, 255, 0.1)' 
       : 'rgba(26, 35, 126, 0.04)',
   },
 }));

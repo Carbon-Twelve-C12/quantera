@@ -104,7 +104,7 @@ const Header = () => {
                 textDecoration: 'none',
               }}
             >
-              <span style={{ color: '#1E2885', fontWeight: 'bold' }}>Q</span>uantera
+              Quantera
             </Typography>
           </Box>
 

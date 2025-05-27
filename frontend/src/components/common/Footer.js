@@ -31,7 +31,7 @@ const Footer = () => {
                 fontSize: '1.25rem'
               }}
             >
-              <span style={{ color: '#1E2885', fontWeight: 'bold' }}>Q</span>uantera
+              Quantera
             </Typography>
             <Typography 
               variant="body2" 
