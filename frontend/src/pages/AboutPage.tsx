@@ -314,8 +314,6 @@ const AboutPage: React.FC = () => {
   ];
 
   const currentFocusItems = [
-    "Enterprise-Grade Security: 19 critical vulnerabilities identified and fixed",
-    "WCAG AAA Accessibility: Complete theme standardization with 7:1 contrast ratios",
     "Advanced Liquidity Solutions with multi-strategy optimization (6-12% APY)",
     "Dynamic fee structures with market condition-based adjustments",
     "Professional institutional dashboard with comprehensive portfolio management",
@@ -327,7 +325,6 @@ const AboutPage: React.FC = () => {
   ];
 
   const futureDevelopmentItems = [
-    "Enhanced Frontend Components and Mobile Optimization",
     "Security audits and testnet deployment preparation", 
     "Mainnet deployment and institutional marketplace launch",
     "Institutional client onboarding and market maker partnerships",
