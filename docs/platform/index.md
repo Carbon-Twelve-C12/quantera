@@ -8,7 +8,7 @@
 
 ## 🏛️ **Platform Overview**
 
-Quantera represents the next generation of enterprise-grade asset tokenization infrastructure, built in alignment with the World Economic Forum's "Asset Tokenization in Financial Markets" report recommendations. Our platform addresses the five core differentiators of tokenization: shared system of record, flexible custodial arrangements, programmability, asset fractionalization, and composability.
+Quantera represents the next generation of enterprise-grade asset tokenization infrastructure. Our platform addresses the five core differentiators of tokenization: shared system of record, flexible custodial arrangements, programmability, asset fractionalization, and composability.
 
 ### **v1.3.0 Platform Highlights**
 

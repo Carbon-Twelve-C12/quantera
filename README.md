@@ -73,7 +73,7 @@
 - **✅ End-to-End Security**: Complete security coverage from smart contracts to frontend
 
 ## Overview
-Quantera is an ecosystem for tokenizing any financial asset class. While initially focused on U.S. Treasury securities, the platform is architecturally designed for multi-asset support with superior liquidity solutions, yield optimization, and cross-chain interoperability. Leveraging Ethereum's capabilities, Quantera aims to become the leading tokenization platform globally, serving both institutional and individual investors. The platform provides specialized support for environmental assets and sustainable finance instruments, positioning Quantera at the forefront of Web3 sustainability solutions.
+Quantera is an ecosystem for tokenizing any financial product. The platform is architecturally designed for multi-asset support with superior liquidity solutions, yield optimization, and cross-chain interoperability. Quantera aims to become the leading tokenization platform globally, serving both institutional and individual investors.
 
 ## Key Features
 - **Asset-Agnostic Tokenization**: Modular system for tokenizing any asset class

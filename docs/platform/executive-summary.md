@@ -8,7 +8,7 @@
 
 ## 🎯 **Executive Overview**
 
-Quantera Platform represents a paradigm shift in asset tokenization, delivering the world's first comprehensive, multi-chain tokenization infrastructure with enterprise-grade security. Our platform addresses the significant opportunity in tokenized assets, providing the critical infrastructure needed to unlock liquidity in traditionally illiquid asset classes while maintaining bank-grade security standards.
+Quantera Platform represents a paradigm shift in tokenization, delivering the world's first comprehensive, multi-chain tokenization infrastructure with enterprise-grade security. Our platform addresses the significant opportunity in tokenized financial products, providing the critical infrastructure needed to unlock liquidity in traditionally illiquid asset classes while maintaining bank-grade security standards.
 
 ### **The Opportunity**
 

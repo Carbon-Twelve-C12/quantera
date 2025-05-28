@@ -11,7 +11,4 @@ entry-point = "workers-site"
 
 [build]
 command = "cd frontend && npm install --legacy-peer-deps && CI=false npm run build"
-upload.format = "service-worker"
-
-[build.upload]
-format = "service-worker" 
+upload.format = "service-worker" 
