@@ -398,9 +398,9 @@ export const MarketplacePage: React.FC = () => {
           
           <FilterContainer>
             <SearchField
-              placeholder="Search assets..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search assets..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{
                 startAdornment: <Search sx={{ color: '#607d8b', mr: 1 }} />,
               }}

@@ -262,7 +262,8 @@ const AssetDetailPage: React.FC = () => {
   const [asset, setAsset] = useState<AssetDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>('overview');
-  const [debug, setDebug] = useState<string>('');
+  // Debug info removed for production
+  // const [debug, setDebug] = useState<string>('');
   const { theme } = useTheme();
   const { address, connected } = useWallet();
   
@@ -339,10 +340,10 @@ const AssetDetailPage: React.FC = () => {
         
         // If we get here, asset not found
         setAsset(null);
-        setDebug(`Asset not found with ID: ${id}.\nChecked treasuries (${MOCK_TREASURIES.length}) and environmental assets (${MOCK_ENVIRONMENTAL_ASSETS.length})`);
+        console.warn(`Asset not found with ID: ${id}`);
       } catch (error) {
         console.error('Error loading asset:', error);
-        setDebug(`Error loading asset: ${error}`);
+        console.error(`Error loading asset: ${error}`);
         setAsset(null);
       } finally {
         setLoading(false);
@@ -395,16 +396,7 @@ const AssetDetailPage: React.FC = () => {
       <div className="not-found">
         <h2>Asset Not Found</h2>
         <p>We couldn't find the asset you're looking for. It may have been removed or the URL is incorrect.</p>
-        <pre className="debug-info" style={{ 
-          background: '#f5f5f5', 
-          padding: '10px', 
-          border: '1px solid #ddd', 
-          borderRadius: '4px',
-          overflow: 'auto',
-          fontSize: '12px',
-          whiteSpace: 'pre-wrap',
-          margin: '20px 0'
-        }}>{debug}</pre>
+        {/* Debug info removed for production */}
         <Link to="/marketplace" className="button primary">Return to Marketplace</Link>
       </div>
     );

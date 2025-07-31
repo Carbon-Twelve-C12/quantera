@@ -11,8 +11,8 @@ import {
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import { 
-  Shield,
-  TrendingUp,
+  Shield, 
+  TrendingUp, 
   ArrowRight,
   Book,
   Cpu,
@@ -322,7 +322,7 @@ export const PlatformPage: React.FC = () => {
             color: theme.palette.mode === 'dark' ? '#ffffff' : '#263238' 
           }}>
             Need More Help?
-          </Typography>
+                  </Typography>
           <Typography variant="body1" sx={{ 
             color: theme.palette.mode === 'dark' ? '#b0b0b0' : '#607d8b', 
             marginBottom: '32px', 
@@ -330,24 +330,24 @@ export const PlatformPage: React.FC = () => {
           }}>
             Can't find what you're looking for in the documentation? Reach out to the Quantera 
             community for assistance.
-          </Typography>
+                  </Typography>
           
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button
-              variant="contained"
-              sx={{
-                background: 'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)',
+              <Button
+                variant="contained"
+                sx={{
+                  background: 'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)',
                 color: '#ffffff',
-                fontWeight: 600,
+                  fontWeight: 600,
                 padding: '12px 24px',
                 textTransform: 'none',
               }}
               onClick={() => window.open('https://github.com/Carbon-Twelve-C12/quantera', '_blank')}
             >
               GitHub Repository
-            </Button>
+              </Button>
           </Box>
-        </Container>
+      </Container>
       </HelpSection>
     </Box>
   );

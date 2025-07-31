@@ -22,7 +22,11 @@ module.exports = {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
       tsconfig: 'tsconfig.json',
     }],
+    '^.+\\.(js|jsx)$': 'babel-jest',
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(axios|@testing-library)/)',
+  ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
@@ -37,10 +41,12 @@ module.exports = {
       statements: 70
     }
   },
-  testMatch: ['**/?(*.)+(spec|test).(ts|tsx)'],
-  globals: {
-    'ts-jest': {
-      isolatedModules: true
-    }
-  }
+  testMatch: [
+    '<rootDir>/src/**/?(*.)+(spec|test).(ts|tsx|js|jsx)'
+  ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/e2e/',
+    '/node_modules 2/'
+  ]
 }; 

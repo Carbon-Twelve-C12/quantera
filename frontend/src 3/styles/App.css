@@ -1,0 +1,237 @@
+/* Global Styles */
+body {
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+/* Custom Card Styles */
+.border-left-thick {
+  border-left: 4px solid !important;
+}
+
+/* Portfolio Page Styles */
+.portfolio-page .card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border: none;
+  border-radius: 0.5rem;
+}
+
+.portfolio-page .table th {
+  font-weight: 600;
+  border-top: none;
+}
+
+.portfolio-page .allocation-chart {
+  min-height: 300px;
+}
+
+/* Header Styles */
+.navbar-dark .navbar-brand {
+  font-weight: 700;
+}
+
+/* Treasury Detail Styles */
+.treasury-detail .yield-card {
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.treasury-detail .action-card {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  padding: 1.5rem;
+}
+
+/* Smart Account Styles */
+.code-editor {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid #dee2e6;
+}
+
+.smart-account .template-card {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.smart-account .template-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Authentication Styles */
+.auth-container {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.auth-logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1.5rem;
+}
+
+/* Trading Page Styles */
+.order-form {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  padding: 1.5rem;
+}
+
+.order-book-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .portfolio-page .card {
+    margin-bottom: 1rem;
+  }
+  
+  .auth-container {
+    width: 90%;
+  }
+}
+
+/* Button Styles */
+.btn-layer2 {
+  background-color: #8d5cf6;
+  border-color: #8d5cf6;
+  color: white;
+}
+
+.btn-layer2:hover {
+  background-color: #7a4ff0;
+  border-color: #7a4ff0;
+  color: white;
+}
+
+/* Badge Styles */
+.badge.bg-layer2 {
+  background-color: #8d5cf6;
+}
+
+/* Ethereum Badge */
+.eth-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: #6c757d;
+  color: white;
+  padding: 0.35em 0.65em;
+  font-size: 0.75em;
+  font-weight: 700;
+  border-radius: 0.25rem;
+}
+
+.eth-badge-eth {
+  background-color: #627eea;
+}
+
+.eth-badge-l2 {
+  background-color: #8d5cf6;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  color: #adb5bd;
+  margin-bottom: 1rem;
+}
+
+.empty-state-text {
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+}
+
+/* Pectra Features Highlight */
+.pectra-feature {
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: #f8f9fa;
+  position: relative;
+}
+
+.pectra-badge {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  background-color: #198754;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+}
+
+/* Loading States */
+.loading-skeleton {
+  animation: pulse 1.5s infinite;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  border-radius: 0.25rem;
+  height: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+@keyframes pulse {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: -200% 0%;
+  }
+}
+
+/* Landing Page Styles */
+.landing-page .card {
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.landing-page .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Step Visualization */
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #0d6efd;
+  color: white;
+  font-weight: bold;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.step-line {
+  position: absolute;
+  top: 20px;
+  bottom: 20px;
+  left: 20px;
+  width: 1px;
+  background-color: #dee2e6;
+  z-index: 1;
+}
+
+/* Hero Section */
+.landing-page .bg-dark {
+  background: linear-gradient(135deg, #212529 0%, #343a40 100%);
+}
+
+/* Feature Cards */
+.landing-page .shadow-sm {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+} 

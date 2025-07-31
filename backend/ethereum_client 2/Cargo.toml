@@ -1,0 +1,25 @@
+[package]
+name = "ethereum_client"
+version = "0.1.0"
+edition = "2021"
+description = "Ethereum client for TreasuryToken platform with Pectra capabilities"
+
+[dependencies]
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+dotenv = { workspace = true }
+hex = { workspace = true }
+async-trait = { workspace = true }
+
+# Alloy framework dependencies
+alloy-primitives = { workspace = true }
+alloy-sol-types = { workspace = true }
+alloy-provider = { workspace = true }
+alloy-signer = { workspace = true }
+alloy-contract = { workspace = true }
+alloy-json-rpc = { workspace = true }
+alloy-network = { workspace = true } 

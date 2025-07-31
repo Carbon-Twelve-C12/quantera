@@ -4,7 +4,12 @@
     "recharts": "^2.15.3"
   },
   "devDependencies": {
+    "@babel/plugin-transform-runtime": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
+    "@babel/preset-typescript": "^7.27.1",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.12",
+    "babel-jest": "^30.0.5",
     "hardhat": "^2.24.0"
   }
 }

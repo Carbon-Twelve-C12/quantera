@@ -7,7 +7,13 @@ import {
   TradeFinanceAssetType
 } from '../types/tradeFinance';
 
-// Mock data for demonstration purposes
+// TODO: Replace with real API call
+// const fetchTradeFinanceAssets = async () => {
+//   const response = await api.getTradeFinanceAssets();
+//   return response.data;
+// };
+
+// Temporary mock data - will be replaced with API integration
 const mockTradeFinanceAssets: TradeFinanceAsset[] = [
   {
     id: 'tf-001',
