@@ -1,6 +1,7 @@
 [workspace]
 members = [
-    "src",
+    "risk_service",
+    # "src", # Temporarily disabled due to async-trait dependency issue
     # "ethereum_client", # Temporarily disabled due to alloy version conflicts
 ]
 resolver = "2"

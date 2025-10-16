@@ -1,9 +1,10 @@
 # Quantera Platform - Asset Tokenization Ecosystem
 
-[![Website](https://img.shields.io/badge/Website-Quantera.finance-blue)](https://quantera.finance/)
+[![Website](https://img.shields.io/badge/Website-quantera.finance-blue)](https://quantera.finance)
 [![Contributors](https://img.shields.io/github/contributors/Carbon-Twelve-C12/quantera)](https://github.com/Carbon-Twelve-C12/quantera/graphs/contributors)
 [![Version](https://img.shields.io/badge/Version-1.3.0-green)]()
 [![Security](https://img.shields.io/badge/Security-Enterprise%20Grade-brightgreen)]()
+[![Deployment](https://img.shields.io/badge/Frontend-Deployed-success)](https://quantera.finance)
 
 ## 🚀 **Current Status: v1.3.0 - Enterprise Security Ready**
 
