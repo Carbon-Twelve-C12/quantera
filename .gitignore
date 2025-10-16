@@ -115,4 +115,25 @@ makefile
 **/.serverless/
 **/.fusebox/
 **/.dynamodb/
-**/.tern-port 
+**/.tern-port
+
+# Internal planning and documentation (never commit to public repo)
+*_plan*.md
+*_spec*.md
+*roadmap*.md
+*Roadmap*.md
+progress.md
+CLOUDFLARE_*.md
+INFRASTRUCTURE_*.md
+Implementation_*.md
+Product_*.md
+Cloudflare.md
+docs/integration_checkpoints/
+checkpoint*.md
+
+# Keep only essential docs
+!README.md
+!LICENSE
+!CONTRIBUTING.md
+!CHANGELOG.md
+!RULES.md 
