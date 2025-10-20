@@ -136,4 +136,12 @@ checkpoint*.md
 !LICENSE
 !CONTRIBUTING.md
 !CHANGELOG.md
+
+# Prevent duplicate file patterns
+*\ 2.*
+*\ 2/
+*_2.*
+*-copy.*
+*.backup
+*.old
 !RULES.md 
