@@ -134,4 +134,33 @@ interface IComplianceModule {
         external
         view
         returns (InstitutionalInfo memory);
+    
+    // ============ Extended Interface for AutomatedComplianceEngine ============
+    
+    /**
+     * @dev Check if a transaction can proceed based on compliance rules
+     * @param investor The address of the investor
+     * @param amount The transaction amount
+     * @return canProceed Whether the transaction can proceed
+     */
+    function checkTransactionCompliance(address investor, uint256 amount) 
+        external 
+        view 
+        returns (bool canProceed);
+    
+    /**
+     * @dev Get investor's current compliance status
+     * @param investor Address to check
+     * @return isCompliant Whether investor is currently compliant
+     * @return kycValid Whether KYC is valid
+     * @return jurisdiction Investor's jurisdiction
+     */
+    function getComplianceStatus(address investor) 
+        external 
+        view 
+        returns (
+            bool isCompliant,
+            bool kycValid,
+            string memory jurisdiction
+        );
 } 
