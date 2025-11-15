@@ -320,26 +320,26 @@ impl TaxCalculator {
     
     /// Store tax report in database
     async fn store_tax_report(&self, report: &TaxReport) -> Result<(), crate::ComplianceError> {
-        sqlx::query!(
+        sqlx::query(
             r#"
             INSERT INTO tax_reports (
                 transaction_id, investor_address, jurisdiction,
                 amount, cost_basis, gain_loss, is_long_term,
                 tax_rate, tax_due, wash_sale, calculated_at
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-            "#,
-            report.transaction_id,
-            report.investor.as_bytes(),
-            report.jurisdiction,
-            report.amount,
-            report.cost_basis,
-            report.gain_loss,
-            report.is_long_term,
-            report.tax_rate,
-            report.tax_due,
-            report.wash_sale,
-            report.calculated_at,
+            "#
         )
+        .bind(&report.transaction_id)
+        .bind(report.investor.as_bytes())
+        .bind(&report.jurisdiction)
+        .bind(report.amount.to_string())
+        .bind(report.cost_basis.to_string())
+        .bind(report.gain_loss.to_string())
+        .bind(report.is_long_term)
+        .bind(report.tax_rate.to_string())
+        .bind(report.tax_due.to_string())
+        .bind(report.wash_sale)
+        .bind(report.calculated_at)
         .execute(self.db.as_ref())
         .await?;
         

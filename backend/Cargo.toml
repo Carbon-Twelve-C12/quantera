@@ -1,7 +1,8 @@
 [workspace]
-members = ["compliance_service",
+members = [
+    "compliance_service",
     "risk_service",
-    # "src", # Temporarily disabled due to async-trait dependency issue
+    "src", # Re-enabled for Phase 2
     # "ethereum_client", # Temporarily disabled due to alloy version conflicts
 ]
 resolver = "2"
@@ -19,10 +20,17 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 axum = "0.7"
 tower = "0.4"
 tower-http = { version = "0.5", features = ["cors", "trace"] }
-sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "rust_decimal"] }
 reqwest = { version = "0.12", features = ["json"] }
 sha2 = "0.10"
 jsonwebtoken = "9.0"
+
+# Additional dependencies needed by services
+async-trait = "0.1"
+futures = "0.3"
+rand = "0.8"
+dotenv = "0.15"
+hex = "0.4"
 
 # Alloy framework for Ethereum (latest versions)
 alloy-primitives = "0.8"

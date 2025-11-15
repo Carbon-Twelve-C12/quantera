@@ -951,13 +951,16 @@ impl EnhancedComplianceEngine {
             return Err(ComplianceError::InvalidInput("Empty investor ID".to_string()));
         }
 
-        if let Some(profile) = self.investor_profiles.get_mut(investor_id) {
-            // Verify data integrity
+        // First verify data integrity with immutable borrow
+        if let Some(profile) = self.investor_profiles.get(investor_id) {
             self.verify_data_integrity(profile)?;
-            
-            // Update last accessed time
+        } else {
+            return Ok(None);
+        }
+        
+        // Then update with mutable borrow
+        if let Some(profile) = self.investor_profiles.get_mut(investor_id) {
             profile.last_accessed = Utc::now();
-            
             Ok(Some(profile))
         } else {
             Ok(None)

@@ -209,7 +209,7 @@ impl IpfsClient {
             peer_id: id.id,
             version: version.version,
             protocol_version: version.repo.to_string(),
-            agent_version: id.agent_version.unwrap_or_else(|| String::new()),
+            agent_version: id.agent_version,
             addresses: id.addresses,
         })
     }
