@@ -21,6 +21,7 @@ reqwest = { workspace = true }
 # Cryptography
 sha2 = { workspace = true }
 jsonwebtoken = { workspace = true }
+ethers = { version = "2.0", features = ["abigen", "ws"] }
 
 # Web framework
 axum = "0.7.0"

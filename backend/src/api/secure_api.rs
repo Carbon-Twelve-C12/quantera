@@ -358,6 +358,8 @@ pub fn create_secure_router(state: SecureApiState) -> Router {
         // Public routes (no auth required)
         .route("/api/v1/auth/challenge", post(create_challenge))
         .route("/api/v1/auth/verify", post(verify_signature))
+        .route("/api/v1/auth/logout", post(logout))
+        .route("/api/v1/auth/validate", get(validate_token))
         // .route("/api/v1/auth/login", post(login)) // TODO: Fix error type mismatch - disabled for Phase 3A
         .route("/api/v1/health", get(health_check))
         
@@ -453,10 +455,44 @@ async fn verify_signature(
         return Err((StatusCode::UNAUTHORIZED, "Challenge already used".to_string()));
     }
     
-    // TODO PHASE 3B: Verify signature cryptographically using ethers-rs
-    // For Phase 3A, we accept any signature as a placeholder
-    // This MUST be replaced with actual ECDSA signature verification before production
-    info!("PLACEHOLDER: Signature verification skipped for Phase 3A - wallet: {}", req.wallet_address);
+    // PHASE 3B: Real ECDSA signature verification using ethers-rs
+    use ethers::core::types::Signature;
+    use ethers::utils::hash_message;
+    
+    // Parse the signature
+    let signature = req.signature.parse::<Signature>()
+        .map_err(|e| {
+            warn!("Invalid signature format from {}: {}", req.wallet_address, e);
+            (StatusCode::BAD_REQUEST, "Invalid signature format".to_string())
+        })?;
+    
+    // Hash the challenge message (this is what the wallet actually signs)
+    let message_hash = hash_message(challenge.as_bytes());
+    
+    // Recover the address that signed this message
+    let recovered_address = signature.recover(message_hash)
+        .map_err(|e| {
+            warn!("Signature recovery failed for {}: {}", req.wallet_address, e);
+            (StatusCode::UNAUTHORIZED, "Invalid signature".to_string())
+        })?;
+    
+    // Compare recovered address with claimed address (case-insensitive)
+    let expected_address = req.wallet_address.to_lowercase();
+    let recovered_address_hex = format!("{:?}", recovered_address).to_lowercase();
+    
+    if recovered_address_hex != expected_address {
+        warn!(
+            "Signature mismatch: expected {}, got {}", 
+            expected_address, 
+            recovered_address_hex
+        );
+        return Err((
+            StatusCode::UNAUTHORIZED, 
+            "Signature verification failed - address mismatch".to_string()
+        ));
+    }
+    
+    info!("Signature verified successfully for {}", req.wallet_address);
     
     // Mark challenge as used
     sqlx::query(
@@ -530,6 +566,133 @@ async fn verify_signature(
         wallet_address,
         role: "user".to_string(),
     }))
+}
+
+/// Validate JWT token
+async fn validate_token(
+    State(state): State<SecureApiState>,
+    headers: HeaderMap,
+) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
+    // Extract token from Authorization header
+    let auth_header = headers
+        .get("Authorization")
+        .and_then(|h| h.to_str().ok());
+    
+    if auth_header.is_none() || !auth_header.unwrap().starts_with("Bearer ") {
+        return Ok(Json(serde_json::json!({
+            "valid": false,
+            "wallet_address": null,
+            "role": null,
+            "expires_at": null
+        })));
+    }
+    
+    let token = &auth_header.unwrap()[7..];
+    
+    // Decode JWT
+    use jsonwebtoken::{decode, DecodingKey, Validation};
+    
+    #[derive(Deserialize)]
+    struct SimpleClaims {
+        sub: String,
+        exp: i64,
+        role: String,
+    }
+    
+    let token_data = decode::<SimpleClaims>(
+        token,
+        &DecodingKey::from_secret(state.jwt_secret.as_bytes()),
+        &Validation::default(),
+    );
+    
+    let claims = match token_data {
+        Ok(data) => data.claims,
+        Err(e) => {
+            info!("Token validation failed: {}", e);
+            return Ok(Json(serde_json::json!({
+                "valid": false,
+                "wallet_address": null,
+                "role": null,
+                "expires_at": null
+            })));
+        }
+    };
+    
+    // Check if token is revoked
+    let token_hash = format!("{:x}", Sha256::digest(token.as_bytes()));
+    
+    let session = sqlx::query(
+        "SELECT is_revoked FROM auth_sessions WHERE token_hash = $1"
+    )
+    .bind(&token_hash)
+    .fetch_optional(state.db.as_ref())
+    .await
+    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Database error: {}", e)))?;
+    
+    let is_revoked = if let Some(row) = session {
+        use sqlx::Row;
+        row.get::<bool, _>("is_revoked")
+    } else {
+        false
+    };
+    
+    if is_revoked {
+        return Ok(Json(serde_json::json!({
+            "valid": false,
+            "wallet_address": null,
+            "role": null,
+            "expires_at": null
+        })));
+    }
+    
+    Ok(Json(serde_json::json!({
+        "valid": true,
+        "wallet_address": claims.sub,
+        "role": claims.role,
+        "expires_at": claims.exp
+    })))
+}
+
+/// Logout and revoke session
+async fn logout(
+    State(state): State<SecureApiState>,
+    headers: HeaderMap,
+) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
+    // Extract token from Authorization header
+    let auth_header = headers
+        .get("Authorization")
+        .and_then(|h| h.to_str().ok())
+        .ok_or((StatusCode::UNAUTHORIZED, "Missing authorization header".to_string()))?;
+    
+    // Check for "Bearer " prefix
+    if !auth_header.starts_with("Bearer ") {
+        return Err((StatusCode::UNAUTHORIZED, "Invalid authorization format".to_string()));
+    }
+    
+    let token = &auth_header[7..]; // Skip "Bearer "
+    
+    // Hash the token
+    let token_hash = format!("{:x}", Sha256::digest(token.as_bytes()));
+    
+    // Mark session as revoked in database
+    let result = sqlx::query(
+        "UPDATE auth_sessions SET is_revoked = true WHERE token_hash = $1"
+    )
+    .bind(&token_hash)
+    .execute(state.db.as_ref())
+    .await
+    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Database error: {}", e)))?;
+    
+    if result.rows_affected() == 0 {
+        return Err((StatusCode::NOT_FOUND, "Session not found".to_string()));
+    }
+    
+    info!("Session revoked for token hash: {}", &token_hash[..8]);
+    
+    Ok(Json(serde_json::json!({
+        "success": true,
+        "message": "Successfully logged out"
+    })))
 }
 
 // Legacy Authentication Handler (v1.3.0 compatibility)
