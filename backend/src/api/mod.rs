@@ -1,3 +1,6 @@
+// Module declarations
+pub mod secure_api;
+
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
