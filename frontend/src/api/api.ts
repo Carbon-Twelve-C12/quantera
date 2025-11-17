@@ -57,14 +57,81 @@ api.interceptors.response.use(
   (error) => {
     // Handle errors (e.g., refresh token, etc.)
     if (error.response?.status === 401) {
-      // Redirect to login or refresh token
+      // Token expired or invalid - clear local storage and redirect to login
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('walletAddress');
+      
+      // Redirect to login page if not already there
+      if (!window.location.pathname.includes('login')) {
+        window.location.href = '/';
+      }
     }
     return Promise.reject(error);
   }
 );
 
 export default api;
+
+// ============================================================================
+// Authentication APIs (Phase 3C)
+// ============================================================================
+
+export const authAPI = {
+  /**
+   * Request authentication challenge for wallet signing
+   * @param walletAddress - Ethereum wallet address (0x...)
+   * @returns Challenge object with message to sign
+   */
+  requestChallenge: async (walletAddress: string) => {
+    const response = await axios.post(`${API_BASE_URL}/api/v1/auth/challenge`, {
+      wallet_address: walletAddress
+    });
+    return response.data;
+  },
+
+  /**
+   * Verify wallet signature and get JWT token
+   * @param walletAddress - Ethereum wallet address
+   * @param signature - Signed challenge message
+   * @returns Authentication data with JWT token
+   */
+  verifySignature: async (walletAddress: string, signature: string) => {
+    const response = await axios.post(`${API_BASE_URL}/api/v1/auth/verify`, {
+      wallet_address: walletAddress,
+      signature: signature
+    });
+    return response.data;
+  },
+
+  /**
+   * Validate current JWT token
+   * @param token - JWT token to validate
+   * @returns Validation result with user data
+   */
+  validateToken: async (token: string) => {
+    const response = await axios.get(`${API_BASE_URL}/api/v1/auth/validate`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response.data;
+  },
+
+  /**
+   * Logout and revoke session
+   * @param token - JWT token to revoke
+   * @returns Logout confirmation
+   */
+  logout: async (token: string) => {
+    const response = await axios.post(`${API_BASE_URL}/api/v1/auth/logout`, {}, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response.data;
+  }
+};
 
 // Asset Factory API
 export const getTemplatesByClass = async (assetClass: AssetClass): Promise<{ templates: AssetTemplate[] }> => {

@@ -71,7 +71,7 @@ function TabPanel(props: TabPanelProps) {
 const TradeFinanceAssetDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { getAssetById, purchaseAsset, loading, error } = useTradeFinance();
-  const { userAddress } = useAuth();
+  const { walletAddress: userAddress } = useAuth();
   const navigate = useNavigate();
   
   // State

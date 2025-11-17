@@ -100,7 +100,7 @@ function TabPanel(props: TabPanelProps) {
 
 const TradeFinanceTradingInterface: React.FC<{ asset?: TradeFinanceAsset }> = ({ asset }) => {
   const { loading, error, getAssetById } = useTradeFinance();
-  const { userAddress } = useAuth();
+  const { walletAddress: userAddress } = useAuth();
   
   // State for trading interface
   const [tabValue, setTabValue] = useState(0);
