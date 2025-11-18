@@ -1,0 +1,46 @@
+Phase 4: Replace Mock Data with Real Backend Integration
+
+Context: The Quantera platform authentication is now production-ready. However, the frontend currently uses ~90% mock/hardcoded data in portfolio, marketplace, and analytics components. Phase 4 replaces this with real backend API calls.
+
+Objective: Systematically identify and replace all mock data in the frontend with real API calls to the Rust backend.
+
+Step 1 - Discovery Phase:
+1. Search the frontend codebase for common mock data patterns:
+   - `const mockData =`
+   - Hardcoded arrays of objects in component files
+   - Comments mentioning "TODO", "mock", "placeholder", "hardcoded"
+   - Large data structures defined directly in components
+
+2. Create an inventory file `frontend-mock-data-inventory.md` listing:
+   - File path
+   - Component name
+   - Type of mock data (portfolio holdings, market listings, analytics, etc.)
+   - Estimated complexity (Low/Medium/High)
+
+Step 2 - Backend API Verification:
+1. Review `backend/src/api/secure_api.rs` to identify which endpoints already exist
+2. Identify gaps where frontend needs data but backend has no endpoint
+3. Document required new endpoints in `backend-api-gaps.md`
+
+Step 3 - Priority Implementation (in this order):
+1. Portfolio Data - Replace mock holdings with real user portfolio API calls
+2. Marketplace Listings - Connect to real asset listings from backend
+3. Analytics/Charts - Replace mock time-series data with real metrics
+4. User Settings - Connect profile/preferences to backend
+
+Constraints:
+- Do NOT implement missing backend endpoints yet - only document them
+- Focus on connecting to EXISTING backend APIs first
+- Add proper error handling and loading states
+- Maintain TypeScript type safety
+- Keep existing UI/UX unchanged - only swap data sources
+
+Deliverables:
+1. `frontend-mock-data-inventory.md` - Complete inventory of mock data
+2. `backend-api-gaps.md` - List of needed but missing backend endpoints
+3. Modified frontend components with real API integration where backend supports it
+4. No changes to backend in this phase
+
+Ask questions if you find ambiguous data flows or unclear component responsibilities. Do not assume - diagnose first.
+
+Follow the rules: @quantera.mdc
