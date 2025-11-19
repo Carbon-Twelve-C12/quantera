@@ -5,6 +5,7 @@ import { environmentalAssets as MOCK_ENVIRONMENTAL_ASSETS } from '../data/mockEn
 import { TreasuryDetail, EnvironmentalAsset } from '../data/assetInterfaces';
 import { useTheme } from '../contexts/ThemeContext';
 import { useWallet } from '../contexts/WalletContext';
+import api from '../api/api';
 import { Modal, Button, Form } from 'react-bootstrap';
 import TradeFinanceAssetDetails from '../components/tradeFinance/TradeFinanceAssetDetails';
 import { TradeFinanceProvider } from '../contexts/TradeFinanceContext';
@@ -299,6 +300,27 @@ const AssetDetailPage: React.FC = () => {
     const loadAsset = async () => {
       setLoading(true);
       try {
+        // PHASE 4A: Try to fetch from backend API first
+        try {
+          console.log(`Fetching asset ${id} from main backend...`);
+          const response = await api.get(`/api/v1/assets/${id}`);
+          
+          if (response.data) {
+            console.log('Asset loaded from backend:', response.data);
+            setAsset(response.data);
+            setLoading(false);
+            return;
+          }
+        } catch (apiError: any) {
+          // Backend unavailable or asset not found - fall back to mock data
+          if (apiError.response?.status === 404) {
+            console.log(`Asset ${id} not found in backend, trying mock data...`);
+          } else {
+            console.warn('Backend API unavailable, using mock data:', apiError.message);
+          }
+        }
+        
+        // FALLBACK: Use mock data (Phase 4A - gradual migration)
         // First try to find it in treasuries
         const treasury = MOCK_TREASURIES.find(t => t.token_id === id);
         if (treasury) {
@@ -338,12 +360,11 @@ const AssetDetailPage: React.FC = () => {
           return;
         }
         
-        // If we get here, asset not found
+        // If we get here, asset not found in backend or mock data
         setAsset(null);
         console.warn(`Asset not found with ID: ${id}`);
       } catch (error) {
         console.error('Error loading asset:', error);
-        console.error(`Error loading asset: ${error}`);
         setAsset(null);
       } finally {
         setLoading(false);

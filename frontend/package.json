@@ -16,6 +16,7 @@
     "bootstrap": "^5.2.3",
     "chart.js": "^4.4.9",
     "ethers": "^6.14.0",
+    "jspdf": "^3.0.4",
     "lucide-react": "^0.511.0",
     "react": "^18.2.0",
     "react-ace": "^14.0.1",
@@ -27,7 +28,9 @@
     "react-scripts": "5.0.1",
     "react-syntax-highlighter": "^15.6.1",
     "recharts": "^2.15.3",
-    "web-vitals": "^2.1.4"
+    "socket.io-client": "^4.8.1",
+    "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.7.3",

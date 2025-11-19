@@ -55,6 +55,7 @@ import { useTheme } from '@mui/material/styles';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import io from 'socket.io-client';
+import { useAuth } from '../contexts/AuthContext';
 
 // Types
 interface RiskMetrics {
@@ -196,26 +197,46 @@ const CorrelationHeatmap: React.FC<{ matrix: number[][] }> = ({ matrix }) => {
 // Main Risk Dashboard Component
 const RiskDashboard: React.FC = () => {
   const theme = useTheme();
+  const { walletAddress, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   const [timeframe, setTimeframe] = useState('1D');
-  const [selectedPortfolio, setSelectedPortfolio] = useState('0x1234...5678');
+  const [selectedPortfolio, setSelectedPortfolio] = useState(walletAddress || '0x1234567890123456789012345678901234567890');
   const [riskMetrics, setRiskMetrics] = useState<RiskMetrics | null>(null);
   const [riskAlerts, setRiskAlerts] = useState<RiskAlert[]>([]);
   const [historicalData, setHistoricalData] = useState<HistoricalMetric[]>([]);
   const [socket, setSocket] = useState<any>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
+  
+  // Update portfolio when wallet address changes
+  useEffect(() => {
+    if (walletAddress) {
+      setSelectedPortfolio(walletAddress);
+    }
+  }, [walletAddress]);
   
   // Fetch risk metrics
   const fetchRiskMetrics = useCallback(async () => {
+    if (!selectedPortfolio) {
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
+    setApiError(null);
     try {
-      const response = await fetch(`/api/v2/risk/portfolio/${selectedPortfolio}`);
-      const data = await response.json();
-      if (data.success) {
-        setRiskMetrics(data.data);
+      // Call risk service directly (port 8001)
+      const response = await fetch(`http://localhost:8001/api/v2/risk/portfolio/${selectedPortfolio}`);
+      if (!response.ok) {
+        throw new Error(`Risk service unavailable (HTTP ${response.status})`);
       }
+      const data = await response.json();
+      // Risk service returns data directly, not wrapped in { success, data }
+      setRiskMetrics(data);
     } catch (error) {
       console.error('Failed to fetch risk metrics:', error);
+      setApiError(error instanceof Error ? error.message : 'Failed to connect to risk service');
+      // Keep any existing metrics on error
     } finally {
       setLoading(false);
     }
@@ -224,13 +245,17 @@ const RiskDashboard: React.FC = () => {
   // Fetch risk alerts
   const fetchRiskAlerts = useCallback(async () => {
     try {
-      const response = await fetch(`/api/v2/risk/alerts/${selectedPortfolio}`);
-      const data = await response.json();
-      if (data.success) {
-        setRiskAlerts(data.data);
+      // Call risk service directly (port 8001)
+      const response = await fetch(`http://localhost:8001/api/v2/risk/alerts/${selectedPortfolio}`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
+      const data = await response.json();
+      // Risk service returns alerts array directly
+      setRiskAlerts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Failed to fetch risk alerts:', error);
+      setRiskAlerts([]);
     }
   }, [selectedPortfolio]);
   
@@ -259,10 +284,13 @@ const RiskDashboard: React.FC = () => {
   
   // Fetch data on component mount and portfolio change
   useEffect(() => {
+    if (!selectedPortfolio) return;
+    
     fetchRiskMetrics();
     fetchRiskAlerts();
     
-    // Mock historical data
+    // TODO PHASE 5: Fetch historical data from risk service
+    // For now, generate mock historical data (risk service may not provide historical endpoint yet)
     const mockHistorical: HistoricalMetric[] = [];
     for (let i = 30; i >= 0; i--) {
       const date = new Date();
@@ -275,7 +303,7 @@ const RiskDashboard: React.FC = () => {
       });
     }
     setHistoricalData(mockHistorical);
-  }, [fetchRiskMetrics, fetchRiskAlerts]);
+  }, [selectedPortfolio, fetchRiskMetrics, fetchRiskAlerts]);
   
   // Export to PDF
   const exportToPDF = () => {
@@ -402,6 +430,22 @@ const RiskDashboard: React.FC = () => {
       
       {/* Loading State */}
       {loading && <LinearProgress sx={{ mb: 2 }} />}
+      
+      {/* API Connection Error */}
+      {apiError && !loading && (
+        <Alert severity="warning" sx={{ mb: 2 }} onClose={() => setApiError(null)}>
+          <AlertTitle>Risk Service Connection Issue</AlertTitle>
+          {apiError}. Please ensure the risk service is running on port 8001.
+        </Alert>
+      )}
+      
+      {/* Wallet Not Connected */}
+      {!walletAddress && !loading && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <AlertTitle>Wallet Not Connected</AlertTitle>
+          Please connect your wallet to view your portfolio risk metrics.
+        </Alert>
+      )}
       
       {/* Risk Alerts */}
       {riskAlerts.length > 0 && (
