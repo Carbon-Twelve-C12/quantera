@@ -1,72 +1,344 @@
--- Seed test data for Risk Management System testing
+-- Quantera Test Data Seed
+-- Phase 5: Portfolio & Trade Finance Test Data
+-- File: seed_test_data.sql
 
--- Insert test portfolio positions
-INSERT INTO portfolio_positions (portfolio_address, asset_address, amount, entry_price, current_price, unrealized_pnl)
-VALUES 
-    ('0x1234567890123456789012345678901234567890', '0xBTC0000000000000000000000000000000000001', 1000000000000000000, 50000.00, 52000.00, 2000.00),
-    ('0x1234567890123456789012345678901234567890', '0xETH0000000000000000000000000000000000002', 5000000000000000000, 3000.00, 3100.00, 500.00),
-    ('0x1234567890123456789012345678901234567890', '0xUSDC000000000000000000000000000000000003', 100000000000, 1.00, 1.00, 0.00),
-    ('0x1234567890123456789012345678901234567890', '0xLINK000000000000000000000000000000000004', 10000000000000000000, 15.00, 14.50, -50.00)
-ON CONFLICT (portfolio_address, asset_address) DO NOTHING;
+-- ============================================================================
+-- TRADE FINANCE ASSETS (Sample Data)
+-- ============================================================================
 
--- Insert test risk limits
-INSERT INTO risk_limits (portfolio_address, max_position_size, max_leverage, max_drawdown_limit, min_liquidity_score, max_var_95, emergency_shutdown)
-VALUES 
-    ('0x1234567890123456789012345678901234567890', 4000, 2.00, 2000, 60, 1000, FALSE)
-ON CONFLICT (portfolio_address) DO NOTHING;
+INSERT INTO tradefinance_assets (
+  id, name, description, asset_type, issuer, recipient,
+  image_url, yield_rate, maturity_date, nominal_value, currency,
+  fractional_units, units_total, units_available, current_price,
+  status, risk_rating, minimum_investment, settlement_currency,
+  verified_entities, issuer_kyc_status, recipient_kyc_status
+) VALUES
+(
+  'tf-001',
+  'Taiwan Semiconductor Supply Chain Finance',
+  'Supply chain financing for semiconductor component manufacturer in Taiwan with multinational technology company buyers.',
+  'SUPPLY_CHAIN_FINANCE',
+  'Global Trade Finance Partners',
+  'Taiwan Advanced Semiconductor Manufacturing',
+  '/images/assets/supply-chain-finance/taiwan-semiconductor.jpg',
+  595, -- 5.95% yield
+  NOW() + INTERVAL '180 days',
+  100000,
+  'USD',
+  1000,
+  1000,
+  856, -- 856 units still available
+  95.50,
+  'Active',
+  3,
+  1000,
+  'USDC',
+  true,
+  'APPROVED',
+  'APPROVED'
+),
+(
+  'tf-002',
+  'German Auto Parts Export Finance',
+  'Export financing for German automotive parts manufacturer shipping to international markets.',
+  'EXPORT_FINANCING',
+  'European Trade Bank',
+  'German Precision Auto Parts GmbH',
+  '/images/assets/supply-chain-finance/auto-parts.jpg',
+  475, -- 4.75% yield
+  NOW() + INTERVAL '90 days',
+  200000,
+  'EUR',
+  2000,
+  2000,
+  1875,
+  97.25,
+  'Active',
+  2,
+  500,
+  'USDC',
+  true,
+  'APPROVED',
+  'APPROVED'
+),
+(
+  'tf-003',
+  'Brazilian Coffee Harvest Inventory Finance',
+  'Pre-export inventory financing for premium coffee producers in Brazil.',
+  'INVENTORY_FINANCING',
+  'South American Trade Solutions',
+  'Brazilian Coffee Exporters Association',
+  '/images/assets/supply-chain-finance/coffee-inventory.jpg',
+  650, -- 6.50% yield
+  NOW() + INTERVAL '120 days',
+  150000,
+  'USD',
+  1500,
+  1500,
+  1320,
+  94.75,
+  'Active',
+  4,
+  750,
+  'USDC',
+  true,
+  'APPROVED',
+  'APPROVED'
+),
+(
+  'tf-004',
+  'Japanese Electronics Import Financing',
+  'Import financing for electronics distributor sourcing components from Japan.',
+  'IMPORT_FINANCING',
+  'Asia-Pacific Trade Bank',
+  'US Electronics Distributor Inc.',
+  '/images/assets/supply-chain-finance/electronics-import.jpg',
+  525, -- 5.25% yield
+  NOW() + INTERVAL '60 days',
+  180000,
+  'USD',
+  1800,
+  1800,
+  1650,
+  96.80,
+  'Active',
+  2,
+  1000,
+  'USDC',
+  true,
+  'APPROVED',
+  'APPROVED'
+),
+(
+  'tf-005',
+  'Singapore Tech Hardware Export',
+  'Export financing for technology hardware manufacturer in Singapore.',
+  'EXPORT_FINANCING',
+  'Asian Trade Finance Ltd',
+  'Singapore Tech Manufacturing',
+  '/images/assets/supply-chain-finance/tech-hardware.jpg',
+  510, -- 5.10% yield
+  NOW() + INTERVAL '75 days',
+  120000,
+  'USD',
+  1200,
+  1200,
+  980,
+  98.10,
+  'Active',
+  2,
+  500,
+  'USDC',
+  true,
+  'APPROVED',
+  'APPROVED'
+);
 
--- Insert test risk metrics
-INSERT INTO risk_metrics (portfolio_address, timestamp, var_95, var_99, expected_shortfall, sharpe_ratio, sortino_ratio, max_drawdown, beta, alpha, volatility, liquidity_score, concentration_risk, leverage_ratio, risk_grade)
-VALUES 
-    ('0x1234567890123456789012345678901234567890', NOW() - INTERVAL '5 days', 0.0750, 0.1100, 0.1400, 1.15, 1.35, 0.1500, 0.92, 0.02, 0.1800, 75, 0.3200, 1.20, 'B'),
-    ('0x1234567890123456789012345678901234567890', NOW() - INTERVAL '4 days', 0.0780, 0.1150, 0.1450, 1.18, 1.38, 0.1550, 0.94, 0.025, 0.1850, 76, 0.3300, 1.25, 'B'),
-    ('0x1234567890123456789012345678901234567890', NOW() - INTERVAL '3 days', 0.0800, 0.1200, 0.1500, 1.20, 1.40, 0.1600, 0.95, 0.03, 0.1900, 77, 0.3400, 1.30, 'B'),
-    ('0x1234567890123456789012345678901234567890', NOW() - INTERVAL '2 days', 0.0820, 0.1250, 0.1550, 1.22, 1.42, 0.1650, 0.96, 0.028, 0.1950, 78, 0.3500, 1.35, 'B'),
-    ('0x1234567890123456789012345678901234567890', NOW() - INTERVAL '1 day', 0.0850, 0.1300, 0.1600, 1.25, 1.45, 0.1700, 0.97, 0.032, 0.2000, 79, 0.3600, 1.40, 'B'),
-    ('0x1234567890123456789012345678901234567890', NOW(), 0.0880, 0.1350, 0.1650, 1.28, 1.48, 0.1750, 0.98, 0.035, 0.2050, 80, 0.3700, 1.45, 'B');
+-- ============================================================================
+-- PORTFOLIO HOLDINGS (Sample Data for Test Wallet)
+-- ============================================================================
 
--- Insert test historical returns
-INSERT INTO historical_returns (portfolio_address, asset_address, return_value, return_date)
-SELECT 
-    '0x1234567890123456789012345678901234567890',
-    '0xBTC0000000000000000000000000000000000001',
-    (RANDOM() * 0.1 - 0.05), -- Random returns between -5% and 5%
-    CURRENT_DATE - generate_series(1, 30)
-ON CONFLICT DO NOTHING;
+-- Test wallet address: 0x742d35Cc6634C0532925a3b844Bc454e4438f44e (Hardhat #0)
 
--- Insert test market scenarios
-INSERT INTO market_scenarios (id, name, description, volatility_multiplier, correlation_adjustment, is_active, created_by)
-VALUES 
-    ('550e8400-e29b-41d4-a716-446655440001', 'Black Swan Event', 'Extreme market downturn scenario', 3.00, 0.20, TRUE, '0xAdmin0000000000000000000000000000000001'),
-    ('550e8400-e29b-41d4-a716-446655440002', 'Bull Market Rally', 'Strong market uptrend scenario', 0.50, -0.10, TRUE, '0xAdmin0000000000000000000000000000000001'),
-    ('550e8400-e29b-41d4-a716-446655440003', 'High Volatility', 'Increased market volatility without direction', 2.00, 0.00, TRUE, '0xAdmin0000000000000000000000000000000001')
-ON CONFLICT DO NOTHING;
+INSERT INTO portfolio_holdings (
+  wallet_address, asset_id, asset_name, asset_symbol,
+  quantity, acquisition_price, acquisition_date,
+  asset_type, asset_category, asset_class, maturity_date
+) VALUES
+(
+  '0x742d35cc6634c0532925a3b844bc454e4438f44e',
+  '0x1',
+  '3-Month T-Bill',
+  'TBILL3M',
+  50,
+  97.85,
+  NOW() - INTERVAL '30 days',
+  'T-Bill',
+  'treasury',
+  'TREASURY',
+  NOW() + INTERVAL '60 days'
+),
+(
+  '0x742d35cc6634c0532925a3b844bc454e4438f44e',
+  '0x2',
+  '2-Year T-Note',
+  'TNOTE2Y',
+  120,
+  94.25,
+  NOW() - INTERVAL '60 days',
+  'T-Note',
+  'treasury',
+  'TREASURY',
+  NOW() + INTERVAL '630 days'
+),
+(
+  '0x742d35cc6634c0532925a3b844bc454e4438f44e',
+  'tf-001',
+  'Taiwan Semiconductor Supply Chain Finance',
+  'TSMC-SCF',
+  5,
+  100.00,
+  NOW() - INTERVAL '15 days',
+  'Supply Chain Finance',
+  'trade_finance',
+  'TRADE_FINANCE',
+  NOW() + INTERVAL '165 days'
+);
 
--- Insert scenario price shocks
-INSERT INTO scenario_price_shocks (scenario_id, asset_address, price_shock)
-VALUES 
-    ('550e8400-e29b-41d4-a716-446655440001', '0xBTC0000000000000000000000000000000000001', -30.00),
-    ('550e8400-e29b-41d4-a716-446655440001', '0xETH0000000000000000000000000000000000002', -35.00),
-    ('550e8400-e29b-41d4-a716-446655440002', '0xBTC0000000000000000000000000000000000001', 25.00),
-    ('550e8400-e29b-41d4-a716-446655440002', '0xETH0000000000000000000000000000000000002', 30.00)
-ON CONFLICT DO NOTHING;
+-- ============================================================================
+-- PORTFOLIO TRANSACTIONS (Sample Data)
+-- ============================================================================
 
--- Insert test risk alerts
-INSERT INTO risk_alerts (portfolio_address, alert_type, severity, message, metric_value, threshold, acknowledged)
-VALUES 
-    ('0x1234567890123456789012345678901234567890', 'VaRBreach', 'Warning', 'VaR approaching limit', 0.0850, 0.1000, FALSE),
-    ('0x1234567890123456789012345678901234567890', 'ConcentrationRisk', 'Info', 'High concentration in single asset', 0.3700, 0.4000, FALSE);
+INSERT INTO portfolio_transactions (
+  wallet_address, transaction_type, asset_id, asset_name, asset_symbol,
+  quantity, price, total_value, fee, status, tx_hash, timestamp
+) VALUES
+(
+  '0x742d35cc6634c0532925a3b844bc454e4438f44e',
+  'buy',
+  '0x1',
+  '3-Month T-Bill',
+  'TBILL3M',
+  50,
+  97.85,
+  4892.50,
+  24.46,
+  'completed',
+  '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+  NOW() - INTERVAL '30 days'
+),
+(
+  '0x742d35cc6634c0532925a3b844bc454e4438f44e',
+  'buy',
+  '0x2',
+  '2-Year T-Note',
+  'TNOTE2Y',
+  120,
+  94.25,
+  11310.00,
+  56.55,
+  'completed',
+  '0x2345678901abcdef2345678901abcdef2345678901abcdef2345678901abcdef',
+  NOW() - INTERVAL '60 days'
+),
+(
+  '0x742d35cc6634c0532925a3b844bc454e4438f44e',
+  'buy',
+  'tf-001',
+  'Taiwan Semiconductor Supply Chain Finance',
+  'TSMC-SCF',
+  5,
+  100.00,
+  5000.00,
+  25.00,
+  'completed',
+  '0x3456789012abcdef3456789012abcdef3456789012abcdef3456789012abcdef',
+  NOW() - INTERVAL '15 days'
+),
+(
+  '0x742d35cc6634c0532925a3b844bc454e4438f44e',
+  'yield',
+  '0x1',
+  '3-Month T-Bill',
+  'TBILL3M',
+  0,
+  0,
+  45.55,
+  0,
+  'completed',
+  '0x4567890123abcdef4567890123abcdef4567890123abcdef4567890123abcdef',
+  NOW() - INTERVAL '15 days'
+);
 
--- Insert test correlation matrix
-INSERT INTO correlation_matrix (portfolio_address, asset1_address, asset2_address, correlation, calculation_date)
-VALUES 
-    ('0x1234567890123456789012345678901234567890', '0xBTC0000000000000000000000000000000000001', '0xETH0000000000000000000000000000000000002', 0.65, CURRENT_DATE),
-    ('0x1234567890123456789012345678901234567890', '0xBTC0000000000000000000000000000000000001', '0xUSDC000000000000000000000000000000000003', -0.10, CURRENT_DATE),
-    ('0x1234567890123456789012345678901234567890', '0xBTC0000000000000000000000000000000000001', '0xLINK000000000000000000000000000000000004', 0.45, CURRENT_DATE)
-ON CONFLICT DO NOTHING;
+-- ============================================================================
+-- YIELD DISTRIBUTIONS (Sample Data)
+-- ============================================================================
 
--- Insert test risk model version
-INSERT INTO risk_model_versions (model_name, version, accuracy, training_date, is_active, parameters)
-VALUES 
-    ('VaR_MonteCarlo', '2.0.0', 0.9450, NOW() - INTERVAL '7 days', TRUE, '{"simulations": 10000, "confidence_levels": [95, 99], "horizon_days": 1}')
-ON CONFLICT DO NOTHING;
+INSERT INTO yield_distributions (
+  wallet_address, asset_id, asset_name, amount, yield_rate,
+  distribution_date, next_distribution_date, frequency, status, tx_hash
+) VALUES
+(
+  '0x742d35cc6634c0532925a3b844bc454e4438f44e',
+  '0x1',
+  '3-Month T-Bill',
+  45.55,
+  3.75,
+  NOW() - INTERVAL '15 days',
+  NOW() + INTERVAL '15 days',
+  'monthly',
+  'completed',
+  '0x4567890123abcdef4567890123abcdef4567890123abcdef4567890123abcdef'
+),
+(
+  '0x742d35cc6634c0532925a3b844bc454e4438f44e',
+  '0x2',
+  '2-Year T-Note',
+  118.75,
+  4.15,
+  NOW() - INTERVAL '15 days',
+  NOW() + INTERVAL '75 days',
+  'quarterly',
+  'completed',
+  '0x5678901234abcdef5678901234abcdef5678901234abcdef5678901234abcdef'
+);
+
+-- ============================================================================
+-- TRADE FINANCE POSITIONS (Sample Data)
+-- ============================================================================
+
+INSERT INTO tradefinance_positions (
+  asset_id, owner_address, units_owned, investment_amount,
+  acquisition_price, acquisition_date, purchase_tx_hash, status
+) VALUES
+(
+  'tf-001',
+  '0x742d35cc6634c0532925a3b844bc454e4438f44e',
+  5,
+  5000.00,
+  100.00,
+  NOW() - INTERVAL '15 days',
+  '0x3456789012abcdef3456789012abcdef3456789012abcdef3456789012abcdef',
+  'Active'
+);
+
+-- ============================================================================
+-- TRADE FINANCE TRANSACTIONS (Sample Data)
+-- ============================================================================
+
+INSERT INTO tradefinance_transactions (
+  asset_id, buyer_address, transaction_type, units,
+  price_per_unit, total_amount, fee, status, tx_hash, timestamp
+) VALUES
+(
+  'tf-001',
+  '0x742d35cc6634c0532925a3b844bc454e4438f44e',
+  'purchase',
+  5,
+  100.00,
+  5000.00,
+  25.00,
+  'completed',
+  '0x3456789012abcdef3456789012abcdef3456789012abcdef3456789012abcdef',
+  NOW() - INTERVAL '15 days'
+);
+
+-- ============================================================================
+-- VERIFICATION QUERIES
+-- ============================================================================
+
+-- Verify trade finance assets inserted
+SELECT 'Trade Finance Assets:', COUNT(*) FROM tradefinance_assets;
+
+-- Verify portfolio holdings inserted
+SELECT 'Portfolio Holdings:', COUNT(*) FROM portfolio_holdings;
+
+-- Verify transactions inserted
+SELECT 'Portfolio Transactions:', COUNT(*) FROM portfolio_transactions;
+SELECT 'Trade Finance Transactions:', COUNT(*) FROM tradefinance_transactions;
+
+-- Verify yield distributions inserted
+SELECT 'Yield Distributions:', COUNT(*) FROM yield_distributions;
+
+-- Verify positions inserted
+SELECT 'Trade Finance Positions:', COUNT(*) FROM tradefinance_positions;
