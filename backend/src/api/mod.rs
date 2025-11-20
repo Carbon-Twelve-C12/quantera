@@ -1,5 +1,7 @@
 // Module declarations
 pub mod secure_api;
+pub mod portfolio_api; // Phase 5
+pub mod tradefinance_api; // Phase 5
 
 use axum::{
     extract::{Path, Query, State},

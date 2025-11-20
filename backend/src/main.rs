@@ -72,8 +72,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         jwt_secret: jwt_secret.clone(),
         rate_limiter: Arc::new(RwLock::new(RateLimiter::new())),
         audit_logger: Arc::new(RwLock::new(AuditLogger::new())),
-        db: Arc::new(db_pool),
+        db: Arc::new(db_pool.clone()),
     };
+    
+    // Keep db_pool Arc for other routers
+    let db_arc = Arc::new(db_pool);
 
     // Parse CORS origins
     let allowed_origins = cors_origins
@@ -92,6 +95,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/", get(|| async { "Quantera Backend API v2.0.0-alpha" }))
         .route("/health", get(health_check))
         .merge(api::secure_api::create_secure_router(secure_state))
+        .merge(api::portfolio_api::create_portfolio_router(db_arc.clone()))
+        .merge(api::tradefinance_api::create_tradefinance_router(db_arc.clone()))
         .layer(cors);
 
     // Run the server

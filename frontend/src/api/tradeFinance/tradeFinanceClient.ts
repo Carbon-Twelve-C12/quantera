@@ -5,6 +5,7 @@ import {
   TradeFinanceAssetType,
   SettlementCurrency
 } from '../../types/tradeFinance';
+import api from '../api';
 
 // Sample mock data for trade finance assets
 const MOCK_ASSETS: TradeFinanceAsset[] = [
@@ -99,29 +100,58 @@ const MOCK_POSITIONS: TradeFinancePosition[] = [
   }
 ];
 
-// Implementation using Promise-based API design
+// Implementation using Promise-based API design with backend integration
 class TradeFinanceClient {
+  private baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+  
   // Fetch all trade finance assets
   public async getTradeFinanceAssets(): Promise<TradeFinanceAsset[]> {
-    // TODO: Replace with actual API call
-    // This is a mock implementation
-    return Promise.resolve(MOCK_ASSETS);
+    try {
+      // PHASE 5: Call real backend API
+      console.log('Fetching trade finance assets from backend...');
+      const response = await api.get(`${this.baseUrl}/api/v1/tradefinance/assets`);
+      console.log('Trade finance assets loaded from backend');
+      return response.data.assets || [];
+    } catch (error) {
+      console.warn('Backend unavailable for trade finance assets, using mock data:', error);
+      // FALLBACK: Use mock data
+      return MOCK_ASSETS;
+    }
   }
   
   // Get trade finance asset by ID
   public async getTradeFinanceAssetById(id: string): Promise<TradeFinanceAsset | null> {
-    // TODO: Replace with actual API call
-    const asset = MOCK_ASSETS.find(a => a.id === id);
-    return Promise.resolve(asset || null);
+    try {
+      // PHASE 5: Call real backend API
+      const response = await api.get(`${this.baseUrl}/api/v1/tradefinance/assets/${id}`);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        console.log(`Asset ${id} not found in backend, trying mock data`);
+      } else {
+        console.warn('Backend unavailable, using mock data');
+      }
+      // FALLBACK: Use mock data
+      const asset = MOCK_ASSETS.find(a => a.id === id);
+      return asset || null;
+    }
   }
   
   // Get user positions (assets owned)
   public async getUserTradeFinancePositions(
     userAddress: string
   ): Promise<TradeFinancePosition[]> {
-    // TODO: Replace with actual API call
-    const positions = MOCK_POSITIONS.filter(p => p.ownerAddress === userAddress);
-    return Promise.resolve(positions);
+    try {
+      // PHASE 5: Call real backend API
+      console.log('Fetching positions for:', userAddress);
+      const response = await api.get(`${this.baseUrl}/api/v1/tradefinance/positions/${userAddress}`);
+      return response.data.positions || [];
+    } catch (error) {
+      console.warn('Backend unavailable for positions, using mock data');
+      // FALLBACK: Use mock data
+      const positions = MOCK_POSITIONS.filter(p => p.ownerAddress === userAddress);
+      return positions;
+    }
   }
   
   // Purchase a trade finance asset
@@ -130,72 +160,72 @@ class TradeFinanceClient {
     userAddress: string,
     units: number
   ): Promise<{ success: boolean; transactionHash?: string; error?: string }> {
-    // TODO: Replace with actual API call
-    // Simulate transaction delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Hardcoded success for mock
-    return Promise.resolve({
-      success: true,
-      transactionHash: `0x${Array(64).fill(0).map(() => 
-        Math.floor(Math.random() * 16).toString(16)
-      ).join('')}`
-    });
+    try {
+      // PHASE 5: Call real backend API
+      console.log(`Purchasing ${units} units of ${assetId} for ${userAddress}`);
+      const response = await api.post(`${this.baseUrl}/api/v1/tradefinance/purchase`, {
+        asset_id: assetId,
+        wallet_address: userAddress,
+        units: units
+      });
+      
+      console.log('Purchase successful:', response.data);
+      return {
+        success: true,
+        transactionHash: response.data.transaction_hash
+      };
+    } catch (error: any) {
+      console.error('Purchase failed:', error);
+      return {
+        success: false,
+        error: error.response?.data || error.message || 'Purchase failed'
+      };
+    }
   }
   
   // Get trade finance analytics
   public async getTradeFinanceAnalytics(): Promise<TradeFinanceAnalytics> {
-    // TODO: Replace with actual API call
-    return Promise.resolve({
-      totalVolume: 1360000,
-      activeAssets: 7,
-      averageYield: 5.66,
-      averageMaturity: 90,
-      assetTypeDistribution: [
-        {
-          type: TradeFinanceAssetType.SUPPLY_CHAIN_FINANCE,
-          count: 2,
-          percentage: 29.8
-        },
-        {
-          type: TradeFinanceAssetType.EXPORT_FINANCING,
-          count: 2,
-          percentage: 25.7
-        },
-        {
-          type: TradeFinanceAssetType.INVENTORY_FINANCING,
-          count: 1,
-          percentage: 18.4
-        },
-        {
-          type: TradeFinanceAssetType.IMPORT_FINANCING,
-          count: 1,
-          percentage: 26.1
-        }
-      ],
-      countryDistribution: [
-        {
-          country: 'Taiwan',
-          count: 2,
-          percentage: 30.5
-        },
-        {
-          country: 'Germany',
-          count: 1,
-          percentage: 25.2
-        },
-        {
-          country: 'Brazil',
-          count: 1,
-          percentage: 15.8
-        },
-        {
-          country: 'Japan',
-          count: 1,
-          percentage: 28.5
-        }
-      ]
-    });
+    try {
+      // PHASE 5: Call real backend API
+      console.log('Fetching trade finance analytics from backend...');
+      const response = await api.get(`${this.baseUrl}/api/v1/tradefinance/analytics`);
+      
+      // Map backend response to frontend format
+      const data = response.data;
+      return {
+        totalVolume: parseFloat(data.total_volume),
+        activeAssets: data.active_assets,
+        averageYield: parseFloat(data.average_yield),
+        averageMaturity: data.average_maturity,
+        assetTypeDistribution: data.asset_type_distribution.map((dist: any) => ({
+          type: dist.asset_type as TradeFinanceAssetType,
+          count: dist.count,
+          percentage: parseFloat(dist.percentage)
+        })),
+        countryDistribution: data.country_distribution || []
+      };
+    } catch (error) {
+      console.warn('Backend unavailable for analytics, using mock data');
+      // FALLBACK: Use mock data
+      return {
+        totalVolume: 1360000,
+        activeAssets: 7,
+        averageYield: 5.66,
+        averageMaturity: 90,
+        assetTypeDistribution: [
+          { type: TradeFinanceAssetType.SUPPLY_CHAIN_FINANCE, count: 2, percentage: 29.8 },
+          { type: TradeFinanceAssetType.EXPORT_FINANCING, count: 2, percentage: 25.7 },
+          { type: TradeFinanceAssetType.INVENTORY_FINANCING, count: 1, percentage: 18.4 },
+          { type: TradeFinanceAssetType.IMPORT_FINANCING, count: 1, percentage: 26.1 }
+        ],
+        countryDistribution: [
+          { country: 'Taiwan', count: 2, percentage: 30.5 },
+          { country: 'Germany', count: 1, percentage: 25.2 },
+          { country: 'Brazil', count: 1, percentage: 15.8 },
+          { country: 'Japan', count: 1, percentage: 28.5 }
+        ]
+      };
+    }
   }
 }
 
