@@ -335,26 +335,3 @@ npx hardhat test integration/*.test.js
 MIT
 
 ---
-
-## Development Status
-
-**v2.0.0-alpha** (Active Development)
-
-| Component | Status | Integration |
-|-----------|--------|-------------|
-| Authentication | ✅ Complete | Production-ready |
-| Risk Management | ✅ Complete | Production-ready |
-| Compliance | ✅ Complete | Backend complete |
-| Portfolio API | ✅ Complete | Testing phase |
-| Trade Finance | ✅ Complete | Testing phase |
-| Smart Contracts | ✅ Complete | Deployed on testnet |
-
-**Next:** Production hardening, JWT validation, blockchain integration
-
----
-
-For detailed API specifications, see:
-- `PHASE5_PORTFOLIO_API_SPEC.md`
-- `PHASE5_TRADING_API_SPEC.md`
-
-For development guidelines, see `.cursor/rules/quantera.mdc`
