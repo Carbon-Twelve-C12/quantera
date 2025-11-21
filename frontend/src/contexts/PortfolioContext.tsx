@@ -1,20 +1,21 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  PortfolioSummary, 
-  AssetHolding, 
-  Transaction, 
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import {
+  PortfolioSummary,
+  AssetHolding,
+  Transaction,
   YieldDistribution,
   PortfolioPerformance,
-  ImpactMetrics 
+  ImpactMetrics
 } from '../types/portfolioTypes';
-import { 
-  mockPortfolioSummary, 
-  mockTransactions, 
-  mockYieldDistributions, 
+import {
+  mockPortfolioSummary,
+  mockTransactions,
+  mockYieldDistributions,
   mockPortfolioPerformance,
   mockImpactMetrics
 } from '../data/mockPortfolioData';
 import { useAuth } from './AuthContext';
+import api from '../api/api';
 
 // Define the context state shape
 interface PortfolioContextType {
@@ -38,10 +39,8 @@ const PortfolioContext = createContext<PortfolioContextType | null>(null);
 
 // Create the provider component
 export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const auth = useAuth();
-  // Using type assertion since currentUser exists in implementation but not in TypeScript definition
-  const currentUser = (auth as any).currentUser;
-  
+  const { walletAddress, isAuthenticated } = useAuth();
+
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [yieldDistributions, setYieldDistributions] = useState<YieldDistribution[]>([]);
@@ -51,9 +50,55 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
-  // Load portfolio data when user changes
+  // Function to refresh portfolio data - defined BEFORE useEffect
+  const refreshPortfolio = useCallback(async () => {
+    if (!walletAddress) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Try backend API first
+      console.log('Fetching portfolio from backend for:', walletAddress);
+      const portfolioResponse = await api.get(`/api/v1/portfolio/${walletAddress}`);
+      setPortfolio(portfolioResponse.data);
+
+      // Fetch transactions
+      const txResponse = await api.get(`/api/v1/portfolio/${walletAddress}/transactions`);
+      setTransactions(txResponse.data.transactions || []);
+
+      // Fetch yield distributions
+      const yieldResponse = await api.get(`/api/v1/portfolio/${walletAddress}/yield`);
+      setYieldDistributions(yieldResponse.data.yield_distributions || []);
+
+      // Fetch performance
+      const perfResponse = await api.get(`/api/v1/portfolio/${walletAddress}/performance`);
+      setPerformance(perfResponse.data);
+
+      // Fetch impact metrics
+      const impactResponse = await api.get(`/api/v1/portfolio/${walletAddress}/impact`);
+      setImpactMetrics(impactResponse.data);
+
+      console.log('Portfolio loaded from backend successfully');
+    } catch (err) {
+      // Fall back to mock data if backend unavailable
+      console.warn('Backend unavailable, using mock data:', err);
+      setPortfolio(mockPortfolioSummary);
+      setTransactions(mockTransactions);
+      setYieldDistributions(mockYieldDistributions);
+      setPerformance(mockPortfolioPerformance);
+      setImpactMetrics(mockImpactMetrics);
+    } finally {
+      setLoading(false);
+    }
+  }, [walletAddress]);
+
+  // Load portfolio data when wallet changes
   useEffect(() => {
-    if (currentUser) {
+    if (isAuthenticated && walletAddress) {
       refreshPortfolio();
     } else {
       // Clear data if user is not logged in
@@ -62,30 +107,9 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setYieldDistributions([]);
       setPerformance(null);
       setImpactMetrics(null);
-    }
-  }, [currentUser]);
-
-  // Function to refresh portfolio data
-  const refreshPortfolio = () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // In a real app, these would be API calls
-      // For now, we use mock data
-      setTimeout(() => {
-        setPortfolio(mockPortfolioSummary);
-        setTransactions(mockTransactions);
-        setYieldDistributions(mockYieldDistributions);
-        setPerformance(mockPortfolioPerformance);
-        setImpactMetrics(mockImpactMetrics);
-        setLoading(false);
-      }, 500); // Simulate API delay
-    } catch (err) {
-      setError('Failed to load portfolio data');
       setLoading(false);
     }
-  };
+  }, [isAuthenticated, walletAddress, refreshPortfolio]);
 
   // Helper to get a specific asset by ID
   const getAssetById = (id: string) => {
