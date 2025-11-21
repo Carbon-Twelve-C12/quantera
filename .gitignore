@@ -23,11 +23,19 @@ yarn-error.log*
 # Editor directories and files
 .idea/
 .vscode/
+.cursor/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Cloudflare
+.cloudflare/
+**/.cloudflare/
+
+# GitHub workflows and CI/CD
+.github/
 
 # OS generated files
 .DS_Store

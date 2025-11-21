@@ -3,6 +3,7 @@ use serde::{Serialize, Deserialize};
 use std::sync::Arc;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
+use rust_decimal::prelude::ToPrimitive;
 use anyhow::{Result, anyhow};
 use uuid::Uuid;
 

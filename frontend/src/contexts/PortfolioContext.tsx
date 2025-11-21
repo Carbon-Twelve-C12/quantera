@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { 
   PortfolioSummary, 
   AssetHolding, 
@@ -53,13 +53,8 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
-  // Load portfolio data when wallet address changes
-  useEffect(() => {
-    refreshPortfolio();
-  }, [refreshPortfolio, walletAddress]);
-
-  // Function to refresh portfolio data
-  const refreshPortfolio = React.useCallback(async () => {
+  // Function to refresh portfolio data (defined BEFORE useEffect)
+  const refreshPortfolio = useCallback(async () => {
     if (!walletAddress) {
       // No wallet connected, clear data
       setPortfolio(null);
@@ -112,6 +107,11 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setLoading(false);
     }
   }, [walletAddress]);
+
+  // Load portfolio data when wallet address changes
+  useEffect(() => {
+    refreshPortfolio();
+  }, [refreshPortfolio, walletAddress]);
 
   // Helper to get a specific asset by ID
   const getAssetById = (id: string) => {
