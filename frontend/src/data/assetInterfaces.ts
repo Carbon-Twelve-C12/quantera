@@ -1,3 +1,31 @@
+/**
+ * Impact metrics as structured object
+ */
+export interface ImpactMetricsData {
+  carbon_offset_tons: number;
+  land_area_protected_hectares: number;
+  renewable_energy_mwh: number;
+  water_protected_liters: number;
+  biodiversity_species_protected?: number;
+  local_communities_supported?: number;
+  jobs_created?: number;
+  sdg_alignment?: Record<string, number>;
+  verification_date?: number;
+  third_party_verifier: string;
+}
+
+/**
+ * Impact metrics as array item (alternative format)
+ */
+export interface ImpactMetricItem {
+  name: string;
+  value: number;
+  unit: string;
+  description?: string;
+  verified?: boolean;
+  verifier?: string;
+}
+
 export interface TreasuryDetail {
   token_id: string;
   token_address: string;
@@ -55,18 +83,7 @@ export interface EnvironmentalAsset {
   verification_date: number;
   registry_link?: string;
   metadata_uri?: string;
-  impact_metrics: {
-    carbon_offset_tons: number;
-    land_area_protected_hectares: number;
-    renewable_energy_mwh: number;
-    water_protected_liters: number;
-    biodiversity_species_protected?: number;
-    local_communities_supported?: number;
-    jobs_created?: number;
-    sdg_alignment?: Record<string, number>;
-    verification_date?: number;
-    third_party_verifier: string;
-  } | any[]; // Support both object and array format
+  impact_metrics: ImpactMetricsData | ImpactMetricItem[];
   issuance_date?: number;
   expiration_date?: number;
   retired?: boolean;

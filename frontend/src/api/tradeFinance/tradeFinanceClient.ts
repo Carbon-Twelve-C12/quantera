@@ -1,11 +1,36 @@
-import { 
-  TradeFinanceAsset, 
-  TradeFinancePosition, 
+import {
+  TradeFinanceAsset,
+  TradeFinancePosition,
   TradeFinanceAnalytics,
   TradeFinanceAssetType,
   SettlementCurrency
 } from '../../types/tradeFinance';
+import { isAxiosError, getErrorMessage } from '../../types/errors';
 import api from '../api';
+
+/**
+ * Backend response types for Trade Finance API
+ */
+interface AssetTypeDistributionResponse {
+  asset_type: string;
+  count: number;
+  percentage: string;
+}
+
+interface CountryDistributionResponse {
+  country: string;
+  count: number;
+  percentage: number;
+}
+
+interface AnalyticsResponse {
+  total_volume: string;
+  active_assets: number;
+  average_yield: string;
+  average_maturity: number;
+  asset_type_distribution: AssetTypeDistributionResponse[];
+  country_distribution: CountryDistributionResponse[];
+}
 
 // Sample mock data for trade finance assets
 const MOCK_ASSETS: TradeFinanceAsset[] = [
@@ -125,8 +150,8 @@ class TradeFinanceClient {
       // PHASE 5: Call real backend API
       const response = await api.get(`${this.baseUrl}/api/v1/tradefinance/assets/${id}`);
       return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 404) {
+    } catch (error: unknown) {
+      if (isAxiosError(error) && error.response?.status === 404) {
         console.log(`Asset ${id} not found in backend, trying mock data`);
       } else {
         console.warn('Backend unavailable, using mock data');
@@ -174,11 +199,11 @@ class TradeFinanceClient {
         success: true,
         transactionHash: response.data.transaction_hash
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Purchase failed:', error);
       return {
         success: false,
-        error: error.response?.data || error.message || 'Purchase failed'
+        error: getErrorMessage(error)
       };
     }
   }
@@ -191,13 +216,13 @@ class TradeFinanceClient {
       const response = await api.get(`${this.baseUrl}/api/v1/tradefinance/analytics`);
       
       // Map backend response to frontend format
-      const data = response.data;
+      const data = response.data as AnalyticsResponse;
       return {
         totalVolume: parseFloat(data.total_volume),
         activeAssets: data.active_assets,
         averageYield: parseFloat(data.average_yield),
         averageMaturity: data.average_maturity,
-        assetTypeDistribution: data.asset_type_distribution.map((dist: any) => ({
+        assetTypeDistribution: data.asset_type_distribution.map((dist: AssetTypeDistributionResponse) => ({
           type: dist.asset_type as TradeFinanceAssetType,
           count: dist.count,
           percentage: parseFloat(dist.percentage)

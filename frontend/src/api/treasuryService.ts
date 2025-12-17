@@ -3,9 +3,11 @@ import {
   DefaultApi,
   CreateTreasuryRequest,
   TreasuryOverview,
-  TreasuriesIdYieldGet200Response
+  TreasuriesIdYieldGet200Response,
+  TreasuriesGetTreasuryTypeEnum
 } from './generated';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import { ApiErrorResponse } from '../types/errors';
 
 /**
  * Error response format from the treasury service
@@ -31,7 +33,7 @@ export class TreasuryService {
    * List treasuries with optional filtering
    */
   async listTreasuries(
-    treasuryType?: string,
+    treasuryType?: TreasuriesGetTreasuryTypeEnum,
     minYield?: number,
     maxMaturity?: number,
     limit?: number,
@@ -39,7 +41,7 @@ export class TreasuryService {
   ): Promise<TreasuryOverview[]> {
     try {
       const response = await this.api.treasuriesGet(
-        treasuryType as any,
+        treasuryType,
         minYield,
         maxMaturity,
         limit,
@@ -94,12 +96,12 @@ export class TreasuryService {
   /**
    * Handle API errors with appropriate messages
    */
-  private handleApiError(error: AxiosError): never {
+  private handleApiError(error: AxiosError<ApiErrorResponse>): never {
     const statusCode = error.response?.status || 500;
     let message = 'An unknown error occurred';
-    
+
     if (error.response?.data) {
-      const errorData = error.response.data as any;
+      const errorData = error.response.data;
       message = errorData.message || message;
     }
 
