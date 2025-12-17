@@ -33,6 +33,15 @@ export interface GasEstimation {
   estimatedCompressedSize: string;
 }
 
+export interface MessageDetails {
+  messageId: string;
+  status: 'PENDING' | 'CONFIRMED' | 'FAILED' | 'REJECTED';
+  timestamp: number;
+  source: string;
+  destination: string;
+  data?: Record<string, unknown>;
+}
+
 export interface Transaction {
   id: string;
   type: string;
@@ -52,7 +61,7 @@ interface L2BridgeContextType {
   bridgeOrder: (order: OrderDetails) => Promise<void>;
   estimateBridgingGas: (dataSize: number, dataType: number) => Promise<GasEstimation>;
   getOrdersByUser: (userAddress: string) => Promise<string[]>;
-  getMessageDetails: (messageId: string) => Promise<any>;
+  getMessageDetails: (messageId: string) => Promise<MessageDetails>;
   getSupportedChains: () => Promise<ChainInfo[]>;
   transactions: Transaction[];
   isWebSocketConnected: boolean;
@@ -75,7 +84,7 @@ const L2BridgeContext = createContext<L2BridgeContextType>({
     estimatedCompressedSize: "0"
   }),
   getOrdersByUser: async () => [],
-  getMessageDetails: async () => {},
+  getMessageDetails: async () => ({ messageId: '', status: 'PENDING', timestamp: 0, source: '', destination: '' }),
   getSupportedChains: async () => [],
   transactions: [],
   isWebSocketConnected: false,
@@ -142,7 +151,7 @@ export const L2BridgeProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
   
   // Get message details
-  const getMessageDetails = async (messageId: string): Promise<any> => {
+  const getMessageDetails = async (messageId: string): Promise<MessageDetails> => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500));
     return {

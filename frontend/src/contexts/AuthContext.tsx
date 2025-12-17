@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { authAPI } from '../api/api';
+import { isAxiosError, isWeb3Error, MetaMaskErrorCodes, getErrorMessage } from '../types/errors';
 
 // Types for auth context
 interface User {
@@ -135,22 +136,24 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       setIsAuthenticated(true);
       
       console.log('Login complete');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Login error:', err);
-      
+
       // Handle specific errors with user-friendly messages
-      if (err.message?.includes('MetaMask')) {
+      const errorMessage = getErrorMessage(err);
+
+      if (errorMessage.includes('MetaMask')) {
         setError('MetaMask not found. Please install MetaMask extension.');
-      } else if (err.code === 4001) {
+      } else if (isWeb3Error(err) && err.code === MetaMaskErrorCodes.USER_REJECTED_REQUEST) {
         setError('Signature rejected. Please approve the signature request to login.');
-      } else if (err.code === -32002) {
+      } else if (isWeb3Error(err) && err.code === MetaMaskErrorCodes.RESOURCE_UNAVAILABLE) {
         setError('MetaMask is already processing a request. Please check MetaMask.');
-      } else if (err.response?.status === 401) {
+      } else if (isAxiosError(err) && err.response?.status === 401) {
         setError('Authentication failed. Please try again.');
-      } else if (err.response?.status === 400) {
+      } else if (isAxiosError(err) && err.response?.status === 400) {
         setError('Invalid wallet address format.');
       } else {
-        setError(err.message || 'Login failed. Please try again.');
+        setError(errorMessage || 'Login failed. Please try again.');
       }
       
       // Clear any partial state

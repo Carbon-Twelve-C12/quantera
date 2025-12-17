@@ -39,10 +39,7 @@ const PortfolioContext = createContext<PortfolioContextType | null>(null);
 
 // Create the provider component
 export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const auth = useAuth();
-  // Using type assertion since currentUser exists in implementation but not in TypeScript definition
-  const currentUser = (auth as any).currentUser;
-  const walletAddress = (auth as any).walletAddress;
+  const { user, walletAddress } = useAuth();
   
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);

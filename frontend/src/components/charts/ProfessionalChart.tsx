@@ -151,10 +151,37 @@ const TooltipValue = styled(Typography)({
 
 export type ChartType = 'line' | 'area' | 'bar';
 
+/**
+ * Generic chart data point interface
+ */
+export interface ChartDataPoint {
+  [key: string]: string | number | Date | null | undefined;
+}
+
+/**
+ * Recharts tooltip payload item
+ */
+interface TooltipPayloadItem {
+  value: number | string;
+  name: string;
+  color: string;
+  dataKey: string;
+  payload: ChartDataPoint;
+}
+
+/**
+ * Recharts tooltip props
+ */
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayloadItem[];
+  label?: string;
+}
+
 interface ProfessionalChartProps {
   title: string;
   subtitle?: string;
-  data: any[];
+  data: ChartDataPoint[];
   dataKey: string;
   xAxisKey: string;
   height?: number;
@@ -196,12 +223,12 @@ export const ProfessionalChart: React.FC<ProfessionalChartProps> = ({
     setAnchorEl(null);
   };
 
-  const customTooltip = ({ active, payload, label }: any) => {
+  const customTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <CustomTooltipContainer>
           <TooltipLabel>{label}</TooltipLabel>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry: TooltipPayloadItem, index: number) => (
             <TooltipValue key={index} sx={{ color: entry.color }}>
               <Box
                 sx={{

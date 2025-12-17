@@ -2,13 +2,19 @@ import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
+// Type for location state with redirect info
+interface LocationState {
+  from?: { pathname: string };
+}
+
 const Login: React.FC = () => {
   const { loginWithWallet, isAuthenticated, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Get the redirect path from location state or default to home
-  const from = (location.state as any)?.from?.pathname || '/';
+  const locationState = location.state as LocationState | null;
+  const from = locationState?.from?.pathname || '/';
   
   // Redirect if already authenticated
   useEffect(() => {

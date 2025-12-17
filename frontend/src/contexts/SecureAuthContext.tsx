@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { ethers } from 'ethers';
 import { secureStorage, isCryptoAvailable } from '../utils/crypto';
+import { getErrorMessage } from '../types/errors';
 
 // Security configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
@@ -194,9 +195,9 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
       setIsAuthenticated(true);
 
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
-      setError(error.message || 'Login failed');
+      setError(getErrorMessage(error));
       return false;
     } finally {
       setIsLoading(false);

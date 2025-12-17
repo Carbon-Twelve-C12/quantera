@@ -79,11 +79,16 @@ const SUPPORTED_NETWORKS = {
 };
 
 // Proper typing for MetaMask ethereum object
+interface EthereumRequestParams {
+  method: string;
+  params?: unknown[];
+}
+
 interface EthereumProvider {
   isMetaMask?: boolean;
-  request: (args: { method: string; params?: any[] }) => Promise<any>;
-  on: (event: string, listener: (...args: any[]) => void) => void;
-  removeListener: (event: string, listener: (...args: any[]) => void) => void;
+  request: <T = unknown>(args: EthereumRequestParams) => Promise<T>;
+  on: (event: string, listener: (...args: unknown[]) => void) => void;
+  removeListener: (event: string, listener: (...args: unknown[]) => void) => void;
   selectedAddress?: string;
   networkVersion?: string;
 }
@@ -159,9 +164,10 @@ export const WalletConnect: React.FC = () => {
         await updateChainId();
         console.log('Wallet connected:', accounts[0]);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to connect wallet:', error);
-      if (error.code === 4001) {
+      const web3Error = error as { code?: number; message?: string };
+      if (web3Error.code === 4001) {
         setError('Connection rejected by user');
       } else {
         setError('Failed to connect wallet. Please try again.');
