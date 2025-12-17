@@ -1170,6 +1170,313 @@ body {
   }
 }
 
+/* ===== ACCESSIBILITY STYLES (WCAG 2.1 AA) ===== */
+
+/* ─────────────────────────────────────────────────────────
+   FOCUS STYLES
+   Visible focus indicators for keyboard navigation
+   ───────────────────────────────────────────────────────── */
+
+/* Global focus outline for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Remove focus outline for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Enhanced focus for interactive elements */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--accent-muted);
+}
+
+/* Focus within for compound components */
+.q-card:focus-within,
+.q-input-group:focus-within {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   SCREEN READER ONLY
+   Visually hidden but accessible to screen readers
+   ───────────────────────────────────────────────────────── */
+
+.sr-only,
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Make focusable sr-only elements visible when focused */
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: normal !important;
+}
+
+/* ─────────────────────────────────────────────────────────
+   SKIP LINKS
+   Allow keyboard users to skip navigation
+   ───────────────────────────────────────────────────────── */
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 16px;
+  z-index: var(--z-toast);
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--accent-primary);
+  color: var(--text-inverse);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: var(--type-body-size);
+  border-radius: var(--radius-md);
+  transition: top var(--duration-fast) var(--ease-default);
+}
+
+.skip-link:focus {
+  top: 16px;
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   FORM ACCESSIBILITY
+   Accessible form patterns
+   ───────────────────────────────────────────────────────── */
+
+/* Required field indicator */
+.required-indicator {
+  color: var(--status-error);
+  margin-left: var(--space-1);
+}
+
+/* Error state for inputs */
+.q-input[aria-invalid="true"],
+.q-textarea[aria-invalid="true"],
+.q-select[aria-invalid="true"],
+input[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"] {
+  border-color: var(--status-error);
+}
+
+.q-input[aria-invalid="true"]:focus,
+input[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px var(--status-error-muted);
+}
+
+/* Error messages */
+.field-error,
+[role="alert"] {
+  color: var(--status-error);
+  font-size: var(--type-caption-size);
+  margin-top: var(--space-1);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* Disabled state - sufficient contrast */
+.q-btn:disabled,
+.q-input:disabled,
+button:disabled,
+input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─────────────────────────────────────────────────────────
+   COLOR CONTRAST HELPERS
+   Ensure WCAG 2.1 AA compliance (4.5:1 for text)
+   ───────────────────────────────────────────────────────── */
+
+/* High contrast text variants */
+.text-high-contrast {
+  color: var(--text-primary);
+}
+
+/* Ensure links have sufficient contrast */
+a {
+  color: var(--accent-primary);
+}
+
+a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+/* Status colors with accessible contrast */
+.status-success { color: var(--status-success); }
+.status-warning { color: var(--status-warning); }
+.status-error { color: var(--status-error); }
+.status-info { color: var(--status-info); }
+
+/* ─────────────────────────────────────────────────────────
+   MOTION ACCESSIBILITY
+   Respect user motion preferences
+   ───────────────────────────────────────────────────────── */
+
+/* Loading spinner animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Pulse animation for loading states */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.loading-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────────────────
+   INTERACTIVE STATES
+   Clear visual feedback for all interactions
+   ───────────────────────────────────────────────────────── */
+
+/* Hover states with sufficient contrast */
+.q-btn:hover:not(:disabled),
+button:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+/* Active/pressed state */
+.q-btn:active:not(:disabled),
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--accent-primary);
+  color: var(--text-inverse);
+}
+
+/* ─────────────────────────────────────────────────────────
+   LANDMARKS & REGIONS
+   Proper landmark styling
+   ───────────────────────────────────────────────────────── */
+
+/* Main content area */
+main,
+[role="main"] {
+  min-height: 100vh;
+  outline: none;
+}
+
+/* Navigation landmarks */
+nav[aria-label],
+[role="navigation"] {
+  position: relative;
+}
+
+/* Complementary content */
+aside,
+[role="complementary"] {
+  border-left: 1px solid var(--surface-subtle);
+}
+
+/* ─────────────────────────────────────────────────────────
+   MODAL ACCESSIBILITY
+   Accessible modal patterns
+   ───────────────────────────────────────────────────────── */
+
+/* Modal backdrop */
+.modal-overlay,
+[role="dialog"]::backdrop {
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+/* Modal focus trap indicator */
+[role="dialog"] {
+  outline: none;
+}
+
+[role="dialog"]:focus {
+  box-shadow: 0 0 0 3px var(--accent-primary);
+}
+
+/* ─────────────────────────────────────────────────────────
+   TABLE ACCESSIBILITY
+   Accessible data tables
+   ───────────────────────────────────────────────────────── */
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+th,
+td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--surface-subtle);
+}
+
+/* Row hover for better tracking */
+tbody tr:hover {
+  background-color: var(--surface-overlay);
+}
+
+/* Focus within table rows */
+tbody tr:focus-within {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: -2px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   TOOLTIP ACCESSIBILITY
+   Accessible tooltips
+   ───────────────────────────────────────────────────────── */
+
+[role="tooltip"] {
+  position: absolute;
+  z-index: var(--z-tooltip);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--surface-overlay);
+  color: var(--text-primary);
+  font-size: var(--type-caption-size);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-subtle);
+  box-shadow: var(--shadow-md);
+  max-width: 250px;
+}
+
 /* ===== PRINT STYLES ===== */
 
 @media print {
@@ -1185,5 +1492,12 @@ body {
 
   .q-btn {
     border: 1px solid #000;
+  }
+
+  /* Hide non-essential elements in print */
+  .skip-link,
+  .sr-only,
+  [aria-hidden="true"] {
+    display: none;
   }
 }
