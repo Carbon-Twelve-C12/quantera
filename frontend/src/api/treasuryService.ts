@@ -49,7 +49,7 @@ export class TreasuryService {
       );
       return response.data;
     } catch (error) {
-      this.handleApiError(error as AxiosError);
+      this.handleApiError(error as AxiosError<ApiErrorResponse>);
       return []; // This line is unreachable, but TypeScript requires it
     }
   }
@@ -62,7 +62,7 @@ export class TreasuryService {
       const response = await this.api.treasuriesIdGet(id);
       return response.data;
     } catch (error) {
-      this.handleApiError(error as AxiosError);
+      this.handleApiError(error as AxiosError<ApiErrorResponse>);
       throw error; // Unreachable
     }
   }
@@ -75,7 +75,7 @@ export class TreasuryService {
       const response = await this.api.treasuriesIdYieldGet(id);
       return response.data;
     } catch (error) {
-      this.handleApiError(error as AxiosError);
+      this.handleApiError(error as AxiosError<ApiErrorResponse>);
       throw error; // Unreachable
     }
   }
@@ -88,7 +88,7 @@ export class TreasuryService {
       const response = await this.api.treasuriesPost(data);
       return response.data;
     } catch (error) {
-      this.handleApiError(error as AxiosError);
+      this.handleApiError(error as AxiosError<ApiErrorResponse>);
       throw error; // Unreachable
     }
   }

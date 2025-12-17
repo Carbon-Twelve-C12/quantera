@@ -138,7 +138,7 @@ interface LiveRegionProps {
   children: ReactNode;
   politeness?: 'polite' | 'assertive';
   atomic?: boolean;
-  relevant?: 'additions' | 'removals' | 'text' | 'all';
+  relevant?: 'additions' | 'removals' | 'text' | 'all' | 'additions text' | 'additions removals' | 'removals text' | 'text additions' | 'text removals' | 'removals additions';
 }
 
 export const LiveRegion: React.FC<LiveRegionProps> = ({

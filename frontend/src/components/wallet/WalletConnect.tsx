@@ -78,26 +78,7 @@ const SUPPORTED_NETWORKS = {
   '0xAA37DC': { name: 'OP Sepolia', symbol: 'ETH' },
 };
 
-// Proper typing for MetaMask ethereum object
-interface EthereumRequestParams {
-  method: string;
-  params?: unknown[];
-}
-
-interface EthereumProvider {
-  isMetaMask?: boolean;
-  request: <T = unknown>(args: EthereumRequestParams) => Promise<T>;
-  on: (event: string, listener: (...args: unknown[]) => void) => void;
-  removeListener: (event: string, listener: (...args: unknown[]) => void) => void;
-  selectedAddress?: string;
-  networkVersion?: string;
-}
-
-declare global {
-  interface Window {
-    ethereum?: EthereumProvider;
-  }
-}
+// EthereumProvider type is defined globally in src/types/declarations.d.ts
 
 export const WalletConnect: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false);

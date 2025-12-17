@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "build": "cd frontend && npm ci && CI=false npm run build"
+  },
   "dependencies": {
     "@mui/lab": "^7.0.0-beta.12",
     "recharts": "^2.15.3"

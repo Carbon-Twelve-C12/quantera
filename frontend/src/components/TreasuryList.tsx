@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { treasuryService } from '../api/treasuryService';
-import { TreasuryOverview } from '../api/generated';
+import { TreasuryOverview, TreasuriesGetTreasuryTypeEnum } from '../api/generated';
 
 interface TreasuryListProps {
   initialLimit?: number;
@@ -12,7 +12,7 @@ const TreasuryList: React.FC<TreasuryListProps> = ({ initialLimit = 10 }) => {
   const [error, setError] = useState<string | null>(null);
   
   // Filter/pagination state
-  const [treasuryType, setTreasuryType] = useState<string | undefined>(undefined);
+  const [treasuryType, setTreasuryType] = useState<TreasuriesGetTreasuryTypeEnum | undefined>(undefined);
   const [minYield, setMinYield] = useState<number | undefined>(undefined);
   const [maxMaturity, setMaxMaturity] = useState<number | undefined>(undefined);
   const [limit, setLimit] = useState<number>(initialLimit);
@@ -47,7 +47,7 @@ const TreasuryList: React.FC<TreasuryListProps> = ({ initialLimit = 10 }) => {
   // Handle type filter change
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    setTreasuryType(value === 'all' ? undefined : value);
+    setTreasuryType(value === 'all' ? undefined : value as TreasuriesGetTreasuryTypeEnum);
     setOffset(0); // Reset pagination when filter changes
   };
 

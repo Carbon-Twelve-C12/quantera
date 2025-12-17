@@ -162,11 +162,11 @@ export interface ChartDataPoint {
  * Recharts tooltip payload item
  */
 interface TooltipPayloadItem {
-  value: number | string;
-  name: string;
-  color: string;
-  dataKey: string;
-  payload: ChartDataPoint;
+  value?: number | string;
+  name?: string | number;
+  color?: string;
+  dataKey?: string | number;
+  payload?: ChartDataPoint;
 }
 
 /**
@@ -229,16 +229,16 @@ export const ProfessionalChart: React.FC<ProfessionalChartProps> = ({
         <CustomTooltipContainer>
           <TooltipLabel>{label}</TooltipLabel>
           {payload.map((entry: TooltipPayloadItem, index: number) => (
-            <TooltipValue key={index} sx={{ color: entry.color }}>
+            <TooltipValue key={index} sx={{ color: entry.color || color }}>
               <Box
                 sx={{
                   width: 8,
                   height: 8,
                   borderRadius: 'var(--radius-full)',
-                  background: entry.color,
+                  background: entry.color || color,
                 }}
               />
-              {`${typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}`}
+              {entry.value != null ? (typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value) : '-'}
             </TooltipValue>
           ))}
         </CustomTooltipContainer>
