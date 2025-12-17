@@ -19,10 +19,11 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LiquidityPoolProvider } from './contexts/LiquidityPoolContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AnalyticsProvider } from './contexts/AnalyticsContext';
-// Temporarily disable TypeScript's checking for this import 
+// Temporarily disable TypeScript's checking for this import
 // @ts-ignore
 import { WalletProvider } from './contexts/WalletContext';
 import WalletConnectButton from './components/common/WalletConnectButton';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 // Import styles
 import './App.css';
@@ -51,23 +52,35 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   return <>{children}</>;
 };
 
+// Error handler for logging errors to monitoring service
+const handleAppError = (error: Error, errorInfo: React.ErrorInfo) => {
+  console.error('Application error:', error);
+  console.error('Component stack:', errorInfo.componentStack);
+  // In production, this would send to Sentry/LogRocket/etc.
+};
+
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <WalletProvider>
-          <LiquidityPoolProvider>
-            <AnalyticsProvider>
-              <Router>
-                <div className="app">
-                  <AppContent />
-                </div>
-              </Router>
-            </AnalyticsProvider>
-          </LiquidityPoolProvider>
-        </WalletProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <ErrorBoundary
+      onError={handleAppError}
+      showDetails={process.env.NODE_ENV === 'development'}
+    >
+      <AuthProvider>
+        <ThemeProvider>
+          <WalletProvider>
+            <LiquidityPoolProvider>
+              <AnalyticsProvider>
+                <Router>
+                  <div className="app">
+                    <AppContent />
+                  </div>
+                </Router>
+              </AnalyticsProvider>
+            </LiquidityPoolProvider>
+          </WalletProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 };
 

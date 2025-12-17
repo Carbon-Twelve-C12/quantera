@@ -1,11 +1,17 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { ethers } from 'ethers';
+import { secureStorage, isCryptoAvailable } from '../utils/crypto';
 
 // Security configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 const TOKEN_STORAGE_KEY = 'quantera_auth_token';
 const REFRESH_TOKEN_KEY = 'quantera_refresh_token';
 const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours
+
+// Log crypto availability on load
+if (typeof window !== 'undefined') {
+  console.log(`[Security] Web Crypto API available: ${isCryptoAvailable()}`);
+}
 
 // User roles and permissions
 export enum UserRole {
@@ -104,8 +110,8 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const initializeAuth = async () => {
     try {
-      const storedToken = getSecureItem(TOKEN_STORAGE_KEY);
-      const refreshTokenValue = getSecureItem(REFRESH_TOKEN_KEY);
+      const storedToken = await getSecureItem(TOKEN_STORAGE_KEY);
+      const refreshTokenValue = await getSecureItem(REFRESH_TOKEN_KEY);
 
       if (storedToken && refreshTokenValue) {
         // Validate token with backend
@@ -165,11 +171,11 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
       }
 
       const loginData = await response.json();
-      
-      // Store tokens securely
-      setSecureItem(TOKEN_STORAGE_KEY, loginData.token);
+
+      // Store tokens securely using AES-GCM encryption
+      await setSecureItem(TOKEN_STORAGE_KEY, loginData.token);
       if (loginData.refresh_token) {
-        setSecureItem(REFRESH_TOKEN_KEY, loginData.refresh_token);
+        await setSecureItem(REFRESH_TOKEN_KEY, loginData.refresh_token);
       }
 
       // Set user data
@@ -212,7 +218,7 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const refreshToken = async (): Promise<boolean> => {
     try {
-      const refreshTokenValue = getSecureItem(REFRESH_TOKEN_KEY);
+      const refreshTokenValue = await getSecureItem(REFRESH_TOKEN_KEY);
       if (!refreshTokenValue) {
         return false;
       }
@@ -304,7 +310,7 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
 
       if (response.ok) {
         const refreshData = await response.json();
-        setSecureItem(TOKEN_STORAGE_KEY, refreshData.token);
+        await setSecureItem(TOKEN_STORAGE_KEY, refreshData.token);
         setToken(refreshData.token);
 
         // Update user session expiry
@@ -333,38 +339,33 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
     removeSecureItem(REFRESH_TOKEN_KEY);
   };
 
-  // Secure storage helpers (basic implementation - in production use more robust encryption)
-  const setSecureItem = (key: string, value: string) => {
+  // Secure storage helpers using AES-GCM encryption via Web Crypto API
+  // These are async because Web Crypto operations are asynchronous
+  const setSecureItem = useCallback(async (key: string, value: string): Promise<void> => {
     try {
-      // In production, encrypt the value before storing
-      const encryptedValue = btoa(value); // Basic base64 encoding (use proper encryption in production)
-      localStorage.setItem(key, encryptedValue);
+      await secureStorage.setItem(key, value);
     } catch (error) {
       console.error('Secure storage error:', error);
+      throw error;
     }
-  };
+  }, []);
 
-  const getSecureItem = (key: string): string | null => {
+  const getSecureItem = useCallback(async (key: string): Promise<string | null> => {
     try {
-      const encryptedValue = localStorage.getItem(key);
-      if (encryptedValue) {
-        // In production, decrypt the value after retrieving
-        return atob(encryptedValue); // Basic base64 decoding (use proper decryption in production)
-      }
-      return null;
+      return await secureStorage.getItem(key);
     } catch (error) {
       console.error('Secure retrieval error:', error);
       return null;
     }
-  };
+  }, []);
 
-  const removeSecureItem = (key: string) => {
+  const removeSecureItem = useCallback((key: string): void => {
     try {
-      localStorage.removeItem(key);
+      secureStorage.removeItem(key);
     } catch (error) {
       console.error('Secure removal error:', error);
     }
-  };
+  }, []);
 
   const value: SecureAuthState = {
     user,
