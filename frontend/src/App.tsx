@@ -24,6 +24,7 @@ import { AnalyticsProvider } from './contexts/AnalyticsContext';
 import { WalletProvider } from './contexts/WalletContext';
 import WalletConnectButton from './components/common/WalletConnectButton';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { SkipLink, VisuallyHidden } from './components/common/AccessibleComponents';
 
 // Import styles
 import './App.css';
@@ -87,13 +88,18 @@ const App: React.FC = () => {
 // Separate component for app content to access auth context inside Router
 const AppContent: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
-  
+
   return (
     <>
-      <header className="app-header">
-        <h1>Quantera</h1>
-        <nav className="main-nav">
-          <ul>
+      {/* Skip Link for keyboard navigation - WCAG 2.1 AA */}
+      <SkipLink targetId="main-content">Skip to main content</SkipLink>
+
+      <header className="app-header" role="banner">
+        <h1>
+          <Link to="/" aria-label="Quantera - Home">Quantera</Link>
+        </h1>
+        <nav className="main-nav" aria-label="Main navigation">
+          <ul role="menubar">
             <li><Link to="/">Home</Link></li>
             <li><Link to="/docs">Documentation</Link></li>
             <li><Link to="/about">About</Link></li>
@@ -125,7 +131,8 @@ const AppContent: React.FC = () => {
         </nav>
       </header>
       
-      <main className="app-content">
+      <main id="main-content" className="app-content" role="main" tabIndex={-1}>
+        <VisuallyHidden as="h2">Main Content</VisuallyHidden>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<AboutPage />} />
@@ -153,7 +160,7 @@ const AppContent: React.FC = () => {
         </Routes>
       </main>
       
-      <footer className="app-footer">
+      <footer className="app-footer" role="contentinfo">
         <p>© 2025 Quantera - Tokenized Financial Products</p>
       </footer>
     </>
