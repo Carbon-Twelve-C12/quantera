@@ -968,42 +968,64 @@ contract L2Bridge is IL2Bridge, AccessControl, Pausable, ReentrancyGuard {
     }
 
     /**
-     * @dev Validate an order
+     * @dev Validate an order with proper EIP-712 signature verification
+     *
+     * SECURITY: Uses EIP-712 typed structured data hashing for signature verification
+     * This prevents signature replay attacks and ensures signatures are domain-bound
      */
     function _validateOrder(OrderBridgingRequest calldata request) internal view {
         // Verify that the order has not expired
         if (request.expiration <= block.timestamp) {
             revert OrderExpired(request.expiration, uint64(block.timestamp));
         }
-        
-        // Verify signature if needed (simplified - would be more complex in production)
+
+        // Verify EIP-712 signature if provided
         if (request.signature.length > 0) {
-            bytes32 orderHash = keccak256(abi.encode(
+            // Create the struct hash using EIP-712 typed data
+            bytes32 structHash = keccak256(abi.encode(
+                ORDER_TYPEHASH,
                 request.order_id,
                 request.treasury_id,
                 request.user,
                 request.is_buy,
                 request.amount,
                 request.price,
-                request.expiration
+                request.expiration,
+                request.destinationChainId
             ));
-            
-            bytes32 signedHash = orderHash.toEthSignedMessageHash();
-            address recoveredSigner = signedHash.recover(request.signature);
-            
+
+            // Create the EIP-712 digest: \x19\x01 || domainSeparator || structHash
+            bytes32 digest = keccak256(abi.encodePacked(
+                "\x19\x01",
+                _DOMAIN_SEPARATOR,
+                structHash
+            ));
+
+            // Recover the signer from the EIP-712 typed data signature
+            address recoveredSigner = digest.recover(request.signature);
+
+            // Verify the recovered address matches the user
             if (recoveredSigner != request.user) {
                 revert InvalidSignature(recoveredSigner, request.user);
             }
         }
-        
+
         // Additional validations
         if (request.amount == 0) {
             revert InvalidAmount(0);
         }
-        
+
         if (request.price == 0) {
             revert InvalidPrice(0);
         }
+    }
+
+    /**
+     * @dev Get the domain separator for EIP-712 signatures
+     * @return The domain separator hash
+     */
+    function DOMAIN_SEPARATOR() external view returns (bytes32) {
+        return _DOMAIN_SEPARATOR;
     }
 
     /**

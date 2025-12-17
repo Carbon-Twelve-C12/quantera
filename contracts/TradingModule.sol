@@ -4,13 +4,19 @@ pragma solidity ^0.8.20;
 import "./interfaces/ITradingModule.sol";
 import "./interfaces/ITreasuryRegistry.sol";
 import "./interfaces/ITreasuryToken.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title TradingModule
  * @dev Implementation of the trading module for treasury tokens with L2 integration
  * and EIP-7691 support for optimized data availability
+ *
+ * SECURITY:
+ * - Uses ReentrancyGuard to prevent reentrancy attacks on all state-changing functions
+ * - Follows checks-effects-interactions pattern
+ * - Uses pull pattern for ETH refunds where possible
  */
-contract TradingModule is ITradingModule {
+contract TradingModule is ITradingModule, ReentrancyGuard {
     // Mapping of orders by order ID
     mapping(bytes32 => Order) public orders;
     
@@ -88,7 +94,7 @@ contract TradingModule is ITradingModule {
         bool useL2,
         uint256 l2ChainId,
         bytes calldata extraData
-    ) external payable override returns (bytes32) {
+    ) external payable override nonReentrant returns (bytes32) {
         // Validate inputs
         require(amount > 0, "TradingModule: amount must be greater than zero");
         require(price > 0, "TradingModule: price must be greater than zero");
@@ -175,7 +181,7 @@ contract TradingModule is ITradingModule {
         bool useL2,
         uint256 l2ChainId,
         bytes calldata extraData
-    ) external override returns (bytes32) {
+    ) external override nonReentrant returns (bytes32) {
         // Validate inputs
         require(amount > 0, "TradingModule: amount must be greater than zero");
         require(price > 0, "TradingModule: price must be greater than zero");
@@ -240,7 +246,7 @@ contract TradingModule is ITradingModule {
      * @dev Cancel an existing order
      * @param orderId The unique identifier for the order
      */
-    function cancelOrder(bytes32 orderId) external override {
+    function cancelOrder(bytes32 orderId) external override nonReentrant {
         // Get order
         Order storage order = orders[orderId];
         
@@ -272,7 +278,7 @@ contract TradingModule is ITradingModule {
      * @param sellOrderId The unique identifier for the sell order
      * @return The unique identifier for the created trade
      */
-    function executeTrade(bytes32 buyOrderId, bytes32 sellOrderId) external override returns (bytes32) {
+    function executeTrade(bytes32 buyOrderId, bytes32 sellOrderId) external override nonReentrant returns (bytes32) {
         // Get orders
         Order storage buyOrder = orders[buyOrderId];
         Order storage sellOrder = orders[sellOrderId];
@@ -349,7 +355,7 @@ contract TradingModule is ITradingModule {
         bytes32 buyOrderId,
         bytes32 sellOrderId,
         bytes calldata accountData
-    ) external override returns (bytes32) {
+    ) external override nonReentrant returns (bytes32) {
         // Get orders
         Order storage buyOrder = orders[buyOrderId];
         Order storage sellOrder = orders[sellOrderId];
@@ -441,7 +447,7 @@ contract TradingModule is ITradingModule {
     function bridgeOrderToL2(
         bytes32 orderId,
         uint256 l2ChainId
-    ) public override returns (bool) {
+    ) public override nonReentrant returns (bool) {
         // Validate L2 parameters
         require(l2ChainId > 0, "TradingModule: L2 chain ID must be specified");
         require(l2Bridges[l2ChainId].isActive, "TradingModule: L2 bridge not available for specified chain");
@@ -493,7 +499,7 @@ contract TradingModule is ITradingModule {
         bytes32 buyOrderId,
         bytes32 sellOrderId,
         bytes calldata l2ProofData
-    ) external override returns (bytes32) {
+    ) external override nonReentrant returns (bytes32) {
         // Get orders
         Order storage buyOrder = orders[buyOrderId];
         Order storage sellOrder = orders[sellOrderId];
@@ -653,7 +659,7 @@ contract TradingModule is ITradingModule {
     /**
      * @dev Withdraw collected fees (admin only)
      */
-    function withdrawFees() external override onlyAdmin {
+    function withdrawFees() external override onlyAdmin nonReentrant {
         require(totalFeesCollected > 0, "TradingModule: no fees to withdraw");
         
         uint256 amount = totalFeesCollected;
