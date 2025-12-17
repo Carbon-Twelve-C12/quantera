@@ -32,6 +32,9 @@ rand = "0.8"
 dotenv = "0.15"
 hex = "0.4"
 
+# Concurrent data structures
+dashmap = "5.5"
+
 # Alloy framework for Ethereum (latest versions)
 alloy-primitives = "0.8"
 alloy-sol-types = "0.8"

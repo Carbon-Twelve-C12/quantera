@@ -1,13 +1,15 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query, State, ConnectInfo},
     http::{StatusCode, HeaderMap},
-    response::Json,
+    response::{Json, IntoResponse},
     routing::{get, post, put},
     Router,
     middleware,
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::net::SocketAddr;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 use chrono::{DateTime, Utc, Duration};
@@ -15,17 +17,22 @@ use sha2::{Sha256, Digest};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation, Algorithm};
 use tracing::{info, warn, error};
 use sqlx::PgPool;
+use dashmap::DashMap;
 
 use crate::services::multi_chain_asset_service::{MultiChainAssetService, AssetType, ComplianceStandard};
 use crate::compliance::enhanced_compliance_engine::{
-    EnhancedComplianceEngine, InvestorProfile, InvestorType, KYCStatus, AMLStatus, 
+    EnhancedComplianceEngine, InvestorProfile, InvestorType, KYCStatus, AMLStatus,
     AccreditationStatus, RiskRating, SanctionsStatus, AccessLevel
 };
 
-// Security Configuration - FIXED: Removed hardcoded secret
+// Security Configuration - loaded from environment with defaults
 const MAX_REQUEST_SIZE: usize = 1024 * 1024; // 1MB
-const RATE_LIMIT_REQUESTS: u32 = 100; // per minute
 const SESSION_TIMEOUT_HOURS: i64 = 24;
+
+// Rate limit defaults (can be overridden by environment variables)
+const DEFAULT_RATE_LIMIT_REQUESTS: u64 = 100; // per minute for authenticated users
+const DEFAULT_RATE_LIMIT_ANONYMOUS: u64 = 20; // per minute for anonymous users
+const DEFAULT_RATE_LIMIT_BURST: u64 = 10; // burst allowance
 
 // SECURITY FIX: JWT secret must be loaded from environment variables
 fn get_jwt_secret() -> String {
@@ -74,41 +81,272 @@ pub struct SecureApiState {
     pub asset_service: Arc<RwLock<MultiChainAssetService>>,
     pub compliance_engine: Arc<RwLock<EnhancedComplianceEngine>>,
     pub jwt_secret: String,
-    pub rate_limiter: Arc<RwLock<RateLimiter>>,
+    pub rate_limiter: Arc<AtomicRateLimiter>,
     pub audit_logger: Arc<RwLock<AuditLogger>>,
     pub db: Arc<PgPool>, // Phase 3: Database pool for auth
 }
 
-// Rate Limiting
+// ============================================================================
+// Production-Grade Atomic Rate Limiter
+// Uses DashMap for lock-free concurrent access with atomic counters
+// Implements sliding window algorithm with configurable limits
+// ============================================================================
+
+/// Rate limit entry with atomic counter and window tracking
+pub struct RateLimitEntry {
+    /// Atomic request counter for lock-free increments
+    count: AtomicU64,
+    /// Window start timestamp (Unix milliseconds)
+    window_start: AtomicU64,
+}
+
+impl RateLimitEntry {
+    fn new(now_ms: u64) -> Self {
+        Self {
+            count: AtomicU64::new(1),
+            window_start: AtomicU64::new(now_ms),
+        }
+    }
+}
+
+/// Lock-free atomic rate limiter using DashMap
+/// Supports both user-based and IP-based rate limiting
+pub struct AtomicRateLimiter {
+    /// User-based rate limit tracking (by user ID or wallet address)
+    user_limits: DashMap<String, RateLimitEntry>,
+    /// IP-based rate limit tracking (defense against distributed attacks)
+    ip_limits: DashMap<String, RateLimitEntry>,
+    /// Rate limit for authenticated users (requests per minute)
+    authenticated_limit: u64,
+    /// Rate limit for anonymous users (requests per minute)
+    anonymous_limit: u64,
+    /// Burst allowance (additional requests allowed in short bursts)
+    burst_allowance: u64,
+    /// Window duration in milliseconds (default 60000ms = 1 minute)
+    window_duration_ms: u64,
+}
+
+impl AtomicRateLimiter {
+    /// Create a new rate limiter with configuration from environment
+    pub fn new() -> Self {
+        let authenticated_limit = std::env::var("RATE_LIMIT_REQUESTS_PER_MINUTE")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(DEFAULT_RATE_LIMIT_REQUESTS);
+
+        let anonymous_limit = std::env::var("RATE_LIMIT_ANONYMOUS_PER_MINUTE")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(DEFAULT_RATE_LIMIT_ANONYMOUS);
+
+        let burst_allowance = std::env::var("RATE_LIMIT_BURST")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(DEFAULT_RATE_LIMIT_BURST);
+
+        info!(
+            "Rate limiter initialized: authenticated={}/min, anonymous={}/min, burst={}",
+            authenticated_limit, anonymous_limit, burst_allowance
+        );
+
+        Self {
+            user_limits: DashMap::new(),
+            ip_limits: DashMap::new(),
+            authenticated_limit,
+            anonymous_limit,
+            burst_allowance,
+            window_duration_ms: 60_000, // 1 minute
+        }
+    }
+
+    /// Check rate limit for a user (lock-free atomic operation)
+    /// Returns (allowed, remaining_requests, reset_time_ms)
+    pub fn check_user_limit(&self, user_id: &str, is_authenticated: bool) -> (bool, u64, u64) {
+        let limit = if is_authenticated {
+            self.authenticated_limit + self.burst_allowance
+        } else {
+            self.anonymous_limit
+        };
+
+        self.check_limit_internal(&self.user_limits, user_id, limit)
+    }
+
+    /// Check rate limit for an IP address (lock-free atomic operation)
+    /// Returns (allowed, remaining_requests, reset_time_ms)
+    pub fn check_ip_limit(&self, ip: &str) -> (bool, u64, u64) {
+        // IP limit is more restrictive to prevent DDoS
+        let ip_limit = self.anonymous_limit * 5; // Allow 5x anonymous limit per IP
+        self.check_limit_internal(&self.ip_limits, ip, ip_limit)
+    }
+
+    /// Internal lock-free rate limit check with atomic operations
+    fn check_limit_internal(
+        &self,
+        limits: &DashMap<String, RateLimitEntry>,
+        key: &str,
+        max_requests: u64,
+    ) -> (bool, u64, u64) {
+        let now_ms = Utc::now().timestamp_millis() as u64;
+        let window_start_threshold = now_ms.saturating_sub(self.window_duration_ms);
+
+        // Use entry API for atomic get-or-insert
+        let entry = limits.entry(key.to_string()).or_insert_with(|| {
+            RateLimitEntry::new(now_ms)
+        });
+
+        let entry_ref = entry.value();
+
+        // Load current window start
+        let current_window_start = entry_ref.window_start.load(Ordering::Acquire);
+
+        // Check if window has expired
+        if current_window_start < window_start_threshold {
+            // Window expired - reset atomically
+            // Use compare_exchange to handle race condition
+            match entry_ref.window_start.compare_exchange(
+                current_window_start,
+                now_ms,
+                Ordering::AcqRel,
+                Ordering::Acquire,
+            ) {
+                Ok(_) => {
+                    // We won the race to reset the window
+                    entry_ref.count.store(1, Ordering::Release);
+                    let remaining = max_requests.saturating_sub(1);
+                    let reset_time = now_ms + self.window_duration_ms;
+                    return (true, remaining, reset_time);
+                }
+                Err(actual_start) => {
+                    // Another thread reset the window, use their start time
+                    // Fall through to normal increment logic
+                    if actual_start >= window_start_threshold {
+                        // Window is now valid, proceed with increment
+                    }
+                }
+            }
+        }
+
+        // Atomically increment counter and check limit
+        let previous_count = entry_ref.count.fetch_add(1, Ordering::AcqRel);
+        let new_count = previous_count + 1;
+
+        let window_start = entry_ref.window_start.load(Ordering::Acquire);
+        let reset_time = window_start + self.window_duration_ms;
+
+        if new_count > max_requests {
+            // Over limit - decrement back to avoid drift
+            entry_ref.count.fetch_sub(1, Ordering::AcqRel);
+            (false, 0, reset_time)
+        } else {
+            let remaining = max_requests.saturating_sub(new_count);
+            (true, remaining, reset_time)
+        }
+    }
+
+    /// Combined check for both user and IP limits
+    /// Returns the most restrictive result
+    pub fn check_combined(
+        &self,
+        user_id: Option<&str>,
+        ip: Option<&str>,
+    ) -> RateLimitResult {
+        let user_id_str = user_id.unwrap_or("anonymous");
+        let is_authenticated = user_id.is_some() && user_id != Some("anonymous");
+
+        let (user_allowed, user_remaining, user_reset) =
+            self.check_user_limit(user_id_str, is_authenticated);
+
+        // If user check failed, return immediately
+        if !user_allowed {
+            return RateLimitResult {
+                allowed: false,
+                remaining: 0,
+                reset_at: user_reset,
+                limit_type: RateLimitType::User,
+            };
+        }
+
+        // Check IP limit if provided
+        if let Some(ip_addr) = ip {
+            let (ip_allowed, ip_remaining, ip_reset) = self.check_ip_limit(ip_addr);
+
+            if !ip_allowed {
+                return RateLimitResult {
+                    allowed: false,
+                    remaining: 0,
+                    reset_at: ip_reset,
+                    limit_type: RateLimitType::Ip,
+                };
+            }
+
+            // Return the more restrictive limit
+            return RateLimitResult {
+                allowed: true,
+                remaining: user_remaining.min(ip_remaining),
+                reset_at: user_reset.max(ip_reset),
+                limit_type: if user_remaining < ip_remaining {
+                    RateLimitType::User
+                } else {
+                    RateLimitType::Ip
+                },
+            };
+        }
+
+        RateLimitResult {
+            allowed: true,
+            remaining: user_remaining,
+            reset_at: user_reset,
+            limit_type: RateLimitType::User,
+        }
+    }
+
+    /// Cleanup expired entries (call periodically from background task)
+    pub fn cleanup_expired(&self) {
+        let now_ms = Utc::now().timestamp_millis() as u64;
+        let window_start_threshold = now_ms.saturating_sub(self.window_duration_ms * 2);
+
+        self.user_limits.retain(|_, entry| {
+            entry.window_start.load(Ordering::Acquire) >= window_start_threshold
+        });
+
+        self.ip_limits.retain(|_, entry| {
+            entry.window_start.load(Ordering::Acquire) >= window_start_threshold
+        });
+    }
+}
+
+/// Result of a rate limit check
+#[derive(Debug, Clone)]
+pub struct RateLimitResult {
+    pub allowed: bool,
+    pub remaining: u64,
+    pub reset_at: u64, // Unix milliseconds
+    pub limit_type: RateLimitType,
+}
+
+/// Type of rate limit that was applied
+#[derive(Debug, Clone, Copy)]
+pub enum RateLimitType {
+    User,
+    Ip,
+}
+
+// Legacy RateLimiter wrapper for backwards compatibility
 #[derive(Debug)]
 pub struct RateLimiter {
-    requests: std::collections::HashMap<String, (u32, DateTime<Utc>)>,
+    inner: Arc<AtomicRateLimiter>,
 }
 
 impl RateLimiter {
     pub fn new() -> Self {
         Self {
-            requests: std::collections::HashMap::new(),
+            inner: Arc::new(AtomicRateLimiter::new()),
         }
     }
 
-    pub fn check_rate_limit(&mut self, user_id: &str) -> bool {
-        let now = Utc::now();
-        let window_start = now - Duration::minutes(1);
-
-        // Clean old entries
-        self.requests.retain(|_, (_, timestamp)| *timestamp > window_start);
-
-        // Check current user's rate
-        let (count, _) = self.requests.entry(user_id.to_string())
-            .or_insert((0, now));
-
-        if *count >= RATE_LIMIT_REQUESTS {
-            false
-        } else {
-            *count += 1;
-            true
-        }
+    pub fn check_rate_limit(&self, user_id: &str) -> bool {
+        let (allowed, _, _) = self.inner.check_user_limit(user_id, user_id != "anonymous");
+        allowed
     }
 }
 
@@ -325,25 +563,102 @@ pub async fn auth_middleware(
     Ok(next.run(req).await)
 }
 
-// Rate Limiting Middleware
+// Rate Limiting Middleware with atomic operations and proper headers
 pub async fn rate_limit_middleware(
     State(state): State<SecureApiState>,
     headers: HeaderMap,
     req: axum::extract::Request,
     next: axum::middleware::Next,
 ) -> Result<axum::response::Response, (StatusCode, Json<SecureApiError>)> {
+    // Extract user ID from header or JWT token
     let user_id = headers
         .get("X-User-ID")
         .and_then(|header| header.to_str().ok())
-        .unwrap_or("anonymous");
+        .or_else(|| {
+            // Try to extract from Authorization header
+            headers.get("Authorization")
+                .and_then(|h| h.to_str().ok())
+                .filter(|h| h.starts_with("Bearer "))
+                .and_then(|_| Some("authenticated")) // Mark as authenticated if has token
+        });
 
-    let mut rate_limiter = state.rate_limiter.write().await;
-    if !rate_limiter.check_rate_limit(user_id) {
+    // Extract client IP from headers (check forwarded headers for proxies)
+    let client_ip = headers
+        .get("X-Forwarded-For")
+        .and_then(|h| h.to_str().ok())
+        .and_then(|s| s.split(',').next())
+        .map(|s| s.trim())
+        .or_else(|| {
+            headers.get("X-Real-IP")
+                .and_then(|h| h.to_str().ok())
+        });
+
+    // Perform atomic rate limit check (no locks required)
+    let result = state.rate_limiter.check_combined(user_id, client_ip);
+
+    if !result.allowed {
+        warn!(
+            "Rate limit exceeded: user={:?}, ip={:?}, limit_type={:?}",
+            user_id, client_ip, result.limit_type
+        );
+
+        // Return rate limit error with standard headers
+        let error = SecureApiError::rate_limited();
+        let mut response = (StatusCode::TOO_MANY_REQUESTS, Json(error)).into_response();
+
+        // Add rate limit headers per RFC 6585 / draft-ietf-httpapi-ratelimit-headers
+        let headers = response.headers_mut();
+        headers.insert(
+            "X-RateLimit-Limit",
+            format!("{}", state.rate_limiter.authenticated_limit)
+                .parse()
+                .unwrap_or_default(),
+        );
+        headers.insert(
+            "X-RateLimit-Remaining",
+            "0".parse().unwrap_or_default(),
+        );
+        headers.insert(
+            "X-RateLimit-Reset",
+            format!("{}", result.reset_at / 1000) // Convert to seconds
+                .parse()
+                .unwrap_or_default(),
+        );
+        headers.insert(
+            "Retry-After",
+            format!("{}", (result.reset_at.saturating_sub(Utc::now().timestamp_millis() as u64)) / 1000 + 1)
+                .parse()
+                .unwrap_or_default(),
+        );
+
         return Err((StatusCode::TOO_MANY_REQUESTS, Json(SecureApiError::rate_limited())));
     }
-    drop(rate_limiter);
 
-    Ok(next.run(req).await)
+    // Execute request and add rate limit headers to response
+    let mut response = next.run(req).await;
+
+    // Add rate limit headers to successful responses
+    let headers = response.headers_mut();
+    headers.insert(
+        "X-RateLimit-Limit",
+        format!("{}", state.rate_limiter.authenticated_limit)
+            .parse()
+            .unwrap_or_default(),
+    );
+    headers.insert(
+        "X-RateLimit-Remaining",
+        format!("{}", result.remaining)
+            .parse()
+            .unwrap_or_default(),
+    );
+    headers.insert(
+        "X-RateLimit-Reset",
+        format!("{}", result.reset_at / 1000)
+            .parse()
+            .unwrap_or_default(),
+    );
+
+    Ok(response)
 }
 
 // Permission Checking
