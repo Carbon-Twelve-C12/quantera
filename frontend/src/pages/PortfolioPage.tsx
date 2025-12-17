@@ -6,34 +6,36 @@ import {
   Box,
   Card,
   CardContent,
-  Chip,
   Button,
   Alert,
   Paper,
-  LinearProgress,
   CircularProgress,
   Tab,
   Tabs,
-  useTheme
+  LinearProgress,
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import {
-  AccountBalance as AccountBalanceIcon,
-  TrendingUp as TrendingUpIcon,
-  PieChart as PieChartIcon,
-  ForestOutlined as ForestIcon,
-  RefreshOutlined as RefreshIcon,
-  Dashboard as DashboardIcon,
-  AssessmentOutlined as AssessmentIcon,
-  StackedLineChartOutlined as StackedLineChartIcon,
-  MonetizationOnOutlined as MonetizationOnIcon,
-  AccountBalanceWallet as AccountBalanceWalletIcon
-} from '@mui/icons-material';
+  Wallet,
+  TrendingUp,
+  PieChart,
+  Leaf,
+  RefreshCw,
+  LayoutDashboard,
+  LineChart,
+  ShieldAlert,
+  Coins,
+  Briefcase,
+  ArrowUpRight,
+  Droplets,
+  TreeDeciduous,
+} from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePortfolio } from '../contexts/PortfolioContext';
-import { 
-  PerformanceChart, 
-  AssetAllocation, 
-  TransactionHistory, 
+import {
+  PerformanceChart,
+  AssetAllocation,
+  TransactionHistory,
   YieldDistributionCard,
   AssetList,
   PortfolioAnalytics,
@@ -44,17 +46,317 @@ import {
 } from '../components/portfolio';
 import CompatGrid from '../components/common/CompatGrid';
 
-// Use CompatGrid instead of MUI Grid
 const Grid = CompatGrid;
+
+// Swiss Precision Styled Components
+const PageContainer = styled(Box)({
+  minHeight: '100vh',
+  background: 'var(--surface-base)',
+  paddingBottom: '80px',
+});
+
+const PageHeader = styled(Box)({
+  padding: '32px 0 24px',
+  borderBottom: '1px solid var(--surface-subtle)',
+  marginBottom: '32px',
+});
+
+const HeaderContent = styled(Box)({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: '16px',
+  flexWrap: 'wrap',
+});
+
+const PageTitle = styled(Typography)({
+  fontFamily: 'var(--font-display)',
+  fontSize: '28px',
+  fontWeight: 600,
+  color: 'var(--text-primary)',
+  letterSpacing: '-0.01em',
+});
+
+const RefreshButton = styled(Button)({
+  background: 'transparent',
+  border: '1px solid var(--surface-subtle)',
+  borderRadius: 'var(--radius-md)',
+  color: 'var(--text-secondary)',
+  padding: '8px 16px',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 500,
+  fontSize: '14px',
+  textTransform: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  transition: 'all 150ms',
+
+  '&:hover': {
+    background: 'var(--surface-overlay)',
+    borderColor: 'var(--surface-hover)',
+    color: 'var(--text-primary)',
+  },
+
+  '&:disabled': {
+    opacity: 0.5,
+  },
+});
+
+const StyledTabs = styled(Tabs)({
+  borderBottom: '1px solid var(--surface-subtle)',
+  marginBottom: '32px',
+
+  '& .MuiTabs-indicator': {
+    backgroundColor: 'var(--accent-primary)',
+    height: '2px',
+  },
+
+  '& .MuiTab-root': {
+    fontFamily: 'var(--font-body)',
+    fontWeight: 500,
+    fontSize: '14px',
+    color: 'var(--text-secondary)',
+    textTransform: 'none',
+    minHeight: '48px',
+    padding: '12px 20px',
+    gap: '8px',
+    transition: 'color 150ms',
+
+    '&.Mui-selected': {
+      color: 'var(--text-primary)',
+    },
+
+    '&:hover': {
+      color: 'var(--text-primary)',
+    },
+
+    '& .MuiTab-iconWrapper': {
+      marginRight: '8px',
+    },
+  },
+});
+
+const StatCard = styled(Card)({
+  background: 'var(--surface-elevated)',
+  border: '1px solid var(--surface-subtle)',
+  borderRadius: 'var(--radius-lg)',
+  boxShadow: 'none',
+  height: '100%',
+  transition: 'border-color 150ms',
+
+  '&:hover': {
+    borderColor: 'var(--surface-hover)',
+  },
+});
+
+const StatCardContent = styled(CardContent)({
+  padding: '24px !important',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: '16px',
+});
+
+const StatIconWrapper = styled(Box)<{ variant?: 'primary' | 'success' | 'info' | 'environmental' }>(
+  ({ variant = 'primary' }) => ({
+    width: '48px',
+    height: '48px',
+    borderRadius: 'var(--radius-lg)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    ...(variant === 'primary' && {
+      background: 'var(--accent-muted)',
+      color: 'var(--accent-primary)',
+    }),
+    ...(variant === 'success' && {
+      background: 'var(--status-success-muted)',
+      color: 'var(--status-success)',
+    }),
+    ...(variant === 'info' && {
+      background: 'var(--status-info-muted)',
+      color: 'var(--status-info)',
+    }),
+    ...(variant === 'environmental' && {
+      background: 'var(--accent-muted)',
+      color: 'var(--accent-primary)',
+    }),
+  })
+);
+
+const StatValue = styled(Typography)({
+  fontFamily: 'var(--font-mono)',
+  fontSize: '24px',
+  fontWeight: 600,
+  color: 'var(--text-primary)',
+  letterSpacing: '-0.02em',
+});
+
+const StatLabel = styled(Typography)({
+  fontFamily: 'var(--font-body)',
+  fontSize: '13px',
+  fontWeight: 500,
+  color: 'var(--text-tertiary)',
+});
+
+const SectionCard = styled(Card)({
+  background: 'var(--surface-elevated)',
+  border: '1px solid var(--surface-subtle)',
+  borderRadius: 'var(--radius-lg)',
+  boxShadow: 'none',
+  overflow: 'hidden',
+});
+
+const SectionTitle = styled(Typography)({
+  fontFamily: 'var(--font-display)',
+  fontSize: '16px',
+  fontWeight: 600,
+  color: 'var(--text-primary)',
+  marginBottom: '16px',
+});
+
+const EmptyStateCard = styled(Card)({
+  background: 'var(--surface-elevated)',
+  border: '1px solid var(--surface-subtle)',
+  borderRadius: 'var(--radius-xl)',
+  boxShadow: 'none',
+  padding: '48px',
+  textAlign: 'center',
+});
+
+const EmptyStateIcon = styled(Box)({
+  width: '80px',
+  height: '80px',
+  borderRadius: 'var(--radius-xl)',
+  background: 'var(--surface-overlay)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  margin: '0 auto 24px',
+  color: 'var(--text-tertiary)',
+});
+
+const primaryButtonStyles = {
+  background: 'var(--accent-primary)',
+  color: '#000',
+  borderRadius: 'var(--radius-md)',
+  padding: '12px 24px',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 500,
+  fontSize: '14px',
+  textTransform: 'none',
+  transition: 'background 150ms',
+  '&:hover': {
+    background: 'var(--accent-hover)',
+  },
+};
+
+const secondaryButtonStyles = {
+  background: 'transparent',
+  color: 'var(--text-primary)',
+  border: '1px solid var(--surface-subtle)',
+  borderRadius: 'var(--radius-md)',
+  padding: '12px 24px',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 500,
+  fontSize: '14px',
+  textTransform: 'none',
+  transition: 'all 150ms',
+  '&:hover': {
+    background: 'var(--surface-overlay)',
+    borderColor: 'var(--surface-hover)',
+  },
+};
+
+const StrategyCard = styled(Box)<{ variant?: 'success' | 'info' | 'warning' }>(
+  ({ variant = 'success' }) => ({
+    padding: '20px',
+    borderRadius: 'var(--radius-lg)',
+    marginBottom: '16px',
+    border: '1px solid var(--surface-subtle)',
+    transition: 'border-color 150ms',
+
+    ...(variant === 'success' && {
+      background: 'var(--status-success-muted)',
+      borderColor: 'rgba(34, 197, 94, 0.2)',
+    }),
+    ...(variant === 'info' && {
+      background: 'var(--status-info-muted)',
+      borderColor: 'rgba(59, 130, 246, 0.2)',
+    }),
+    ...(variant === 'warning' && {
+      background: 'var(--status-warning-muted)',
+      borderColor: 'rgba(245, 158, 11, 0.2)',
+    }),
+
+    '&:hover': {
+      ...(variant === 'success' && {
+        borderColor: 'rgba(34, 197, 94, 0.4)',
+      }),
+      ...(variant === 'info' && {
+        borderColor: 'rgba(59, 130, 246, 0.4)',
+      }),
+      ...(variant === 'warning' && {
+        borderColor: 'rgba(245, 158, 11, 0.4)',
+      }),
+    },
+
+    '&:last-child': {
+      marginBottom: 0,
+    },
+  })
+);
+
+const ImpactCard = styled(Box)<{ variant?: 'carbon' | 'land' | 'water' }>(
+  ({ variant = 'carbon' }) => ({
+    textAlign: 'center',
+    padding: '24px',
+    borderRadius: 'var(--radius-lg)',
+    border: '1px solid var(--surface-subtle)',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '12px',
+
+    ...(variant === 'carbon' && {
+      background: 'var(--accent-muted)',
+    }),
+    ...(variant === 'land' && {
+      background: 'var(--status-success-muted)',
+    }),
+    ...(variant === 'water' && {
+      background: 'var(--status-info-muted)',
+    }),
+  })
+);
+
+const SDGCard = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  padding: '16px',
+  borderRadius: 'var(--radius-lg)',
+  background: 'var(--surface-overlay)',
+  border: '1px solid var(--surface-subtle)',
+});
+
+const ProjectCard = styled(Box)({
+  padding: '20px',
+  borderRadius: 'var(--radius-lg)',
+  background: 'var(--surface-overlay)',
+  border: '1px solid var(--surface-subtle)',
+  height: '100%',
+});
 
 const PortfolioPage: React.FC = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
   const auth = useAuth();
-  // Using type assertion since currentUser exists in implementation but not in TypeScript definition
   const currentUser = (auth as any).currentUser;
-  
-  const { 
+
+  const {
     portfolio,
     transactions,
     yieldDistributions,
@@ -67,920 +369,978 @@ const PortfolioPage: React.FC = () => {
     refreshPortfolio
   } = usePortfolio();
 
-  // Dashboard view state
   const [dashboardView, setDashboardView] = useState<string>('overview');
 
   const handleDashboardChange = (event: React.SyntheticEvent, newValue: string) => {
     setDashboardView(newValue);
   };
 
-  // Check if user is authenticated
+  // Not authenticated state
   if (!currentUser) {
     return (
-      <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
-        <Card sx={{ 
-          p: 5, 
-          borderRadius: 2,
-          bgcolor: 'background.paper',
-          color: 'text.primary'
-        }}>
-          <CardContent>
-            <AccountBalanceIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 4 }} />
-            <Typography variant="h4" gutterBottom>
+      <PageContainer>
+        <Container maxWidth="md" sx={{ py: 8 }}>
+          <EmptyStateCard>
+            <EmptyStateIcon>
+              <Wallet size={32} />
+            </EmptyStateIcon>
+            <Typography
+              sx={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '24px',
+                fontWeight: 600,
+                color: 'var(--text-primary)',
+                mb: 2,
+              }}
+            >
               Connect Your Wallet
             </Typography>
-            <Typography variant="body1" paragraph color="text.secondary">
+            <Typography
+              sx={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '15px',
+                color: 'var(--text-secondary)',
+                mb: 4,
+                maxWidth: '400px',
+                mx: 'auto',
+              }}
+            >
               Please connect your Ethereum wallet to view your treasury token portfolio.
             </Typography>
-            <Button 
-              variant="contained" 
-              size="large"
-              onClick={() => {}} // Would trigger wallet connection
-            >
+            <Button onClick={() => {}} sx={primaryButtonStyles}>
               Connect Wallet
             </Button>
-          </CardContent>
-        </Card>
-      </Container>
+          </EmptyStateCard>
+        </Container>
+      </PageContainer>
     );
   }
 
-  // Show loading state
+  // Loading state
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
-        <Paper sx={{ p: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-          <CircularProgress />
-          <Typography variant="h6">Loading Portfolio Data...</Typography>
-        </Paper>
-      </Container>
+      <PageContainer>
+        <Container maxWidth="md" sx={{ py: 8 }}>
+          <Paper
+            sx={{
+              p: 6,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 3,
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--surface-subtle)',
+              borderRadius: 'var(--radius-lg)',
+            }}
+          >
+            <CircularProgress sx={{ color: 'var(--accent-primary)' }} />
+            <Typography
+              sx={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '15px',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              Loading Portfolio Data...
+            </Typography>
+          </Paper>
+        </Container>
+      </PageContainer>
     );
   }
 
-  // Show error state
+  // Error state
   if (error) {
     return (
-      <Container maxWidth="md" sx={{ py: 8 }}>
-        <Alert 
-          severity="error" 
-          action={
-            <Button color="inherit" size="small" onClick={refreshPortfolio}>
-              Retry
-            </Button>
-          }
-        >
-          {error}
-        </Alert>
-      </Container>
+      <PageContainer>
+        <Container maxWidth="md" sx={{ py: 8 }}>
+          <Alert
+            severity="error"
+            action={
+              <Button color="inherit" size="small" onClick={refreshPortfolio}>
+                Retry
+              </Button>
+            }
+            sx={{
+              background: 'var(--status-error-muted)',
+              color: 'var(--status-error)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              borderRadius: 'var(--radius-lg)',
+            }}
+          >
+            {error}
+          </Alert>
+        </Container>
+      </PageContainer>
     );
   }
 
-  // No portfolio data
+  // Empty portfolio state
   if (!portfolio) {
     return (
-      <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
-        <Card sx={{ 
-          p: 5, 
-          borderRadius: 2,
-          bgcolor: 'background.paper',
-          color: 'text.primary'
-        }}>
-          <CardContent>
-            <AccountBalanceIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 4 }} />
-            <Typography variant="h4" gutterBottom>
+      <PageContainer>
+        <Container maxWidth="md" sx={{ py: 8 }}>
+          <EmptyStateCard>
+            <EmptyStateIcon>
+              <Briefcase size={32} />
+            </EmptyStateIcon>
+            <Typography
+              sx={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '24px',
+                fontWeight: 600,
+                color: 'var(--text-primary)',
+                mb: 2,
+              }}
+            >
               No Assets Yet
             </Typography>
-            <Typography variant="body1" paragraph color="text.secondary">
+            <Typography
+              sx={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '15px',
+                color: 'var(--text-secondary)',
+                mb: 4,
+                maxWidth: '400px',
+                mx: 'auto',
+              }}
+            >
               You don't have any assets in your portfolio yet. Explore the marketplace to get started.
             </Typography>
-            <Button 
-              variant="contained" 
-              size="large"
-              component={Link}
-              to="/marketplace"
-            >
+            <Button component={Link} to="/marketplace" sx={primaryButtonStyles}>
               Explore Marketplace
             </Button>
-          </CardContent>
-        </Card>
-      </Container>
+          </EmptyStateCard>
+        </Container>
+      </PageContainer>
     );
   }
 
-  // Calculate asset values by category for analytics
   const calculateAssetValuesByCategory = () => {
     const valuesByCategory: {[key: string]: number} = {};
-    
     portfolio.holdings.forEach(asset => {
       valuesByCategory[asset.category] = (valuesByCategory[asset.category] || 0) + asset.value;
     });
-    
     return valuesByCategory;
   };
 
   const assetValuesByCategory = calculateAssetValuesByCategory();
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" gutterBottom>
-          My Portfolio
-        </Typography>
-        
-        <Button 
-          startIcon={<RefreshIcon />}
-          onClick={refreshPortfolio}
-          disabled={loading}
-        >
-          Refresh
-        </Button>
-      </Box>
-      
-      {/* Dashboard Tabs */}
-      <Box sx={{ width: '100%', mb: 3 }}>
-        <Tabs
+    <PageContainer>
+      <Container maxWidth="lg">
+        <PageHeader>
+          <HeaderContent>
+            <PageTitle>My Portfolio</PageTitle>
+            <RefreshButton onClick={refreshPortfolio} disabled={loading}>
+              <RefreshCw size={16} />
+              Refresh
+            </RefreshButton>
+          </HeaderContent>
+        </PageHeader>
+
+        {/* Dashboard Tabs */}
+        <StyledTabs
           value={dashboardView}
           onChange={handleDashboardChange}
-          aria-label="portfolio dashboard tabs"
           variant="scrollable"
           scrollButtons="auto"
-          sx={{
-            '& .MuiTab-root': {
-              textTransform: 'none',
-              fontSize: '0.95rem',
-              fontWeight: 500,
-              minHeight: 48,
-              minWidth: 110
-            }
-          }}
         >
-          <Tab 
-            icon={<DashboardIcon />} 
-            iconPosition="start" 
-            label="Overview" 
-            value="overview" 
+          <Tab
+            icon={<LayoutDashboard size={18} />}
+            iconPosition="start"
+            label="Overview"
+            value="overview"
           />
-          <Tab 
-            icon={<StackedLineChartIcon />} 
-            iconPosition="start" 
-            label="Analytics" 
-            value="analytics" 
+          <Tab
+            icon={<LineChart size={18} />}
+            iconPosition="start"
+            label="Analytics"
+            value="analytics"
           />
-          <Tab 
-            icon={<AssessmentIcon />} 
-            iconPosition="start" 
-            label="Risk Analysis" 
-            value="risk" 
+          <Tab
+            icon={<ShieldAlert size={18} />}
+            iconPosition="start"
+            label="Risk Analysis"
+            value="risk"
           />
-          <Tab 
-            icon={<MonetizationOnIcon />} 
-            iconPosition="start" 
-            label="Yield" 
-            value="yield" 
+          <Tab
+            icon={<Coins size={18} />}
+            iconPosition="start"
+            label="Yield"
+            value="yield"
           />
-          <Tab 
-            icon={<AccountBalanceWalletIcon />} 
-            iconPosition="start" 
-            label="Trade Finance" 
-            value="tradefinance" 
+          <Tab
+            icon={<Briefcase size={18} />}
+            iconPosition="start"
+            label="Trade Finance"
+            value="tradefinance"
           />
           {impactMetrics && portfolio.holdings.some(asset => asset.category === 'environmental') && (
-            <Tab 
-              icon={<ForestIcon />} 
-              iconPosition="start" 
-              label="Environmental Impact" 
-              value="environmental" 
+            <Tab
+              icon={<Leaf size={18} />}
+              iconPosition="start"
+              label="Environmental Impact"
+              value="environmental"
             />
           )}
-        </Tabs>
-      </Box>
-      
-      {/* Portfolio Summary Cards - Visible on all views */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            height: '100%', 
-            bgcolor: 'background.paper',
-            color: 'text.primary',
-            boxShadow: 1
-          }}>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center',
-                borderRadius: '50%',
-                bgcolor: 'primary.main' + '20',
-                p: 1.5,
-                width: 60,
-                height: 60,
-                mx: 'auto',
-                mb: 2
-              }}>
-                <AccountBalanceIcon color="primary" fontSize="large" />
-              </Box>
-              <Typography variant="h5" component="div" gutterBottom color="text.primary">
-                ${portfolio.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Total Portfolio Value
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            height: '100%', 
-            bgcolor: 'background.paper',
-            color: 'text.primary',
-            boxShadow: 1
-          }}>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center',
-                borderRadius: '50%',
-                bgcolor: 'success.main' + '20',
-                p: 1.5,
-                width: 60,
-                height: 60,
-                mx: 'auto',
-                mb: 2
-              }}>
-                <TrendingUpIcon color="success" fontSize="large" />
-              </Box>
-              <Typography variant="h5" component="div" gutterBottom color="text.primary">
-                ${portfolio.totalYield.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Total Yield Earned
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            height: '100%', 
-            bgcolor: 'background.paper',
-            color: 'text.primary',
-            boxShadow: 1
-          }}>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center',
-                borderRadius: '50%',
-                bgcolor: 'info.main' + '20',
-                p: 1.5,
-                width: 60,
-                height: 60,
-                mx: 'auto',
-                mb: 2
-              }}>
-                <PieChartIcon color="info" fontSize="large" />
-              </Box>
-              <Typography variant="h5" component="div" gutterBottom color="text.primary">
-                {portfolio.yieldRate.toFixed(2)}%
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Average Yield Rate
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            height: '100%', 
-            bgcolor: 'background.paper',
-            color: 'text.primary',
-            boxShadow: 1
-          }}>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center',
-                borderRadius: '50%',
-                bgcolor: '#10b981' + '20', // Environmental green with transparency
-                p: 1.5,
-                width: 60,
-                height: 60,
-                mx: 'auto',
-                mb: 2
-              }}>
-                <ForestIcon sx={{ color: '#10b981' }} fontSize="large" />
-              </Box>
-              <Typography variant="h5" component="div" gutterBottom color="text.primary">
-                {portfolio.carbonOffset?.toFixed(1) || 0} tons
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Carbon Offset
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+        </StyledTabs>
 
-      {/* Overview Dashboard View */}
-      {dashboardView === 'overview' && (
-        <>
-      {/* Charts and Data */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={8}>
-          <PerformanceChart 
-            performanceHistory={portfolio.performanceHistory} 
-            title="Portfolio Performance"
-            height={300}
-          />
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <AssetAllocation 
-            assetAllocation={portfolio.assetAllocation} 
-            title="Asset Allocation"
-            height={300}
-          />
-        </Grid>
-      </Grid>
+        {/* Portfolio Summary Stats */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <StatCard>
+              <StatCardContent>
+                <StatIconWrapper variant="primary">
+                  <Wallet size={24} />
+                </StatIconWrapper>
+                <Box>
+                  <StatValue>
+                    ${portfolio.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </StatValue>
+                  <StatLabel>Total Portfolio Value</StatLabel>
+                </Box>
+              </StatCardContent>
+            </StatCard>
+          </Grid>
 
-      {/* Asset List */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12}>
-          <AssetList 
-            assets={portfolio.holdings} 
-            title="Your Assets"
-            activeFilter={activeFilter}
-            onFilterChange={setActiveFilter}
-          />
-        </Grid>
-      </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <StatCard>
+              <StatCardContent>
+                <StatIconWrapper variant="success">
+                  <TrendingUp size={24} />
+                </StatIconWrapper>
+                <Box>
+                  <StatValue>
+                    ${portfolio.totalYield.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </StatValue>
+                  <StatLabel>Total Yield Earned</StatLabel>
+                </Box>
+              </StatCardContent>
+            </StatCard>
+          </Grid>
 
-          {/* Trade Finance, Yield, and Transactions */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
-          <YieldDistributionCard 
-            yieldDistributions={yieldDistributions} 
-            title="Upcoming Yield Distributions"
-          />
+          <Grid item xs={12} sm={6} md={3}>
+            <StatCard>
+              <StatCardContent>
+                <StatIconWrapper variant="info">
+                  <PieChart size={24} />
+                </StatIconWrapper>
+                <Box>
+                  <StatValue>{portfolio.yieldRate.toFixed(2)}%</StatValue>
+                  <StatLabel>Average Yield Rate</StatLabel>
+                </Box>
+              </StatCardContent>
+            </StatCard>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <StatCard>
+              <StatCardContent>
+                <StatIconWrapper variant="environmental">
+                  <Leaf size={24} />
+                </StatIconWrapper>
+                <Box>
+                  <StatValue>{portfolio.carbonOffset?.toFixed(1) || 0} tons</StatValue>
+                  <StatLabel>Carbon Offset</StatLabel>
+                </Box>
+              </StatCardContent>
+            </StatCard>
+          </Grid>
         </Grid>
-            <Grid item xs={12} md={4}>
-              <TradeFinancePortfolioSection 
-                maxItems={3}
+
+        {/* Overview Dashboard View */}
+        {dashboardView === 'overview' && (
+          <>
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12} md={8}>
+                <PerformanceChart
+                  performanceHistory={portfolio.performanceHistory}
+                  title="Portfolio Performance"
+                  height={300}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <AssetAllocation
+                  assetAllocation={portfolio.assetAllocation}
+                  title="Asset Allocation"
+                  height={300}
+                />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12}>
+                <AssetList
+                  assets={portfolio.holdings}
+                  title="Your Assets"
+                  activeFilter={activeFilter}
+                  onFilterChange={setActiveFilter}
+                />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={4}>
+                <YieldDistributionCard
+                  yieldDistributions={yieldDistributions}
+                  title="Upcoming Yield Distributions"
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TradeFinancePortfolioSection maxItems={3} height={400} />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TransactionHistory
+                  transactions={transactions}
+                  title="Recent Transactions"
+                />
+              </Grid>
+            </Grid>
+          </>
+        )}
+
+        {/* Analytics Dashboard View */}
+        {dashboardView === 'analytics' && performance && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <PortfolioAnalytics
+                performance={performance}
+                assetAllocation={portfolio.assetAllocation}
+                assetValuesByCategory={assetValuesByCategory}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <PerformanceChart
+                performanceHistory={portfolio.performanceHistory}
+                title="Detailed Portfolio Performance"
                 height={400}
               />
             </Grid>
-            <Grid item xs={12} md={4}>
-          <TransactionHistory 
-            transactions={transactions} 
-            title="Recent Transactions"
-          />
-        </Grid>
-      </Grid>
-        </>
-      )}
+            <Grid item xs={12}>
+              <TransactionHistory
+                transactions={transactions}
+                title="Complete Transaction History"
+              />
+            </Grid>
+          </Grid>
+        )}
 
-      {/* Analytics Dashboard View */}
-      {dashboardView === 'analytics' && performance && (
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <PortfolioAnalytics 
-              performance={performance} 
-              assetAllocation={portfolio.assetAllocation}
-              assetValuesByCategory={assetValuesByCategory}
-            />
+        {/* Risk Analysis Dashboard View */}
+        {dashboardView === 'risk' && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <RiskAnalysis holdings={portfolio.holdings} />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <AssetAllocation
+                assetAllocation={portfolio.assetAllocation}
+                title="Portfolio Diversification"
+                height={300}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <SectionCard>
+                <CardContent sx={{ p: 3 }}>
+                  <SectionTitle>Risk Mitigation Strategies</SectionTitle>
+                  <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                    {[
+                      { title: 'Diversify further', desc: 'across additional asset classes to reduce concentration risk.' },
+                      { title: 'Balance maturity dates', desc: 'to manage reinvestment risk and liquidity needs.' },
+                      { title: 'Consider environmental assets', desc: 'to hedge against climate transition risks.' },
+                      { title: 'Evaluate yield strategies', desc: 'to optimize return relative to risk.' },
+                      { title: 'Monitor market trends', desc: 'and rebalance positions accordingly.' },
+                    ].map((item, index) => (
+                      <Box component="li" key={index} sx={{ mb: 1.5 }}>
+                        <Typography
+                          sx={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '14px',
+                            color: 'var(--text-secondary)',
+                          }}
+                        >
+                          <strong style={{ color: 'var(--text-primary)' }}>{item.title}</strong> {item.desc}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                  <Box sx={{ mt: 3, textAlign: 'center' }}>
+                    <Button component={Link} to="/marketplace" sx={secondaryButtonStyles}>
+                      Explore Diversification Options
+                    </Button>
+                  </Box>
+                </CardContent>
+              </SectionCard>
+            </Grid>
           </Grid>
-          <Grid item xs={12}>
-            <PerformanceChart 
-              performanceHistory={portfolio.performanceHistory} 
-              title="Detailed Portfolio Performance"
-              height={400}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TransactionHistory 
-              transactions={transactions} 
-              title="Complete Transaction History"
-            />
-          </Grid>
-        </Grid>
-      )}
+        )}
 
-      {/* Risk Analysis Dashboard View */}
-      {dashboardView === 'risk' && (
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <RiskAnalysis holdings={portfolio.holdings} />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <AssetAllocation 
-              assetAllocation={portfolio.assetAllocation} 
-              title="Portfolio Diversification"
-              height={300}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Card sx={{ 
-              height: '100%',
-              bgcolor: 'background.paper',
-              color: 'text.primary',
-              boxShadow: theme.shadows[1]
-            }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Risk Mitigation Strategies</Typography>
-                <Box component="ul" sx={{ pl: 2 }}>
-                  <Box component="li" sx={{ mb: 1 }}>
-                    <Typography variant="body2">
-                      <strong>Diversify further</strong> across additional asset classes to reduce concentration risk.
-                    </Typography>
-                  </Box>
-                  <Box component="li" sx={{ mb: 1 }}>
-                    <Typography variant="body2">
-                      <strong>Balance maturity dates</strong> to manage reinvestment risk and liquidity needs.
-                    </Typography>
-                  </Box>
-                  <Box component="li" sx={{ mb: 1 }}>
-                    <Typography variant="body2">
-                      <strong>Consider environmental assets</strong> to hedge against climate transition risks.
-                    </Typography>
-                  </Box>
-                  <Box component="li" sx={{ mb: 1 }}>
-                    <Typography variant="body2">
-                      <strong>Evaluate yield strategies</strong> to optimize return relative to risk.
-                    </Typography>
-                  </Box>
-                  <Box component="li">
-                    <Typography variant="body2">
-                      <strong>Monitor market trends</strong> and rebalance positions accordingly.
-                    </Typography>
-                  </Box>
-                </Box>
-                <Box sx={{ mt: 3, textAlign: 'center' }}>
-                  <Button 
-                    variant="outlined" 
-                    color="primary" 
-                    component={Link}
-                    to="/marketplace"
-                  >
-                    Explore Diversification Options
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      )}
+        {/* Yield Dashboard View */}
+        {dashboardView === 'yield' && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <YieldMetrics
+                holdings={portfolio.holdings}
+                yieldDistributions={yieldDistributions}
+                totalYield={portfolio.totalYield}
+                averageYieldRate={portfolio.yieldRate}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <SectionCard>
+                <CardContent sx={{ p: 3 }}>
+                  <SectionTitle>Yield Optimization Strategies</SectionTitle>
 
-      {/* Yield Dashboard View */}
-      {dashboardView === 'yield' && (
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <YieldMetrics 
-              holdings={portfolio.holdings}
-              yieldDistributions={yieldDistributions}
-              totalYield={portfolio.totalYield}
-              averageYieldRate={portfolio.yieldRate}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Card sx={{ 
-              height: '100%',
-              bgcolor: 'background.paper',
-              color: 'text.primary',
-              boxShadow: theme.shadows[1]
-            }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Yield Optimization Strategies</Typography>
-                <Box sx={{ mt: 2 }}>
-                  <Box sx={{ 
-                    p: 2, 
-                    borderRadius: 2, 
-                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 171, 85, 0.08)' : 'rgba(0, 171, 85, 0.08)',
-                    mb: 2
-                  }}>
-                    <Typography variant="subtitle2" gutterBottom color="success.main">
+                  <StrategyCard variant="success">
+                    <Typography
+                      sx={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        color: 'var(--status-success)',
+                        mb: 1,
+                      }}
+                    >
                       Auto-Compounding
                     </Typography>
-                    <Typography variant="body2">
+                    <Typography
+                      sx={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '13px',
+                        color: 'var(--text-secondary)',
+                        mb: 2,
+                      }}
+                    >
                       Automatically reinvest yield distributions to accelerate growth through compound interest.
                     </Typography>
-                    <Button 
-                      size="small" 
-                      color="success" 
-                      sx={{ mt: 1 }}
+                    <Button
                       component={Link}
                       to="/yield-strategies"
+                      size="small"
+                      sx={{
+                        color: 'var(--status-success)',
+                        p: 0,
+                        minWidth: 'auto',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '13px',
+                        textTransform: 'none',
+                        '&:hover': { background: 'transparent', textDecoration: 'underline' },
+                      }}
                     >
-                      Explore Strategy
+                      Explore Strategy <ArrowUpRight size={14} style={{ marginLeft: 4 }} />
                     </Button>
-                  </Box>
+                  </StrategyCard>
 
-                  <Box sx={{ 
-                    p: 2, 
-                    borderRadius: 2, 
-                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.08)' : 'rgba(33, 150, 243, 0.08)',
-                    mb: 2
-                  }}>
-                    <Typography variant="subtitle2" gutterBottom color="info.main">
+                  <StrategyCard variant="info">
+                    <Typography
+                      sx={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        color: 'var(--status-info)',
+                        mb: 1,
+                      }}
+                    >
                       Yield Laddering
                     </Typography>
-                    <Typography variant="body2">
+                    <Typography
+                      sx={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '13px',
+                        color: 'var(--text-secondary)',
+                        mb: 2,
+                      }}
+                    >
                       Distribute investments across different maturities to balance yield and liquidity.
                     </Typography>
-                    <Button 
-                      size="small" 
-                      color="info" 
-                      sx={{ mt: 1 }}
+                    <Button
                       component={Link}
                       to="/yield-strategies"
+                      size="small"
+                      sx={{
+                        color: 'var(--status-info)',
+                        p: 0,
+                        minWidth: 'auto',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '13px',
+                        textTransform: 'none',
+                        '&:hover': { background: 'transparent', textDecoration: 'underline' },
+                      }}
                     >
-                      Explore Strategy
+                      Explore Strategy <ArrowUpRight size={14} style={{ marginLeft: 4 }} />
                     </Button>
-                  </Box>
+                  </StrategyCard>
 
-                  <Box sx={{ 
-                    p: 2, 
-                    borderRadius: 2, 
-                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 171, 0, 0.08)' : 'rgba(255, 171, 0, 0.08)'
-                  }}>
-                    <Typography variant="subtitle2" gutterBottom color="warning.main">
+                  <StrategyCard variant="warning">
+                    <Typography
+                      sx={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        color: 'var(--status-warning)',
+                        mb: 1,
+                      }}
+                    >
                       Yield Aggregation
                     </Typography>
-                    <Typography variant="body2">
+                    <Typography
+                      sx={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '13px',
+                        color: 'var(--text-secondary)',
+                        mb: 2,
+                      }}
+                    >
                       Dynamically allocate assets to highest yielding options while managing risk exposure.
                     </Typography>
-                    <Button 
-                      size="small" 
-                      color="warning" 
-                      sx={{ mt: 1 }}
+                    <Button
                       component={Link}
                       to="/yield-strategies"
+                      size="small"
+                      sx={{
+                        color: 'var(--status-warning)',
+                        p: 0,
+                        minWidth: 'auto',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '13px',
+                        textTransform: 'none',
+                        '&:hover': { background: 'transparent', textDecoration: 'underline' },
+                      }}
                     >
-                      Explore Strategy
+                      Explore Strategy <ArrowUpRight size={14} style={{ marginLeft: 4 }} />
+                    </Button>
+                  </StrategyCard>
+                </CardContent>
+              </SectionCard>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <YieldDistributionCard
+                yieldDistributions={yieldDistributions}
+                title="Detailed Yield Schedule"
+              />
+            </Grid>
+          </Grid>
+        )}
+
+        {/* Trade Finance Dashboard View */}
+        {dashboardView === 'tradefinance' && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <SectionCard>
+                <CardContent sx={{ p: 3 }}>
+                  <SectionTitle>Trade Finance Portfolio</SectionTitle>
+                  <Typography
+                    sx={{
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '14px',
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
+                    Your trade finance investments provide exposure to short-term, high-yield assets backed by real-world trade activities.
+                  </Typography>
+                </CardContent>
+              </SectionCard>
+            </Grid>
+
+            <Grid item xs={12}>
+              <TradeFinanceAnalytics height={400} />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TradeFinancePortfolioSection height={500} maxItems={10} />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <SectionCard sx={{ height: '100%' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <SectionTitle>Benefits of Trade Finance</SectionTitle>
+                  <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                    {[
+                      { title: 'Low Correlation', desc: 'to traditional asset classes and market volatility' },
+                      { title: 'Short Duration', desc: 'with typical maturities of 30-180 days' },
+                      { title: 'Asset-Backed', desc: 'by real-world trade flows and goods' },
+                      { title: 'Attractive Yields', desc: 'compared to other fixed-income investments' },
+                      { title: 'Portfolio Diversification', desc: 'across industries and geographies' },
+                    ].map((item, index) => (
+                      <Box component="li" key={index} sx={{ mb: 1.5 }}>
+                        <Typography
+                          sx={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '14px',
+                            color: 'var(--text-secondary)',
+                          }}
+                        >
+                          <strong style={{ color: 'var(--text-primary)' }}>{item.title}</strong> {item.desc}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                  <Box sx={{ mt: 3, textAlign: 'center' }}>
+                    <Button component={Link} to="/trade-finance" sx={secondaryButtonStyles}>
+                      Explore Trade Finance Assets
                     </Button>
                   </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <YieldDistributionCard 
-              yieldDistributions={yieldDistributions} 
-              title="Detailed Yield Schedule"
-            />
-          </Grid>
-        </Grid>
-      )}
+                </CardContent>
+              </SectionCard>
+            </Grid>
 
-      {/* Trade Finance Dashboard View */}
-      {dashboardView === 'tradefinance' && (
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Card sx={{ 
-              bgcolor: 'background.paper',
-              color: 'text.primary',
-              boxShadow: theme.shadows[1]
-            }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Trade Finance Portfolio</Typography>
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  Your trade finance investments provide exposure to short-term, high-yield assets backed by real-world trade activities.
-                </Typography>
-              </CardContent>
-            </Card>
+            <Grid item xs={12} md={6}>
+              <SectionCard sx={{ height: '100%' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <SectionTitle>Risk Considerations</SectionTitle>
+                  <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                    {[
+                      { title: 'Counterparty Risk:', desc: 'Carefully evaluate the creditworthiness of trade parties' },
+                      { title: 'Country Risk:', desc: 'Consider political and economic stability of countries involved' },
+                      { title: 'Documentation Risk:', desc: 'Ensure proper verification of trade documents' },
+                      { title: 'Liquidity Risk:', desc: 'Secondary market may have limited liquidity' },
+                      { title: 'Fraud Risk:', desc: 'Rely on our KYC and verification processes' },
+                    ].map((item, index) => (
+                      <Box component="li" key={index} sx={{ mb: 1.5 }}>
+                        <Typography
+                          sx={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '14px',
+                            color: 'var(--text-secondary)',
+                          }}
+                        >
+                          <strong style={{ color: 'var(--text-primary)' }}>{item.title}</strong> {item.desc}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                  <Box sx={{ mt: 3, textAlign: 'center' }}>
+                    <Button component={Link} to="/trade-finance/portfolio" sx={secondaryButtonStyles}>
+                      View Detailed Analytics
+                    </Button>
+                  </Box>
+                </CardContent>
+              </SectionCard>
+            </Grid>
           </Grid>
-          
-          <Grid item xs={12}>
-            <TradeFinanceAnalytics height={400} />
-          </Grid>
-          
-          <Grid item xs={12}>
-            <TradeFinancePortfolioSection height={500} maxItems={10} />
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <Card sx={{ 
-              height: '100%',
-              bgcolor: 'background.paper',
-              color: 'text.primary',
-              boxShadow: theme.shadows[1]
-            }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Benefits of Trade Finance</Typography>
-                <Box component="ul" sx={{ pl: 2 }}>
-                  <Box component="li" sx={{ mb: 1 }}>
-                    <Typography variant="body2">
-                      <strong>Low Correlation</strong> to traditional asset classes and market volatility
-                    </Typography>
-                  </Box>
-                  <Box component="li" sx={{ mb: 1 }}>
-                    <Typography variant="body2">
-                      <strong>Short Duration</strong> with typical maturities of 30-180 days
-                    </Typography>
-                  </Box>
-                  <Box component="li" sx={{ mb: 1 }}>
-                    <Typography variant="body2">
-                      <strong>Asset-Backed</strong> by real-world trade flows and goods
-                    </Typography>
-                  </Box>
-                  <Box component="li" sx={{ mb: 1 }}>
-                    <Typography variant="body2">
-                      <strong>Attractive Yields</strong> compared to other fixed-income investments
-                    </Typography>
-                  </Box>
-                  <Box component="li">
-                    <Typography variant="body2">
-                      <strong>Portfolio Diversification</strong> across industries and geographies
-                    </Typography>
-                  </Box>
-                </Box>
-                <Box sx={{ mt: 3, textAlign: 'center' }}>
-                  <Button 
-                    variant="outlined" 
-                    color="primary" 
-                    component={Link}
-                    to="/trade-finance"
-                  >
-                    Explore Trade Finance Assets
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <Card sx={{ 
-              height: '100%',
-              bgcolor: 'background.paper',
-              color: 'text.primary',
-              boxShadow: theme.shadows[1]
-            }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>Risk Considerations</Typography>
-                <Box component="ul" sx={{ pl: 2 }}>
-                  <Box component="li" sx={{ mb: 1 }}>
-                    <Typography variant="body2">
-                      <strong>Counterparty Risk:</strong> Carefully evaluate the creditworthiness of trade parties
-                    </Typography>
-                  </Box>
-                  <Box component="li" sx={{ mb: 1 }}>
-                    <Typography variant="body2">
-                      <strong>Country Risk:</strong> Consider political and economic stability of countries involved
-                    </Typography>
-                  </Box>
-                  <Box component="li" sx={{ mb: 1 }}>
-                    <Typography variant="body2">
-                      <strong>Documentation Risk:</strong> Ensure proper verification of trade documents
-                    </Typography>
-                  </Box>
-                  <Box component="li" sx={{ mb: 1 }}>
-                    <Typography variant="body2">
-                      <strong>Liquidity Risk:</strong> Secondary market may have limited liquidity
-                    </Typography>
-                  </Box>
-                  <Box component="li">
-                    <Typography variant="body2">
-                      <strong>Fraud Risk:</strong> Rely on our KYC and verification processes
-                    </Typography>
-                  </Box>
-                </Box>
-                <Box sx={{ mt: 3, textAlign: 'center' }}>
-                  <Button 
-                    variant="outlined" 
-                    color="primary" 
-                    component={Link}
-                    to="/trade-finance/portfolio"
-                  >
-                    View Detailed Analytics
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      )}
+        )}
 
-      {/* Environmental Impact Dashboard View */}
-      {dashboardView === 'environmental' && impactMetrics && (
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            color: 'text.primary',
-            boxShadow: 1 
-          }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                  Environmental Impact Dashboard
-              </Typography>
-              
-                <Box sx={{ mt: 3 }}>
-                  <Grid container spacing={3}>
-                <Grid item xs={12} md={4}>
-                  <Box sx={{ 
-                    textAlign: 'center', 
-                        p: 3,
-                    borderRadius: 2,
-                    bgcolor: 'rgba(16, 185, 129, 0.1)',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
-                  }}>
-                        <ForestIcon sx={{ color: '#10b981', fontSize: 48, mb: 1 }} />
-                        <Typography variant="h4" gutterBottom>
-                      {impactMetrics.totalCarbonOffset.toFixed(1)} tons
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Carbon Offset (CO₂e)
-                    </Typography>
-                        <Box sx={{ mt: 2 }}>
-                          <Typography variant="body2" color="text.secondary">
+        {/* Environmental Impact Dashboard View */}
+        {dashboardView === 'environmental' && impactMetrics && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <SectionCard>
+                <CardContent sx={{ p: 3 }}>
+                  <SectionTitle>Environmental Impact Dashboard</SectionTitle>
+
+                  <Grid container spacing={3} sx={{ mt: 1 }}>
+                    <Grid item xs={12} md={4}>
+                      <ImpactCard variant="carbon">
+                        <Leaf size={40} style={{ color: 'var(--accent-primary)' }} />
+                        <Typography
+                          sx={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '32px',
+                            fontWeight: 600,
+                            color: 'var(--text-primary)',
+                          }}
+                        >
+                          {impactMetrics.totalCarbonOffset.toFixed(1)} tons
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '13px',
+                            color: 'var(--text-secondary)',
+                          }}
+                        >
+                          Carbon Offset (CO₂e)
+                        </Typography>
+                        <Box sx={{ mt: 1 }}>
+                          <Typography
+                            sx={{
+                              fontFamily: 'var(--font-body)',
+                              fontSize: '12px',
+                              color: 'var(--text-tertiary)',
+                            }}
+                          >
                             Equivalent to:
                           </Typography>
-                          <Typography variant="body1" fontWeight="medium" color="success.main" sx={{ mt: 0.5 }}>
+                          <Typography
+                            sx={{
+                              fontFamily: 'var(--font-mono)',
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              color: 'var(--accent-primary)',
+                            }}
+                          >
                             {(impactMetrics.totalCarbonOffset * 2.3).toFixed(0)} trees planted
                           </Typography>
                         </Box>
-                  </Box>
-                </Grid>
-                
-                <Grid item xs={12} md={4}>
-                  <Box sx={{ 
-                    textAlign: 'center', 
-                        p: 3,
-                    borderRadius: 2,
-                    bgcolor: 'rgba(22, 163, 74, 0.1)',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
-                  }}>
-                        <ForestIcon sx={{ color: '#16a34a', fontSize: 48, mb: 1 }} />
-                        <Typography variant="h4" gutterBottom>
-                      {impactMetrics.totalLandProtected.toFixed(1)} ha
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Land Area Protected
-                    </Typography>
-                        <Box sx={{ mt: 2 }}>
-                          <Typography variant="body2" color="text.secondary">
+                      </ImpactCard>
+                    </Grid>
+
+                    <Grid item xs={12} md={4}>
+                      <ImpactCard variant="land">
+                        <TreeDeciduous size={40} style={{ color: 'var(--status-success)' }} />
+                        <Typography
+                          sx={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '32px',
+                            fontWeight: 600,
+                            color: 'var(--text-primary)',
+                          }}
+                        >
+                          {impactMetrics.totalLandProtected.toFixed(1)} ha
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '13px',
+                            color: 'var(--text-secondary)',
+                          }}
+                        >
+                          Land Area Protected
+                        </Typography>
+                        <Box sx={{ mt: 1 }}>
+                          <Typography
+                            sx={{
+                              fontFamily: 'var(--font-body)',
+                              fontSize: '12px',
+                              color: 'var(--text-tertiary)',
+                            }}
+                          >
                             Equivalent to:
                           </Typography>
-                          <Typography variant="body1" fontWeight="medium" color="success.main" sx={{ mt: 0.5 }}>
+                          <Typography
+                            sx={{
+                              fontFamily: 'var(--font-mono)',
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              color: 'var(--status-success)',
+                            }}
+                          >
                             {(impactMetrics.totalLandProtected * 1.4).toFixed(1)} football fields
                           </Typography>
                         </Box>
-                  </Box>
-                </Grid>
-                
-                <Grid item xs={12} md={4}>
-                  <Box sx={{ 
-                    textAlign: 'center', 
-                        p: 3,
-                    borderRadius: 2,
-                    bgcolor: 'rgba(14, 165, 233, 0.1)',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
-                  }}>
-                        <ForestIcon sx={{ color: '#0ea5e9', fontSize: 48, mb: 1 }} />
-                        <Typography variant="h4" gutterBottom>
-                      {(impactMetrics.totalWaterSaved / 1000).toFixed(0)} kL
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Water Protected
-                    </Typography>
-                        <Box sx={{ mt: 2 }}>
-                          <Typography variant="body2" color="text.secondary">
+                      </ImpactCard>
+                    </Grid>
+
+                    <Grid item xs={12} md={4}>
+                      <ImpactCard variant="water">
+                        <Droplets size={40} style={{ color: 'var(--status-info)' }} />
+                        <Typography
+                          sx={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '32px',
+                            fontWeight: 600,
+                            color: 'var(--text-primary)',
+                          }}
+                        >
+                          {(impactMetrics.totalWaterSaved / 1000).toFixed(0)} kL
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '13px',
+                            color: 'var(--text-secondary)',
+                          }}
+                        >
+                          Water Protected
+                        </Typography>
+                        <Box sx={{ mt: 1 }}>
+                          <Typography
+                            sx={{
+                              fontFamily: 'var(--font-body)',
+                              fontSize: '12px',
+                              color: 'var(--text-tertiary)',
+                            }}
+                          >
                             Equivalent to:
                           </Typography>
-                          <Typography variant="body1" fontWeight="medium" color="info.main" sx={{ mt: 0.5 }}>
+                          <Typography
+                            sx={{
+                              fontFamily: 'var(--font-mono)',
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              color: 'var(--status-info)',
+                            }}
+                          >
                             {((impactMetrics.totalWaterSaved / 1000) / 2.5).toFixed(0)} households' yearly use
                           </Typography>
                         </Box>
-                  </Box>
-                </Grid>
-              </Grid>
-              
+                      </ImpactCard>
+                    </Grid>
+                  </Grid>
+
                   <Box sx={{ mt: 4 }}>
-                    <Typography variant="h6" gutterBottom>
-                      Sustainable Development Goals Impact
-                    </Typography>
+                    <SectionTitle>Sustainable Development Goals Impact</SectionTitle>
                     <Grid container spacing={2} sx={{ mt: 1 }}>
                       {Object.entries(impactMetrics.sdgContributions).map(([sdgNumber, score]) => (
                         <Grid item xs={6} sm={4} md={3} key={sdgNumber}>
-                          <Box sx={{ 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            alignItems: 'center',
-                            p: 2,
-                            borderRadius: 2,
-                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)'
-                          }}>
+                          <SDGCard>
                             <Box
                               component="img"
                               src={`/images/sdg/sdg-${sdgNumber}.png`}
                               alt={`SDG ${sdgNumber}`}
-                              sx={{ 
-                                width: 60, 
-                                height: 60, 
+                              sx={{
+                                width: 60,
+                                height: 60,
                                 mb: 1,
                                 borderRadius: '50%',
-                                objectFit: 'cover'
+                                objectFit: 'cover',
                               }}
                             />
-                            <Typography variant="body2" fontWeight="medium">
+                            <Typography
+                              sx={{
+                                fontFamily: 'var(--font-body)',
+                                fontSize: '13px',
+                                fontWeight: 500,
+                                color: 'var(--text-primary)',
+                              }}
+                            >
                               SDG {sdgNumber}
                             </Typography>
-                            <LinearProgress 
-                              variant="determinate" 
-                              value={score} 
-                              sx={{ 
-                                width: '100%', 
-                                mt: 1, 
-                                height: 6, 
-                                borderRadius: 3,
-                                backgroundColor: theme.palette.mode === 'dark' 
-                                  ? 'rgba(255, 255, 255, 0.1)' 
-                                  : 'rgba(0, 0, 0, 0.1)',
+                            <LinearProgress
+                              variant="determinate"
+                              value={score as number}
+                              sx={{
+                                width: '100%',
+                                mt: 1,
+                                height: 4,
+                                borderRadius: 'var(--radius-full)',
+                                backgroundColor: 'var(--surface-subtle)',
+                                '& .MuiLinearProgress-bar': {
+                                  backgroundColor: 'var(--accent-primary)',
+                                  borderRadius: 'var(--radius-full)',
+                                },
                               }}
                             />
-                            <Typography variant="body2" sx={{ mt: 0.5 }}>
+                            <Typography
+                              sx={{
+                                fontFamily: 'var(--font-mono)',
+                                fontSize: '12px',
+                                color: 'var(--text-tertiary)',
+                                mt: 0.5,
+                              }}
+                            >
                               {score}/100
                             </Typography>
-                          </Box>
+                          </SDGCard>
                         </Grid>
                       ))}
                     </Grid>
                   </Box>
-                  
+
                   <Box sx={{ mt: 4 }}>
-                    <Typography variant="h6" gutterBottom>
-                      Impact by Project
-                    </Typography>
+                    <SectionTitle>Impact by Project</SectionTitle>
                     <Grid container spacing={2} sx={{ mt: 1 }}>
-                      {impactMetrics.impactByProject.map((project, index) => (
+                      {impactMetrics.impactByProject.map((project) => (
                         <Grid item xs={12} md={6} key={project.projectId}>
-                          <Box sx={{ 
-                            p: 2, 
-                            borderRadius: 2,
-                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
-                            height: '100%'
-                          }}>
-                            <Typography variant="subtitle1" gutterBottom>
+                          <ProjectCard>
+                            <Typography
+                              sx={{
+                                fontFamily: 'var(--font-display)',
+                                fontSize: '15px',
+                                fontWeight: 600,
+                                color: 'var(--text-primary)',
+                                mb: 2,
+                              }}
+                            >
                               {project.projectName}
                             </Typography>
                             <Grid container spacing={2}>
                               <Grid item xs={4}>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography
+                                  sx={{
+                                    fontFamily: 'var(--font-body)',
+                                    fontSize: '11px',
+                                    color: 'var(--text-tertiary)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em',
+                                    mb: 0.5,
+                                  }}
+                                >
                                   Carbon Offset
                                 </Typography>
-                                <Typography variant="body1" fontWeight="medium" color="success.main">
+                                <Typography
+                                  sx={{
+                                    fontFamily: 'var(--font-mono)',
+                                    fontSize: '14px',
+                                    fontWeight: 500,
+                                    color: 'var(--status-success)',
+                                  }}
+                                >
                                   {project.carbonOffset.toFixed(1)} tons
                                 </Typography>
                               </Grid>
                               {project.landProtected && (
                                 <Grid item xs={4}>
-                                  <Typography variant="body2" color="text.secondary">
+                                  <Typography
+                                    sx={{
+                                      fontFamily: 'var(--font-body)',
+                                      fontSize: '11px',
+                                      color: 'var(--text-tertiary)',
+                                      textTransform: 'uppercase',
+                                      letterSpacing: '0.05em',
+                                      mb: 0.5,
+                                    }}
+                                  >
                                     Land Protected
                                   </Typography>
-                                  <Typography variant="body1" fontWeight="medium" color="success.main">
+                                  <Typography
+                                    sx={{
+                                      fontFamily: 'var(--font-mono)',
+                                      fontSize: '14px',
+                                      fontWeight: 500,
+                                      color: 'var(--status-success)',
+                                    }}
+                                  >
                                     {project.landProtected.toFixed(1)} ha
                                   </Typography>
                                 </Grid>
                               )}
                               {project.waterSaved && (
                                 <Grid item xs={4}>
-                                  <Typography variant="body2" color="text.secondary">
+                                  <Typography
+                                    sx={{
+                                      fontFamily: 'var(--font-body)',
+                                      fontSize: '11px',
+                                      color: 'var(--text-tertiary)',
+                                      textTransform: 'uppercase',
+                                      letterSpacing: '0.05em',
+                                      mb: 0.5,
+                                    }}
+                                  >
                                     Water Saved
                                   </Typography>
-                                  <Typography variant="body1" fontWeight="medium" color="info.main">
+                                  <Typography
+                                    sx={{
+                                      fontFamily: 'var(--font-mono)',
+                                      fontSize: '14px',
+                                      fontWeight: 500,
+                                      color: 'var(--status-info)',
+                                    }}
+                                  >
                                     {(project.waterSaved / 1000).toFixed(0)} kL
                                   </Typography>
                                 </Grid>
                               )}
                             </Grid>
-                          </Box>
+                          </ProjectCard>
                         </Grid>
                       ))}
                     </Grid>
                   </Box>
-                </Box>
-                
-                <Box sx={{ mt: 4, textAlign: 'center' }}>
-                <Button 
-                    variant="contained" 
-                  color="success" 
-                  component={Link}
-                    to="/environmental/marketplace"
-                    size="large"
-                >
-                    Explore Environmental Assets
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
+
+                  <Box sx={{ mt: 4, textAlign: 'center' }}>
+                    <Button component={Link} to="/environmental/marketplace" sx={primaryButtonStyles}>
+                      Explore Environmental Assets
+                    </Button>
+                  </Box>
+                </CardContent>
+              </SectionCard>
+            </Grid>
           </Grid>
-        </Grid>
-      )}
-    </Container>
+        )}
+      </Container>
+    </PageContainer>
   );
 };
 
-export default PortfolioPage; 
+export default PortfolioPage;

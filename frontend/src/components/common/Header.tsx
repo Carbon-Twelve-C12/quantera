@@ -1,164 +1,323 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Box, Button, IconButton, Menu, MenuItem, Avatar } from '@mui/material';
+import { AppBar, Toolbar, Box, Button, IconButton, Menu, MenuItem, Avatar, Divider } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { Menu as MenuIcon, Notifications, Settings, AccountCircle } from '@mui/icons-material';
+import {
+  Menu as MenuIcon,
+  Notifications,
+  Settings,
+  AccountCircle,
+} from '@mui/icons-material';
+import { Sun, Moon, ChevronDown, X } from 'lucide-react';
 import { WalletConnect } from '../wallet/WalletConnect';
+import { useTheme } from '../../contexts/ThemeContext';
 
-const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)',
-  boxShadow: '0 4px 24px rgba(26, 35, 126, 0.15)',
-  backdropFilter: 'blur(20px)',
-  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+// Swiss Precision Header - Clean, minimal, dark-first
+const StyledAppBar = styled(AppBar)({
+  background: 'var(--surface-base)',
+  boxShadow: 'none',
+  borderBottom: '1px solid var(--surface-subtle)',
   position: 'fixed',
   top: 0,
   left: 0,
   right: 0,
-  zIndex: 1100,
-}));
+  zIndex: 'var(--z-fixed)',
+});
 
 const StyledToolbar = styled(Toolbar)({
-  minHeight: '80px',
-  padding: '0 32px',
+  minHeight: '64px',
+  padding: '0 24px',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  
+  maxWidth: '1536px',
+  margin: '0 auto',
+  width: '100%',
+
   '@media (max-width: 768px)': {
     padding: '0 16px',
-    minHeight: '64px',
+    minHeight: '56px',
   },
 });
 
 const Logo = styled(Box)({
-  fontSize: '28px',
-  fontWeight: 700,
-  color: '#ffffff',
-  letterSpacing: '-0.5px',
-  fontFamily: 'Inter, sans-serif',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
   cursor: 'pointer',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  
-  '&:hover': {
-    transform: 'scale(1.05)',
-  },
-  
-  '@media (max-width: 768px)': {
-    fontSize: '24px',
+});
+
+const LogoMark = styled(Box)({
+  width: '32px',
+  height: '32px',
+  background: 'var(--accent-primary)',
+  borderRadius: 'var(--radius-md)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontFamily: 'var(--font-display)',
+  fontWeight: 700,
+  fontSize: '18px',
+  color: 'var(--text-inverse)',
+});
+
+const LogoText = styled(Box)({
+  fontFamily: 'var(--font-display)',
+  fontSize: '20px',
+  fontWeight: 600,
+  color: 'var(--text-primary)',
+  letterSpacing: '-0.02em',
+
+  '@media (max-width: 480px)': {
+    display: 'none',
   },
 });
 
 const NavContainer = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
-  
-  '@media (max-width: 768px)': {
+  gap: '4px',
+
+  '@media (max-width: 1024px)': {
     display: 'none',
   },
 });
 
-const MobileMenuContainer = styled(Box)({
-  display: 'none',
-  
-  '@media (max-width: 768px)': {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-});
-
-const NavButton = styled(Button)(({ theme }) => ({
-  color: 'rgba(255, 255, 255, 0.9)',
-  fontSize: '16px',
+const NavButton = styled(Button)<{ active?: boolean }>(({ active }) => ({
+  color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
+  fontSize: '14px',
   fontWeight: 500,
-  padding: '12px 24px',
-  margin: '0 4px',
-  borderRadius: '8px',
+  fontFamily: 'var(--font-body)',
+  padding: '8px 16px',
+  borderRadius: 'var(--radius-md)',
   textTransform: 'none',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'all 150ms cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
-  overflow: 'hidden',
-  
+  background: 'transparent',
+  minWidth: 'auto',
+
   '&:hover': {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    color: '#ffffff',
-    transform: 'translateY(-2px)',
+    background: 'var(--surface-overlay)',
+    color: 'var(--text-primary)',
   },
-  
-  '&.active': {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    color: '#ffffff',
-    
+
+  ...(active && {
     '&::after': {
       content: '""',
       position: 'absolute',
-      bottom: 0,
-      left: '50%',
-      transform: 'translateX(-50%)',
-      width: '60%',
+      bottom: '4px',
+      left: '16px',
+      right: '16px',
       height: '2px',
-      background: '#00bcd4',
+      background: 'var(--accent-primary)',
       borderRadius: '1px',
     },
-  },
+  }),
 }));
 
+const ActionsContainer = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+});
+
 const ActionButton = styled(IconButton)({
-  color: 'rgba(255, 255, 255, 0.9)',
-  padding: '12px',
-  margin: '0 4px',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  
+  color: 'var(--text-secondary)',
+  padding: '8px',
+  borderRadius: 'var(--radius-md)',
+  transition: 'all 150ms cubic-bezier(0.4, 0, 0.2, 1)',
+
   '&:hover': {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    color: '#ffffff',
-    transform: 'scale(1.1)',
+    background: 'var(--surface-overlay)',
+    color: 'var(--text-primary)',
+  },
+
+  '& svg': {
+    width: '20px',
+    height: '20px',
   },
 });
 
-const UserSection = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '16px',
-});
-
-const NotificationBadge = styled(Box)({
+const NotificationButton = styled(ActionButton)({
   position: 'relative',
-  
+
   '&::after': {
     content: '""',
     position: 'absolute',
     top: '8px',
     right: '8px',
-    width: '8px',
-    height: '8px',
-    background: '#f44336',
+    width: '6px',
+    height: '6px',
+    background: 'var(--accent-primary)',
     borderRadius: '50%',
-    border: '2px solid #1a237e',
   },
 });
 
-const MobileMenu = styled(Menu)(({ theme }) => ({
-  '& .MuiPaper-root': {
-    background: 'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)',
-    backdropFilter: 'blur(20px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '12px',
-    marginTop: '8px',
+const MobileMenuButton = styled(IconButton)({
+  display: 'none',
+  color: 'var(--text-secondary)',
+  padding: '8px',
+  borderRadius: 'var(--radius-md)',
+
+  '@media (max-width: 1024px)': {
+    display: 'flex',
   },
-  
-  '& .MuiMenuItem-root': {
-    color: 'rgba(255, 255, 255, 0.9)',
-    padding: '12px 24px',
-    fontSize: '16px',
-    fontWeight: 500,
-    
+
+  '&:hover': {
+    background: 'var(--surface-overlay)',
+    color: 'var(--text-primary)',
+  },
+});
+
+const StyledMenu = styled(Menu)({
+  '& .MuiPaper-root': {
+    background: 'var(--surface-elevated)',
+    border: '1px solid var(--surface-subtle)',
+    borderRadius: 'var(--radius-lg)',
+    boxShadow: 'var(--shadow-lg)',
+    marginTop: '8px',
+    minWidth: '200px',
+  },
+});
+
+const StyledMenuItem = styled(MenuItem)({
+  fontFamily: 'var(--font-body)',
+  fontSize: '14px',
+  color: 'var(--text-primary)',
+  padding: '10px 16px',
+  transition: 'background 150ms',
+
+  '&:hover': {
+    background: 'var(--surface-overlay)',
+  },
+
+  '&.Mui-selected': {
+    background: 'var(--accent-muted)',
+    color: 'var(--accent-primary)',
+
     '&:hover': {
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      color: '#ffffff',
+      background: 'var(--accent-muted)',
     },
   },
+});
+
+const UserMenuHeader = styled(Box)({
+  padding: '16px',
+  borderBottom: '1px solid var(--surface-subtle)',
+});
+
+const UserInfo = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+});
+
+const UserAvatar = styled(Avatar)({
+  width: '40px',
+  height: '40px',
+  background: 'var(--accent-muted)',
+  color: 'var(--accent-primary)',
+  fontFamily: 'var(--font-display)',
+  fontWeight: 600,
+  fontSize: '16px',
+});
+
+const UserDetails = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2px',
+});
+
+const UserName = styled(Box)({
+  fontFamily: 'var(--font-body)',
+  fontSize: '14px',
+  fontWeight: 600,
+  color: 'var(--text-primary)',
+});
+
+const UserEmail = styled(Box)({
+  fontFamily: 'var(--font-body)',
+  fontSize: '12px',
+  color: 'var(--text-tertiary)',
+});
+
+const MenuDivider = styled(Divider)({
+  borderColor: 'var(--surface-subtle)',
+  margin: '4px 0',
+});
+
+const DangerMenuItem = styled(StyledMenuItem)({
+  color: 'var(--status-error)',
+
+  '&:hover': {
+    background: 'var(--status-error-muted)',
+  },
+});
+
+// Mobile drawer styles
+const MobileDrawer = styled(Box)<{ open: boolean }>(({ open }) => ({
+  position: 'fixed',
+  top: 0,
+  right: 0,
+  bottom: 0,
+  width: '100%',
+  maxWidth: '320px',
+  background: 'var(--surface-elevated)',
+  borderLeft: '1px solid var(--surface-subtle)',
+  transform: open ? 'translateX(0)' : 'translateX(100%)',
+  transition: 'transform 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+  zIndex: 1200,
+  display: 'flex',
+  flexDirection: 'column',
 }));
+
+const MobileDrawerBackdrop = styled(Box)<{ open: boolean }>(({ open }) => ({
+  position: 'fixed',
+  inset: 0,
+  background: 'rgba(0, 0, 0, 0.6)',
+  backdropFilter: 'blur(4px)',
+  opacity: open ? 1 : 0,
+  visibility: open ? 'visible' : 'hidden',
+  transition: 'opacity 300ms, visibility 300ms',
+  zIndex: 1199,
+}));
+
+const MobileDrawerHeader = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '16px',
+  borderBottom: '1px solid var(--surface-subtle)',
+});
+
+const MobileDrawerTitle = styled(Box)({
+  fontFamily: 'var(--font-display)',
+  fontSize: '16px',
+  fontWeight: 600,
+  color: 'var(--text-primary)',
+});
+
+const MobileNavItem = styled(Box)<{ active?: boolean }>(({ active }) => ({
+  padding: '12px 16px',
+  fontFamily: 'var(--font-body)',
+  fontSize: '15px',
+  fontWeight: 500,
+  color: active ? 'var(--accent-primary)' : 'var(--text-primary)',
+  background: active ? 'var(--accent-muted)' : 'transparent',
+  cursor: 'pointer',
+  transition: 'all 150ms',
+
+  '&:hover': {
+    background: active ? 'var(--accent-muted)' : 'var(--surface-overlay)',
+  },
+}));
+
+const Spacer = styled(Box)({
+  height: '64px',
+
+  '@media (max-width: 768px)': {
+    height: '56px',
+  },
+});
 
 interface HeaderProps {
   activeRoute?: string;
@@ -166,24 +325,17 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ activeRoute = 'marketplace', onNavigate }) => {
-  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(null);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const { resolvedTheme, toggleTheme } = useTheme();
 
   const navigationItems = [
     { label: 'Marketplace', route: 'marketplace' },
     { label: 'Portfolio', route: 'portfolio' },
     { label: 'Analytics', route: 'analytics' },
-    { label: 'Documentation', route: 'docs' },
-    { label: 'Institutional', route: 'institutional' },
+    { label: 'Trade Finance', route: 'trade-finance' },
+    { label: 'Docs', route: 'docs' },
   ];
-
-  const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setMobileMenuAnchor(event.currentTarget);
-  };
-
-  const handleMobileMenuClose = () => {
-    setMobileMenuAnchor(null);
-  };
 
   const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setUserMenuAnchor(event.currentTarget);
@@ -197,123 +349,110 @@ export const Header: React.FC<HeaderProps> = ({ activeRoute = 'marketplace', onN
     if (onNavigate) {
       onNavigate(route);
     }
-    handleMobileMenuClose();
+    setMobileDrawerOpen(false);
   };
 
   return (
     <>
-      <StyledAppBar>
+      <StyledAppBar elevation={0}>
         <StyledToolbar>
           <Logo onClick={() => handleNavigation('home')}>
-            Quantera
+            <LogoMark>Q</LogoMark>
+            <LogoText>Quantera</LogoText>
           </Logo>
-          
+
           <NavContainer>
             {navigationItems.map((item) => (
               <NavButton
                 key={item.route}
-                className={activeRoute === item.route ? 'active' : ''}
+                active={activeRoute === item.route}
                 onClick={() => handleNavigation(item.route)}
+                disableRipple
               >
                 {item.label}
               </NavButton>
             ))}
           </NavContainer>
-          
-          <UserSection>
-            <NotificationBadge>
-              <ActionButton>
-                <Notifications />
-              </ActionButton>
-            </NotificationBadge>
-            
-            <ActionButton>
-              <Settings />
+
+          <ActionsContainer>
+            <ActionButton onClick={toggleTheme} aria-label="Toggle theme">
+              {resolvedTheme === 'dark' ? <Sun /> : <Moon />}
             </ActionButton>
-            
-            <WalletConnect />
-            
-            <ActionButton onClick={handleUserMenuOpen}>
+
+            <NotificationButton aria-label="Notifications">
+              <Notifications />
+            </NotificationButton>
+
+            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+              <WalletConnect />
+            </Box>
+
+            <ActionButton onClick={handleUserMenuOpen} aria-label="User menu">
               <AccountCircle />
             </ActionButton>
-            
-            <MobileMenuContainer>
-              <ActionButton onClick={handleMobileMenuOpen}>
-                <MenuIcon />
-              </ActionButton>
-            </MobileMenuContainer>
-          </UserSection>
+
+            <MobileMenuButton onClick={() => setMobileDrawerOpen(true)} aria-label="Open menu">
+              <MenuIcon />
+            </MobileMenuButton>
+          </ActionsContainer>
         </StyledToolbar>
       </StyledAppBar>
-      
-      {/* Mobile Navigation Menu */}
-      <MobileMenu
-        anchorEl={mobileMenuAnchor}
-        open={Boolean(mobileMenuAnchor)}
-        onClose={handleMobileMenuClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-      >
-        {navigationItems.map((item) => (
-          <MenuItem
-            key={item.route}
-            onClick={() => handleNavigation(item.route)}
-            selected={activeRoute === item.route}
-          >
-            {item.label}
-          </MenuItem>
-        ))}
-      </MobileMenu>
-      
+
       {/* User Menu */}
-      <Menu
+      <StyledMenu
         anchorEl={userMenuAnchor}
         open={Boolean(userMenuAnchor)}
         onClose={handleUserMenuClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        PaperProps={{
-          sx: {
-            background: '#ffffff',
-            borderRadius: '12px',
-            boxShadow: '0 8px 40px rgba(26, 35, 126, 0.12)',
-            border: '1px solid rgba(26, 35, 126, 0.08)',
-            marginTop: '8px',
-            minWidth: '200px',
-          },
-        }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <MenuItem onClick={handleUserMenuClose}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ width: 32, height: 32, bgcolor: '#1a237e' }}>U</Avatar>
-            <Box>
-              <Box sx={{ fontWeight: 600, color: '#263238' }}>User Profile</Box>
-              <Box sx={{ fontSize: '12px', color: '#607d8b' }}>View & Edit</Box>
-            </Box>
-          </Box>
-        </MenuItem>
-        <MenuItem onClick={handleUserMenuClose}>Account Settings</MenuItem>
-        <MenuItem onClick={handleUserMenuClose}>Compliance Status</MenuItem>
-        <MenuItem onClick={handleUserMenuClose}>Security</MenuItem>
-        <MenuItem onClick={handleUserMenuClose} sx={{ color: '#f44336' }}>
-          Sign Out
-        </MenuItem>
-      </Menu>
-      
-      {/* Spacer to prevent content from being hidden under fixed header */}
-      <Box sx={{ height: { xs: '64px', md: '80px' } }} />
+        <UserMenuHeader>
+          <UserInfo>
+            <UserAvatar>U</UserAvatar>
+            <UserDetails>
+              <UserName>User Account</UserName>
+              <UserEmail>user@quantera.io</UserEmail>
+            </UserDetails>
+          </UserInfo>
+        </UserMenuHeader>
+        <StyledMenuItem onClick={handleUserMenuClose}>Account Settings</StyledMenuItem>
+        <StyledMenuItem onClick={handleUserMenuClose}>Compliance Status</StyledMenuItem>
+        <StyledMenuItem onClick={handleUserMenuClose}>Security</StyledMenuItem>
+        <MenuDivider />
+        <DangerMenuItem onClick={handleUserMenuClose}>Sign Out</DangerMenuItem>
+      </StyledMenu>
+
+      {/* Mobile Drawer */}
+      <MobileDrawerBackdrop open={mobileDrawerOpen} onClick={() => setMobileDrawerOpen(false)} />
+      <MobileDrawer open={mobileDrawerOpen}>
+        <MobileDrawerHeader>
+          <MobileDrawerTitle>Menu</MobileDrawerTitle>
+          <ActionButton onClick={() => setMobileDrawerOpen(false)} aria-label="Close menu">
+            <X />
+          </ActionButton>
+        </MobileDrawerHeader>
+
+        <Box sx={{ flex: 1, py: 1 }}>
+          {navigationItems.map((item) => (
+            <MobileNavItem
+              key={item.route}
+              active={activeRoute === item.route}
+              onClick={() => handleNavigation(item.route)}
+            >
+              {item.label}
+            </MobileNavItem>
+          ))}
+        </Box>
+
+        <Box sx={{ p: 2, borderTop: '1px solid var(--surface-subtle)' }}>
+          <WalletConnect />
+        </Box>
+      </MobileDrawer>
+
+      {/* Spacer */}
+      <Spacer />
     </>
   );
-}; 
+};
+
+export default Header;

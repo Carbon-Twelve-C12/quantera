@@ -1,186 +1,302 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Container, Typography, Grid, TextField, MenuItem, Chip, Button } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Container, Typography, TextField, MenuItem, Grid, InputAdornment } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { Search, FilterList, TrendingUp } from '@mui/icons-material';
+import { Search, TrendingUp, Users, Coins, Clock } from 'lucide-react';
 import { Header } from '../components/common/Header';
 import { AssetCard } from '../components/marketplace/AssetCard';
-import { ProfessionalChart } from '../components/charts/ProfessionalChart';
 import '../styles/quantera-design-system.css';
 
+// Swiss Precision Page Layout
 const PageContainer = styled(Box)({
   minHeight: '100vh',
-  background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.02) 0%, rgba(63, 81, 181, 0.02) 100%)',
+  background: 'var(--surface-base)',
 });
 
 const HeroSection = styled(Box)({
-  background: 'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)',
-  color: '#ffffff',
-  padding: '80px 0 60px',
-  position: 'relative',
-  overflow: 'hidden',
-  
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+  background: 'var(--surface-base)',
+  borderBottom: '1px solid var(--surface-subtle)',
+  padding: '48px 0',
+
+  '@media (max-width: 768px)': {
+    padding: '32px 0',
   },
 });
 
 const HeroContent = styled(Container)({
-  position: 'relative',
-  zIndex: 1,
-  textAlign: 'center',
+  maxWidth: '1280px',
 });
 
 const HeroTitle = styled(Typography)({
-  fontSize: '3.5rem',
-  fontWeight: 800,
-  marginBottom: '16px',
-  fontFamily: 'Inter, sans-serif',
+  fontFamily: 'var(--font-display)',
+  fontSize: 'var(--type-display-size)',
+  fontWeight: 700,
+  color: 'var(--text-primary)',
   letterSpacing: '-0.02em',
-  
+  lineHeight: 1.1,
+  marginBottom: '16px',
+
   '@media (max-width: 768px)': {
-    fontSize: '2.5rem',
+    fontSize: '2rem',
   },
 });
 
 const HeroSubtitle = styled(Typography)({
-  fontSize: '1.25rem',
-  fontWeight: 400,
-  marginBottom: '32px',
-  opacity: 0.9,
-  maxWidth: '600px',
-  margin: '0 auto 32px',
+  fontFamily: 'var(--font-body)',
+  fontSize: '1rem',
+  color: 'var(--text-secondary)',
+  maxWidth: '560px',
   lineHeight: 1.6,
 });
 
-const StatsContainer = styled(Box)({
+const StatsGrid = styled(Box)({
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-  gap: '32px',
+  gridTemplateColumns: 'repeat(4, 1fr)',
+  gap: '24px',
   marginTop: '48px',
+
+  '@media (max-width: 1024px)': {
+    gridTemplateColumns: 'repeat(2, 1fr)',
+  },
+
+  '@media (max-width: 480px)': {
+    gridTemplateColumns: '1fr',
+    gap: '16px',
+  },
 });
 
 const StatCard = styled(Box)({
-  textAlign: 'center',
-  padding: '24px',
-  background: 'rgba(255, 255, 255, 0.1)',
-  borderRadius: '16px',
-  backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(255, 255, 255, 0.2)',
+  background: 'var(--surface-elevated)',
+  border: '1px solid var(--surface-subtle)',
+  borderRadius: 'var(--radius-lg)',
+  padding: '20px',
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '16px',
+  transition: 'border-color 250ms, box-shadow 250ms',
+
+  '&:hover': {
+    borderColor: 'var(--surface-hover)',
+    boxShadow: 'var(--shadow-glow)',
+  },
+});
+
+const StatIcon = styled(Box)({
+  width: '40px',
+  height: '40px',
+  borderRadius: 'var(--radius-md)',
+  background: 'var(--accent-muted)',
+  color: 'var(--accent-primary)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+});
+
+const StatContent = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4px',
 });
 
 const StatValue = styled(Typography)({
-  fontSize: '2.5rem',
-  fontWeight: 700,
-  marginBottom: '8px',
-  fontFamily: 'Inter, sans-serif',
+  fontFamily: 'var(--font-mono)',
+  fontSize: '24px',
+  fontWeight: 600,
+  color: 'var(--text-primary)',
+  lineHeight: 1.2,
 });
 
 const StatLabel = styled(Typography)({
-  fontSize: '14px',
-  opacity: 0.8,
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-  fontWeight: 500,
+  fontFamily: 'var(--font-body)',
+  fontSize: '13px',
+  color: 'var(--text-tertiary)',
 });
 
 const ContentSection = styled(Container)({
-  padding: '60px 24px',
+  maxWidth: '1280px',
+  padding: '48px 24px',
+
+  '@media (max-width: 768px)': {
+    padding: '32px 16px',
+  },
 });
 
 const SectionHeader = styled(Box)({
   display: 'flex',
   justifyContent: 'space-between',
-  alignItems: 'center',
+  alignItems: 'flex-end',
   marginBottom: '32px',
-  
+  gap: '24px',
+
   '@media (max-width: 768px)': {
     flexDirection: 'column',
-    gap: '16px',
     alignItems: 'stretch',
+    gap: '16px',
   },
+});
+
+const SectionTitleGroup = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4px',
 });
 
 const SectionTitle = styled(Typography)({
-  fontSize: '2rem',
+  fontFamily: 'var(--font-display)',
+  fontSize: 'var(--type-h2-size)',
   fontWeight: 600,
-  color: '#263238',
-  fontFamily: 'Inter, sans-serif',
+  color: 'var(--text-primary)',
+  letterSpacing: '-0.01em',
 });
 
-const FilterContainer = styled(Box)({
+const SectionSubtitle = styled(Typography)({
+  fontFamily: 'var(--font-body)',
+  fontSize: '14px',
+  color: 'var(--text-tertiary)',
+});
+
+const FiltersContainer = styled(Box)({
   display: 'flex',
-  gap: '16px',
+  gap: '12px',
   alignItems: 'center',
-  
+
   '@media (max-width: 768px)': {
     flexDirection: 'column',
     alignItems: 'stretch',
   },
 });
 
-const SearchField = styled(TextField)({
-  minWidth: '300px',
-  
+const SearchInput = styled(TextField)({
+  minWidth: '280px',
+
   '& .MuiOutlinedInput-root': {
-    borderRadius: '12px',
-    background: '#ffffff',
-    
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: '#3f51b5',
+    background: 'var(--surface-elevated)',
+    borderRadius: 'var(--radius-md)',
+    fontFamily: 'var(--font-body)',
+    fontSize: '14px',
+    color: 'var(--text-primary)',
+
+    '& fieldset': {
+      borderColor: 'var(--surface-subtle)',
+      transition: 'border-color 150ms',
     },
-    
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: '#1a237e',
+
+    '&:hover fieldset': {
+      borderColor: 'var(--surface-hover)',
+    },
+
+    '&.Mui-focused fieldset': {
+      borderColor: 'var(--accent-primary)',
+      borderWidth: '1px',
+    },
+
+    '& input': {
+      padding: '10px 14px',
+      color: 'var(--text-primary)',
+
+      '&::placeholder': {
+        color: 'var(--text-tertiary)',
+        opacity: 1,
+      },
     },
   },
-  
+
   '@media (max-width: 768px)': {
     minWidth: 'auto',
   },
 });
 
 const FilterSelect = styled(TextField)({
-  minWidth: '150px',
-  
+  minWidth: '160px',
+
   '& .MuiOutlinedInput-root': {
-    borderRadius: '12px',
-    background: '#ffffff',
+    background: 'var(--surface-elevated)',
+    borderRadius: 'var(--radius-md)',
+    fontFamily: 'var(--font-body)',
+    fontSize: '14px',
+    color: 'var(--text-primary)',
+
+    '& fieldset': {
+      borderColor: 'var(--surface-subtle)',
+      transition: 'border-color 150ms',
+    },
+
+    '&:hover fieldset': {
+      borderColor: 'var(--surface-hover)',
+    },
+
+    '&.Mui-focused fieldset': {
+      borderColor: 'var(--accent-primary)',
+      borderWidth: '1px',
+    },
   },
-  
+
+  '& .MuiSelect-select': {
+    padding: '10px 14px',
+    color: 'var(--text-primary)',
+  },
+
+  '& .MuiSelect-icon': {
+    color: 'var(--text-tertiary)',
+  },
+
   '@media (max-width: 768px)': {
     minWidth: 'auto',
   },
 });
 
-const ChartSection = styled(Box)({
-  marginBottom: '60px',
+const StyledMenuItem = styled(MenuItem)({
+  fontFamily: 'var(--font-body)',
+  fontSize: '14px',
+  color: 'var(--text-primary)',
+  padding: '10px 16px',
+
+  '&:hover': {
+    background: 'var(--surface-overlay)',
+  },
+
+  '&.Mui-selected': {
+    background: 'var(--accent-muted)',
+    color: 'var(--accent-primary)',
+
+    '&:hover': {
+      background: 'var(--accent-muted)',
+    },
+  },
 });
 
 const AssetGrid = styled(Grid)({
-  marginTop: '32px',
+  marginTop: '8px',
+});
+
+const EmptyState = styled(Box)({
+  textAlign: 'center',
+  padding: '64px 24px',
+  background: 'var(--surface-elevated)',
+  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--surface-subtle)',
+});
+
+const EmptyTitle = styled(Typography)({
+  fontFamily: 'var(--font-display)',
+  fontSize: '18px',
+  fontWeight: 600,
+  color: 'var(--text-primary)',
+  marginBottom: '8px',
+});
+
+const EmptyDescription = styled(Typography)({
+  fontFamily: 'var(--font-body)',
+  fontSize: '14px',
+  color: 'var(--text-tertiary)',
 });
 
 // Sample data
 const marketStats = [
-  { value: '$2.4B', label: 'Total Value Locked' },
-  { value: '1,247', label: 'Active Assets' },
-  { value: '89,432', label: 'Verified Investors' },
-  { value: '24/7', label: 'Global Trading' },
-];
-
-const chartData = [
-  { name: 'Jan', value: 1200 },
-  { name: 'Feb', value: 1900 },
-  { name: 'Mar', value: 1600 },
-  { name: 'Apr', value: 2400 },
-  { name: 'May', value: 2100 },
-  { name: 'Jun', value: 2800 },
+  { value: '$2.4B', label: 'Total Value Locked', icon: Coins },
+  { value: '1,247', label: 'Active Assets', icon: TrendingUp },
+  { value: '89,432', label: 'Verified Investors', icon: Users },
+  { value: '24/7', label: 'Global Trading', icon: Clock },
 ];
 
 const sampleAssets = [
@@ -192,7 +308,6 @@ const sampleAssets = [
     yield: '8.5%',
     minInvestment: '$10,000',
     totalValue: '$45.2M',
-    imageUrl: '/images/assets/real-estate/manhattan-commercial.jpg',
     isCompliant: true,
     isVerified: true,
     isInstitutional: true,
@@ -210,7 +325,6 @@ const sampleAssets = [
     yield: '12.3%',
     minInvestment: '$5,000',
     totalValue: '$28.7M',
-    imageUrl: '/images/assets/commodities/gold-mining.jpg',
     isCompliant: true,
     isVerified: true,
     riskLevel: 'high' as const,
@@ -227,7 +341,6 @@ const sampleAssets = [
     yield: '4.2%',
     minInvestment: '$1,000',
     totalValue: '$125.8M',
-    imageUrl: '/images/assets/treasury-notes/us-treasury.jpg',
     isCompliant: true,
     isVerified: true,
     isInstitutional: true,
@@ -245,7 +358,6 @@ const sampleAssets = [
     yield: '9.1%',
     minInvestment: '$25,000',
     totalValue: '$67.3M',
-    imageUrl: '/images/assets/infrastructure/european-infrastructure.jpg',
     isCompliant: true,
     isVerified: true,
     isInstitutional: true,
@@ -263,7 +375,6 @@ const sampleAssets = [
     yield: '18.7%',
     minInvestment: '$50,000',
     totalValue: '$34.1M',
-    imageUrl: '/images/assets/private-equity/tech-startups.jpg',
     isCompliant: true,
     isVerified: false,
     riskLevel: 'high' as const,
@@ -280,7 +391,6 @@ const sampleAssets = [
     yield: '15.2%',
     minInvestment: '$15,000',
     totalValue: '$19.8M',
-    imageUrl: '/images/assets/art/contemporary-collection.jpg',
     isCompliant: true,
     isVerified: true,
     riskLevel: 'high' as const,
@@ -317,11 +427,10 @@ export const MarketplacePage: React.FC = () => {
 
   const handleAssetInvest = (assetId: string) => {
     console.log('Investing in asset:', assetId);
-    // Implementation for investment flow
   };
 
   const handleAssetFavorite = (assetId: string) => {
-    setFavoriteAssets(prev => {
+    setFavoriteAssets((prev) => {
       const newFavorites = new Set(prev);
       if (newFavorites.has(assetId)) {
         newFavorites.delete(assetId);
@@ -332,19 +441,14 @@ export const MarketplacePage: React.FC = () => {
     });
   };
 
-  const handleAssetShare = (assetId: string) => {
-    console.log('Sharing asset:', assetId);
-    // Implementation for sharing functionality
-  };
-
   const handleAssetDetails = (assetId: string) => {
     console.log('Viewing asset details:', assetId);
-    // Implementation for navigation to asset details
   };
 
-  const filteredAssets = sampleAssets.filter(asset => {
-    const matchesSearch = asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         asset.description.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredAssets = sampleAssets.filter((asset) => {
+    const matchesSearch =
+      asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      asset.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = selectedType === 'All Types' || asset.type === selectedType;
     return matchesSearch && matchesType;
   });
@@ -352,113 +456,125 @@ export const MarketplacePage: React.FC = () => {
   return (
     <PageContainer>
       <Header activeRoute="marketplace" />
-      
+
       <HeroSection>
-        <HeroContent maxWidth="lg">
-          <HeroTitle>
-            Global Tokenization Marketplace
-          </HeroTitle>
+        <HeroContent>
+          <HeroTitle>Tokenization Marketplace</HeroTitle>
           <HeroSubtitle>
-            Access institutional-grade tokenized assets with full regulatory compliance. 
-            Invest in real estate, commodities, and alternative assets with unprecedented transparency.
+            Access institutional-grade tokenized assets with full regulatory compliance.
+            Invest in real estate, commodities, and alternative assets.
           </HeroSubtitle>
-          
-          <StatsContainer>
+
+          <StatsGrid>
             {marketStats.map((stat, index) => (
               <StatCard key={index}>
-                <StatValue>{stat.value}</StatValue>
-                <StatLabel>{stat.label}</StatLabel>
+                <StatIcon>
+                  <stat.icon size={20} />
+                </StatIcon>
+                <StatContent>
+                  <StatValue>{stat.value}</StatValue>
+                  <StatLabel>{stat.label}</StatLabel>
+                </StatContent>
               </StatCard>
             ))}
-          </StatsContainer>
+          </StatsGrid>
         </HeroContent>
       </HeroSection>
-      
-      <ContentSection maxWidth="xl">
-        <ChartSection>
-          <ProfessionalChart
-            title="Market Performance"
-            subtitle="Total value locked across all tokenized assets"
-            data={chartData}
-            dataKey="value"
-            xAxisKey="name"
-            height={300}
-            type="area"
-            color="#1a237e"
-            currentValue="$2.4B"
-            changeValue="+$300M"
-            changePercentage={12.5}
-            showMetrics={true}
-            showActions={true}
-          />
-        </ChartSection>
-        
+
+      <ContentSection>
         <SectionHeader>
-          <SectionTitle>Featured Assets</SectionTitle>
-          
-          <FilterContainer>
-            <SearchField
-            placeholder="Search assets..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+          <SectionTitleGroup>
+            <SectionTitle>Featured Assets</SectionTitle>
+            <SectionSubtitle>{filteredAssets.length} assets available</SectionSubtitle>
+          </SectionTitleGroup>
+
+          <FiltersContainer>
+            <SearchInput
+              placeholder="Search assets..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{
-                startAdornment: <Search sx={{ color: '#607d8b', mr: 1 }} />,
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search size={18} color="var(--text-tertiary)" />
+                  </InputAdornment>
+                ),
               }}
             />
-            
+
             <FilterSelect
               select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              label="Asset Type"
+              SelectProps={{
+                MenuProps: {
+                  PaperProps: {
+                    sx: {
+                      background: 'var(--surface-elevated)',
+                      border: '1px solid var(--surface-subtle)',
+                      borderRadius: 'var(--radius-lg)',
+                      boxShadow: 'var(--shadow-lg)',
+                    },
+                  },
+                },
+              }}
             >
               {assetTypes.map((type) => (
-                <MenuItem key={type} value={type}>
+                <StyledMenuItem key={type} value={type}>
                   {type}
-                </MenuItem>
+                </StyledMenuItem>
               ))}
             </FilterSelect>
-            
+
             <FilterSelect
               select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              label="Sort By"
+              SelectProps={{
+                MenuProps: {
+                  PaperProps: {
+                    sx: {
+                      background: 'var(--surface-elevated)',
+                      border: '1px solid var(--surface-subtle)',
+                      borderRadius: 'var(--radius-lg)',
+                      boxShadow: 'var(--shadow-lg)',
+                    },
+                  },
+                },
+              }}
             >
               {sortOptions.map((option) => (
-                <MenuItem key={option} value={option}>
+                <StyledMenuItem key={option} value={option}>
                   {option}
-                </MenuItem>
+                </StyledMenuItem>
               ))}
             </FilterSelect>
-          </FilterContainer>
+          </FiltersContainer>
         </SectionHeader>
-        
-        <AssetGrid container spacing={3}>
-          {filteredAssets.map((asset) => (
-            <Grid item xs={12} sm={6} lg={4} key={asset.id}>
-              <AssetCard
-                asset={asset}
-                onInvest={handleAssetInvest}
-                onToggleFavorite={handleAssetFavorite}
-                onViewDetails={handleAssetDetails}
-                isFavorite={favoriteAssets.has(asset.id)}
-              />
-            </Grid>
-          ))}
-        </AssetGrid>
-        
-        {filteredAssets.length === 0 && (
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <Typography variant="h6" sx={{ color: '#607d8b', mb: 2 }}>
-              No assets found matching your criteria
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#607d8b' }}>
-              Try adjusting your search terms or filters
-            </Typography>
-          </Box>
+
+        {filteredAssets.length > 0 ? (
+          <AssetGrid container spacing={3}>
+            {filteredAssets.map((asset) => (
+              <Grid item xs={12} sm={6} lg={4} key={asset.id}>
+                <AssetCard
+                  asset={asset}
+                  onInvest={handleAssetInvest}
+                  onToggleFavorite={handleAssetFavorite}
+                  onViewDetails={handleAssetDetails}
+                  isFavorite={favoriteAssets.has(asset.id)}
+                />
+              </Grid>
+            ))}
+          </AssetGrid>
+        ) : (
+          <EmptyState>
+            <EmptyTitle>No assets found</EmptyTitle>
+            <EmptyDescription>Try adjusting your search terms or filters</EmptyDescription>
+          </EmptyState>
         )}
       </ContentSection>
     </PageContainer>
   );
-}; 
+};
+
+export default MarketplacePage;

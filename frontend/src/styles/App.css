@@ -1,532 +1,440 @@
-/* Global styles for Quantera Platform */
-:root {
-  /* Light theme variables */
-  --primary-color: #2563eb;
-  --primary-dark: #1e40af;
-  --primary-light: #60a5fa;
-  --secondary-color: #475569;
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
-  --danger-color: #ef4444;
-  --dark-color: #1e293b;
-  --light-color: #f8fafc;
-  --gray-100: #f1f5f9;
-  --gray-200: #e2e8f0;
-  --gray-300: #cbd5e1;
-  --gray-700: #334155;
-  --gray-900: #0f172a;
+/*
+ * Quantera Platform - Global App Styles
+ * Swiss Precision Design System
+ * Works in conjunction with quantera-design-system.css
+ */
 
-  /* Environmental theme colors */
-  --environmental-primary: #10b981;
-  --environmental-dark: #0d9488;
-  --environmental-light: #34d399;
-  --water-color: #0ea5e9;
-  --forest-color: #16a34a;
-  --biodiversity-color: #84cc16;
-  --carbon-color: #4ade80;
+/* ===== GLOBAL OVERRIDES ===== */
 
-  /* Theme specific variables */
-  --bg-color: var(--light-color);
-  --text-color: var(--gray-900);
-  --muted-color: #6c757d;
-  --card-bg: #ffffff;
-  --navbar-bg: var(--dark-color);
-  --navbar-text: #ffffff;
-  --footer-bg: var(--dark-color);
-  --footer-text: #ffffff;
-  --footer-text-muted: rgba(255, 255, 255, 0.7);
-  --border-color: var(--gray-200);
-  --shadow-color: rgba(0, 0, 0, 0.1);
-  --hover-shadow: rgba(0, 0, 0, 0.15);
-  --table-head-bg: var(--gray-100);
-  --thead-text-color: var(--gray-900);
-  --badge-text: #212529;
-  --hero-bg: var(--primary-color);
-  --hero-text: #ffffff;
-  --feature-icon-bg: rgba(37, 99, 235, 0.1);
-  --feature-icon-color: var(--primary-color);
+/* Ensure dark mode by default for MUI components */
+html, body, #root {
+  background-color: var(--surface-base);
+  color: var(--text-primary);
+  min-height: 100vh;
 }
 
-/* Dark theme variables */
-[data-theme='dark'] {
-  --bg-color: #121212;
-  --text-color: #e5e5e5;
-  --muted-color: #a0a0a0;
-  --card-bg: #1e1e1e;
-  --navbar-bg: #0a0a0a;
-  --navbar-text: #e5e5e5;
-  --footer-bg: #0a0a0a;
-  --footer-text: #e5e5e5;
-  --footer-text-muted: rgba(255, 255, 255, 0.7);
-  --border-color: #2d2d2d;
-  --shadow-color: rgba(0, 0, 0, 0.5);
-  --hover-shadow: rgba(0, 0, 0, 0.7);
-  --gray-100: #1a1a1a;
-  --gray-200: #2d2d2d;
-  --gray-300: #3d3d3d;
-  --table-head-bg: #1a1a1a;
-  --thead-text-color: #e5e5e5;
-  --badge-text: #e5e5e5;
-  --hero-bg: #0c4a6e;
-  --hero-text: #ffffff;
-  --feature-icon-bg: rgba(96, 165, 250, 0.2);
-  --feature-icon-color: var(--primary-light);
+/* Scrollbar styling for dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, 
-    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  color: var(--text-color);
-  background-color: var(--bg-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
+::-webkit-scrollbar-track {
+  background: var(--surface-base);
 }
 
-/* Feature icons */
-.feature-icon-wrapper {
-  background-color: var(--feature-icon-bg);
-  border-radius: 50%;
-  width: fit-content;
-  padding: 1rem;
-  margin: 0 auto 0.75rem auto;
-  transition: background-color 0.3s ease;
+::-webkit-scrollbar-thumb {
+  background: var(--surface-subtle);
+  border-radius: var(--radius-full);
 }
 
-.feature-icon {
-  color: var(--feature-icon-color);
-  font-size: 1.875rem;
-  transition: color 0.3s ease;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--surface-hover);
 }
 
-/* Hero section */
-.bg-primary {
-  background-color: var(--hero-bg) !important;
+/* Selection styling */
+::selection {
+  background: var(--accent-muted);
+  color: var(--accent-primary);
 }
 
-.text-white {
-  color: var(--hero-text) !important;
+/* ===== MUI COMPONENT OVERRIDES ===== */
+
+/* Paper/Card backgrounds */
+.MuiPaper-root {
+  background-color: var(--surface-elevated) !important;
+  background-image: none !important;
 }
 
-.text-white-50 {
-  color: var(--footer-text-muted) !important;
+/* Button text transform */
+.MuiButton-root {
+  text-transform: none;
+  font-weight: 500;
 }
 
-/* Custom button styles */
-.btn-primary {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
+/* Input fields */
+.MuiOutlinedInput-root {
+  background-color: var(--surface-overlay);
 }
 
-.btn-primary:hover {
-  background-color: var(--primary-dark);
-  border-color: var(--primary-dark);
+.MuiOutlinedInput-notchedOutline {
+  border-color: var(--surface-subtle) !important;
 }
 
-.btn-outline-primary {
-  color: var(--primary-color);
-  border-color: var(--primary-color);
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--surface-hover) !important;
 }
 
-.btn-outline-primary:hover {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--accent-primary) !important;
+  border-width: 1px !important;
 }
 
-/* Text colors */
-.text-primary {
-  color: var(--primary-color) !important;
+.MuiInputBase-input {
+  color: var(--text-primary) !important;
 }
 
-.text-success {
-  color: var(--success-color) !important;
+.MuiInputBase-input::placeholder {
+  color: var(--text-tertiary) !important;
+  opacity: 1 !important;
 }
 
-.text-warning {
-  color: var(--warning-color) !important;
+.MuiInputLabel-root {
+  color: var(--text-secondary) !important;
 }
 
-.text-danger {
-  color: var(--danger-color) !important;
+.MuiInputLabel-root.Mui-focused {
+  color: var(--accent-primary) !important;
 }
 
-.text-muted {
-  color: var(--muted-color) !important;
+/* Select dropdown */
+.MuiSelect-icon {
+  color: var(--text-tertiary) !important;
 }
 
-/* Fix for dark text in badges */
-.badge {
-  color: var(--badge-text) !important;
+.MuiMenu-paper {
+  background-color: var(--surface-elevated) !important;
+  border: 1px solid var(--surface-subtle) !important;
 }
 
-[data-theme='dark'] .badge-light, 
-[data-theme='dark'] .bg-light.badge {
-  background-color: #2d2d2d !important;
+.MuiMenuItem-root {
+  color: var(--text-primary) !important;
 }
 
-[data-theme='dark'] .badge[text="dark"] {
-  color: var(--badge-text) !important;
+.MuiMenuItem-root:hover {
+  background-color: var(--surface-overlay) !important;
 }
 
-/* Card styles with theme support */
-.card {
-  background-color: var(--card-bg);
-  border-color: var(--border-color);
-  box-shadow: 0 4px 6px var(--shadow-color);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+.MuiMenuItem-root.Mui-selected {
+  background-color: var(--accent-muted) !important;
+  color: var(--accent-primary) !important;
 }
 
-.card-header, .card-footer {
-  background-color: var(--gray-100) !important;
-  color: var(--text-color);
-  border-color: var(--border-color);
+/* Tabs */
+.MuiTabs-root {
+  border-bottom: 1px solid var(--surface-subtle);
 }
 
-.card-body {
-  color: var(--text-color);
+.MuiTab-root {
+  color: var(--text-secondary) !important;
+  text-transform: none;
+  font-weight: 500;
+  min-height: 48px;
 }
 
-/* Card hover effect */
-.hover-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.MuiTab-root.Mui-selected {
+  color: var(--accent-primary) !important;
 }
 
-.hover-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px var(--hover-shadow) !important;
+.MuiTabs-indicator {
+  background-color: var(--accent-primary) !important;
 }
 
-/* Navbar styles */
-.navbar {
-  background-color: var(--navbar-bg) !important;
-  box-shadow: 0 2px 10px var(--shadow-color);
+/* Chips */
+.MuiChip-root {
+  background-color: var(--surface-overlay) !important;
+  color: var(--text-secondary) !important;
+  border: none !important;
 }
 
-.navbar-dark .navbar-nav .nav-link {
-  color: var(--navbar-text);
+.MuiChip-root.MuiChip-colorPrimary {
+  background-color: var(--accent-muted) !important;
+  color: var(--accent-primary) !important;
 }
 
-.navbar-dark .navbar-nav .nav-link.active {
-  color: var(--primary-light);
-  font-weight: 600;
+.MuiChip-root.MuiChip-colorSuccess {
+  background-color: var(--status-success-muted) !important;
+  color: var(--status-success) !important;
 }
 
-/* Footer styles */
-footer {
-  background-color: var(--footer-bg) !important;
-  color: var(--footer-text);
-  border-top: 1px solid var(--border-color);
+.MuiChip-root.MuiChip-colorWarning {
+  background-color: var(--status-warning-muted) !important;
+  color: var(--status-warning) !important;
 }
 
-/* Background colors */
-.bg-dark {
-  background-color: var(--navbar-bg) !important;
+.MuiChip-root.MuiChip-colorError {
+  background-color: var(--status-error-muted) !important;
+  color: var(--status-error) !important;
 }
 
-.bg-light {
-  background-color: var(--gray-100) !important;
-  color: var(--text-color) !important;
+/* Tables */
+.MuiTableHead-root {
+  background-color: var(--surface-overlay) !important;
 }
 
-/* Table styles */
-.table {
-  color: var(--text-color);
+.MuiTableHead-root .MuiTableCell-head {
+  color: var(--text-tertiary) !important;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--surface-subtle) !important;
 }
 
-.table thead.bg-light th,
-.table th, 
-.table td {
-  color: var(--text-color);
+.MuiTableCell-root {
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--surface-subtle) !important;
 }
 
-.table thead.bg-light th,
-.table thead th {
-  background-color: var(--table-head-bg) !important;
-  color: var(--thead-text-color) !important;
+.MuiTableRow-root:hover {
+  background-color: var(--surface-overlay) !important;
 }
 
-.table-hover tbody tr:hover {
-  background-color: var(--gray-100);
+/* Dialogs/Modals */
+.MuiDialog-paper {
+  background-color: var(--surface-elevated) !important;
+  border: 1px solid var(--surface-subtle) !important;
+  border-radius: var(--radius-xl) !important;
 }
 
-/* Form controls */
-.form-control, .input-group-text, .form-select {
-  background-color: var(--card-bg);
-  color: var(--text-color);
-  border-color: var(--border-color);
+.MuiDialogTitle-root {
+  color: var(--text-primary) !important;
+  font-family: var(--font-display) !important;
 }
 
-.form-control:focus, .form-select:focus {
-  background-color: var(--card-bg);
-  color: var(--text-color);
+.MuiDialogContent-root {
+  color: var(--text-secondary) !important;
 }
 
-.input-group-text {
-  color: var(--text-color);
+.MuiDialogActions-root {
+  border-top: 1px solid var(--surface-subtle) !important;
+  padding: 16px 24px !important;
 }
 
-/* Alert styles */
-.alert-info {
-  background-color: rgba(37, 99, 235, 0.1);
-  color: var(--text-color);
-  border-color: rgba(37, 99, 235, 0.2);
+/* Dividers */
+.MuiDivider-root {
+  border-color: var(--surface-subtle) !important;
 }
 
-/* Bootstrap utilities override */
-.lead {
-  color: var(--text-color);
+/* Alerts */
+.MuiAlert-root {
+  border-radius: var(--radius-lg) !important;
 }
 
-h1, h2, h3, h4, h5, h6,
-.h1, .h2, .h3, .h4, .h5, .h6 {
-  color: var(--text-color);
+.MuiAlert-standardSuccess {
+  background-color: var(--status-success-muted) !important;
+  color: var(--status-success) !important;
 }
 
-.small {
-  color: var(--muted-color);
+.MuiAlert-standardWarning {
+  background-color: var(--status-warning-muted) !important;
+  color: var(--status-warning) !important;
 }
 
-/* Theme toggle button */
-.theme-toggle-btn {
-  position: relative;
-  width: 50px;
-  height: 26px;
-  margin-left: 15px;
-  border-radius: 20px;
-  background-color: var(--primary-color);
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  display: flex;
-  align-items: center;
-  padding: 0 4px;
+.MuiAlert-standardError {
+  background-color: var(--status-error-muted) !important;
+  color: var(--status-error) !important;
 }
 
-.theme-toggle-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.3s ease;
+.MuiAlert-standardInfo {
+  background-color: var(--status-info-muted) !important;
+  color: var(--status-info) !important;
 }
 
-.theme-toggle-icon.light {
-  transform: translateX(0);
-  color: #f59e0b;
+/* Tooltips */
+.MuiTooltip-tooltip {
+  background-color: var(--surface-overlay) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--surface-subtle) !important;
+  font-size: 12px !important;
+  border-radius: var(--radius-md) !important;
 }
 
-.theme-toggle-icon.dark {
-  transform: translateX(24px);
-  color: #1e40af;
+/* Progress bars */
+.MuiLinearProgress-root {
+  background-color: var(--surface-subtle) !important;
+  border-radius: var(--radius-full) !important;
+  height: 4px !important;
 }
 
-/* Fix for image placeholders */
-.placeholder-img {
-  width: 100%;
-  height: 180px;
-  background-color: var(--gray-300);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-color);
-  border-top-left-radius: 0.25rem;
-  border-top-right-radius: 0.25rem;
+.MuiLinearProgress-bar {
+  background-color: var(--accent-primary) !important;
+  border-radius: var(--radius-full) !important;
 }
 
-/* Background colors for cards and sections */
-.bg-primary-light {
-  background-color: rgba(37, 99, 235, 0.1);
+/* Circular progress */
+.MuiCircularProgress-root {
+  color: var(--accent-primary) !important;
 }
 
-/* Dropdown menu fix for dark mode */
-.dropdown-menu {
-  background-color: var(--card-bg);
-  border-color: var(--border-color);
+/* Accordions */
+.MuiAccordion-root {
+  background-color: var(--surface-elevated) !important;
+  border: 1px solid var(--surface-subtle) !important;
+  border-radius: var(--radius-lg) !important;
 }
 
-.dropdown-item {
-  color: var(--text-color);
+.MuiAccordion-root::before {
+  display: none !important;
 }
 
-.dropdown-item:hover, 
-.dropdown-item:focus {
-  background-color: var(--gray-100);
-  color: var(--text-color);
+.MuiAccordionSummary-root {
+  color: var(--text-primary) !important;
 }
 
-/* Button variant fixes */
-.btn-outline-success, 
-.btn-outline-warning, 
-.btn-outline-info, 
-.btn-outline-danger {
+.MuiAccordionDetails-root {
+  color: var(--text-secondary) !important;
+  border-top: 1px solid var(--surface-subtle) !important;
+}
+
+/* Avatars */
+.MuiAvatar-root {
+  background-color: var(--accent-muted) !important;
+  color: var(--accent-primary) !important;
+}
+
+/* Badges */
+.MuiBadge-badge {
+  background-color: var(--accent-primary) !important;
+  color: var(--text-inverse) !important;
+}
+
+/* Skeleton loading */
+.MuiSkeleton-root {
+  background-color: var(--surface-subtle) !important;
+}
+
+/* Cards */
+.MuiCard-root {
+  background-color: var(--surface-elevated) !important;
+  border: 1px solid var(--surface-subtle) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: none !important;
+}
+
+.MuiCardContent-root {
+  color: var(--text-primary);
+}
+
+/* Typography colors */
+.MuiTypography-root {
   color: inherit;
 }
 
-.btn-outline-success {
-  color: var(--success-color);
+.MuiTypography-colorPrimary {
+  color: var(--accent-primary) !important;
 }
 
-.btn-outline-danger {
-  color: var(--danger-color);
+.MuiTypography-colorSecondary {
+  color: var(--text-secondary) !important;
 }
 
-/* Environmental asset specific styles */
-.environmental-card {
-  border-left: 4px solid var(--environmental-primary);
+.MuiTypography-colorTextSecondary {
+  color: var(--text-secondary) !important;
 }
 
-.btn-success {
-  background-color: var(--environmental-primary);
-  border-color: var(--environmental-primary);
+/* Icon buttons */
+.MuiIconButton-root {
+  color: var(--text-secondary) !important;
 }
 
-.btn-success:hover {
-  background-color: var(--environmental-dark);
-  border-color: var(--environmental-dark);
+.MuiIconButton-root:hover {
+  background-color: var(--surface-overlay) !important;
+  color: var(--text-primary) !important;
 }
 
-.btn-outline-success {
-  border-color: var(--environmental-primary);
-  color: var(--environmental-primary);
+/* Switch */
+.MuiSwitch-switchBase.Mui-checked {
+  color: var(--accent-primary) !important;
 }
 
-.btn-outline-success:hover {
-  background-color: var(--environmental-primary);
-  border-color: var(--environmental-primary);
-  color: white;
+.MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track {
+  background-color: var(--accent-primary) !important;
 }
 
-.environmental-impact-icon {
-  font-size: 1.1rem;
-  margin-right: 0.5rem;
+.MuiSwitch-track {
+  background-color: var(--surface-subtle) !important;
 }
 
-.environmental-impact-section {
-  background-color: rgba(16, 185, 129, 0.1);
-  border-radius: 0.375rem;
-  padding: 0.75rem;
-  margin-top: 1rem;
+/* Checkbox */
+.MuiCheckbox-root {
+  color: var(--surface-subtle) !important;
 }
 
-.sdg-chip {
-  display: inline-block;
-  margin: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: white;
+.MuiCheckbox-root.Mui-checked {
+  color: var(--accent-primary) !important;
 }
 
-.sdg-1 { background-color: #e5243b; } /* No Poverty */
-.sdg-2 { background-color: #DDA63A; } /* Zero Hunger */
-.sdg-3 { background-color: #4C9F38; } /* Good Health */
-.sdg-4 { background-color: #C5192D; } /* Quality Education */
-.sdg-5 { background-color: #FF3A21; } /* Gender Equality */
-.sdg-6 { background-color: #26BDE2; } /* Clean Water */
-.sdg-7 { background-color: #FCC30B; } /* Affordable Energy */
-.sdg-8 { background-color: #A21942; } /* Decent Work */
-.sdg-9 { background-color: #FD6925; } /* Industry, Innovation */
-.sdg-10 { background-color: #DD1367; } /* Reduced Inequalities */
-.sdg-11 { background-color: #FD9D24; } /* Sustainable Cities */
-.sdg-12 { background-color: #BF8B2E; } /* Responsible Consumption */
-.sdg-13 { background-color: #3F7E44; } /* Climate Action */
-.sdg-14 { background-color: #0A97D9; } /* Life Below Water */
-.sdg-15 { background-color: #56C02B; } /* Life on Land */
-.sdg-16 { background-color: #00689D; } /* Peace, Justice */
-.sdg-17 { background-color: #19486A; } /* Partnerships */
-
-/* Environmental asset cards in marketplace */
-.marketplace-card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+/* Radio */
+.MuiRadio-root {
+  color: var(--surface-subtle) !important;
 }
 
-.marketplace-card .card-body {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
+.MuiRadio-root.Mui-checked {
+  color: var(--accent-primary) !important;
 }
 
-.marketplace-card .card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
+/* ===== RECHARTS OVERRIDES ===== */
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--surface-subtle) !important;
+  stroke-opacity: 0.3 !important;
 }
 
-.marketplace-card .card-img-container {
-  height: 180px;
-  overflow: hidden;
+.recharts-text {
+  fill: var(--text-tertiary) !important;
 }
 
-.marketplace-card .card-img-top {
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: var(--surface-overlay) !important;
+  border: 1px solid var(--surface-subtle) !important;
+  border-radius: var(--radius-md) !important;
 }
 
-.marketplace-card:hover .card-img-top {
-  transform: scale(1.05);
+.recharts-legend-item-text {
+  color: var(--text-secondary) !important;
 }
 
-.marketplace-card .environmental-metrics {
-  background-color: rgba(16, 185, 129, 0.1);
-  border-radius: 0.375rem;
-  padding: 0.5rem;
-  margin-top: 0.75rem;
-  font-size: 0.875rem;
+/* ===== LAYOUT HELPERS ===== */
+
+.page-container {
+  min-height: 100vh;
+  background-color: var(--surface-base);
 }
 
-.marketplace-card .btn-container {
-  margin-top: auto;
-  padding-top: 1rem;
+.content-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
 }
 
-/* Environmental impact dashboard */
-.impact-metric-card {
-  text-align: center;
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease;
+@media (max-width: 768px) {
+  .content-container {
+    padding: 0 16px;
+  }
 }
 
-.impact-metric-card:hover {
-  transform: translateY(-5px);
+/* ===== LINK STYLES ===== */
+
+a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  transition: color 150ms;
 }
 
-.impact-metric-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+a:hover {
+  color: var(--accent-hover);
 }
 
-.impact-metric-value {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
+/* ===== FOCUS STYLES ===== */
+
+*:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
 }
 
-.impact-metric-label {
-  color: var(--gray-700);
-  font-size: 0.875rem;
-}
+/* ===== PRINT STYLES ===== */
 
-/* Water protection indicator */
-.water-protection-icon {
-  color: var(--water-color);
-}
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
 
-/* Carbon offset indicator */
-.carbon-offset-icon {
-  color: var(--carbon-color);
+  .MuiPaper-root,
+  .MuiCard-root {
+    background-color: white !important;
+    border: 1px solid #ccc !important;
+  }
 }
-
-/* Land protection indicator */
-.land-protection-icon {
-  color: var(--forest-color);
-}
-
-/* Biodiversity protection indicator */
-.biodiversity-icon {
-  color: var(--biodiversity-color);
-} 

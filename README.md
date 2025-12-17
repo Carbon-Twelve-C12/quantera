@@ -1,107 +1,232 @@
-# Quantera Platform
+<p align="center">
+  <img src="https://img.shields.io/badge/Quantera-Asset%20Tokenization-10B981?style=for-the-badge&labelColor=09090B" alt="Quantera" />
+</p>
 
-Institutional-grade asset tokenization infrastructure enabling fractional ownership and trading of real-world assets through blockchain technology.
+<h1 align="center">Quantera</h1>
 
-[![Version](https://img.shields.io/badge/Version-2.0.0--alpha-green)]()
-[![License](https://img.shields.io/badge/License-MIT-blue)]()
+<p align="center">
+  <strong>Institutional-Grade Asset Tokenization Infrastructure</strong>
+</p>
 
-## Quick Start
+<p align="center">
+  Enabling fractional ownership, instant settlement, and 24/7 liquidity for real-world assets.
+</p>
 
-```bash
-# 1. Clone and install
-git clone https://github.com/Carbon-Twelve-C12/quantera.git
-cd quantera
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#api-reference">API Reference</a> •
+  <a href="#documentation">Documentation</a>
+</p>
 
-# 2. Set up database
-createdb quantera_dev
-psql quantera_dev < backend/migrations/*.sql
+<p align="center">
+  <img src="https://img.shields.io/badge/version-2.0.0--alpha-10B981?style=flat-square&labelColor=18181B" alt="Version" />
+  <img src="https://img.shields.io/badge/license-Apache--2.0-3B82F6?style=flat-square&labelColor=18181B" alt="License" />
+  <img src="https://img.shields.io/badge/rust-1.75+-EF4444?style=flat-square&labelColor=18181B" alt="Rust" />
+  <img src="https://img.shields.io/badge/node-18+-22C55E?style=flat-square&labelColor=18181B" alt="Node" />
+</p>
 
-# 3. Configure environment
-cp backend/.env.example backend/.env
-# Edit backend/.env with your DATABASE_URL
+---
 
-# 4. Start backend
-cd backend && cargo run --bin quantera-backend
+## Features
 
-# 5. Start frontend
-cd frontend && npm install && npm start
-```
+**Tokenization Engine**
+- ERC-1400 compliant security tokens with transfer restrictions
+- Template-based asset deployment for rapid onboarding
+- Automated lifecycle management (issuance, dividends, redemption)
 
-Visit `http://localhost:3000` and connect your MetaMask wallet.
+**Portfolio Management**
+- Real-time holdings tracking and performance analytics
+- Transaction history with complete audit trail
+- Yield distribution and dividend tracking
+
+**Trade Finance**
+- Tokenized trade finance instruments (letters of credit, receivables)
+- Fractional investment with automated settlement
+- Risk-rated opportunities with transparent scoring
+
+**Risk & Compliance**
+- Real-time Value-at-Risk (VaR) calculation
+- Multi-jurisdiction KYC/AML compliance
+- Automated sanctions screening
+- IPFS-based document verification
+
+**Security**
+- Wallet-based authentication (ECDSA signature verification)
+- JWT session management with automatic expiry
+- Role-based access control (RBAC)
+- SQL injection prevention with parameterized queries
 
 ---
 
 ## Architecture
 
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Frontend                                 │
+│              React 18 • TypeScript • Material-UI                │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      API Gateway (Port 3001)                     │
+│                    Rust • Axum • SQLx                           │
+├─────────────────────────────────────────────────────────────────┤
+│  Auth  │  Portfolio  │  Trade Finance  │  Assets  │  Trading   │
+└─────────────────────────────────────────────────────────────────┘
+              │                    │                    │
+              ▼                    ▼                    ▼
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│  Risk Service    │  │ Compliance Svc   │  │   PostgreSQL     │
+│   Port 8001      │  │    Port 8002     │  │     + Redis      │
+└──────────────────┘  └──────────────────┘  └──────────────────┘
+              │                    │
+              ▼                    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Smart Contracts                             │
+│           Solidity 0.8.20 • Hardhat • Ethereum/L2               │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ### Services
 
-| Service | Port | Framework | Purpose |
-|---------|------|-----------|---------|
-| Main Backend | 3001 | Axum | Auth, Assets, Portfolio, Trading |
-| Risk Service | 8001 | Axum | Real-time risk metrics |
-| Compliance Service | 8002 | Axum | KYC/AML, sanctions screening |
+| Service | Port | Purpose |
+|---------|------|---------|
+| Main Backend | 3001 | Authentication, assets, portfolio, trading |
+| Risk Service | 8001 | Real-time risk metrics, VaR calculation |
+| Compliance Service | 8002 | KYC/AML, sanctions screening |
 
-### Data Flow
+### Tech Stack
 
+| Layer | Technologies |
+|-------|--------------|
+| Frontend | React 18, TypeScript, Material-UI, ethers.js |
+| Backend | Rust, Axum, PostgreSQL, Redis, SQLx |
+| Blockchain | Solidity 0.8.20, Hardhat, ethers-rs |
+| Infrastructure | Docker, TimescaleDB |
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Rust 1.75+
+- Node.js 18+
+- PostgreSQL 15+
+- MetaMask browser extension
+
+### Installation
+
+```bash
+# Clone repository
+git clone https://github.com/Carbon-Twelve-C12/quantera.git
+cd quantera
+
+# Set up database
+createdb quantera_dev
+psql quantera_dev < backend/migrations/001_auth_schema.sql
+psql quantera_dev < backend/migrations/002_portfolio_schema.sql
+psql quantera_dev < backend/migrations/003_tradefinance_schema.sql
+
+# Configure environment
+cp backend/.env.example backend/.env
+# Edit backend/.env with your DATABASE_URL
+
+# Start backend
+cd backend && cargo run --bin quantera-backend
+
+# Start frontend (new terminal)
+cd frontend && npm install && npm start
 ```
-Frontend (React + TypeScript)
-    ↓ REST API
-Main Backend (Axum)
-    ↓ Database queries
-PostgreSQL + Redis
+
+Visit `http://localhost:3000` and connect your MetaMask wallet.
+
+### Environment Variables
+
+**Backend** (`backend/.env`)
+```bash
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/quantera_dev
+REDIS_URL=redis://localhost:6379/0
+JWT_SECRET=your-secret-key-here
+API_PORT=3001
+ALLOWED_ORIGINS=http://localhost:3000
+```
+
+**Frontend** (`frontend/.env`)
+```bash
+REACT_APP_API_URL=http://localhost:3001
+REACT_APP_CHAIN_ID=1337
 ```
 
 ---
 
-## Tech Stack
+## API Reference
 
-| Layer | Technology |
-|-------|------------|
-| **Frontend** | React 18, TypeScript, Material-UI, ethers.js |
-| **Backend** | Rust (Axum), PostgreSQL, Redis, SQLx |
-| **Blockchain** | Solidity 0.8.20, Hardhat, ethers-rs |
-| **Infrastructure** | Docker, TimescaleDB |
+### Authentication
 
----
+Challenge-response authentication using wallet signatures.
 
-## API Endpoints
-
-### Authentication (Challenge-Response)
 ```
-POST /api/v1/auth/challenge      # Generate signing challenge
-POST /api/v1/auth/verify         # Verify signature, get JWT
-GET  /api/v1/auth/validate       # Check token validity
-POST /api/v1/auth/logout         # Revoke session
+POST /api/v1/auth/challenge      Generate signing challenge
+POST /api/v1/auth/verify         Verify signature, receive JWT
+GET  /api/v1/auth/validate       Validate token
+POST /api/v1/auth/logout         Revoke session
 ```
 
-### Portfolio Management
+### Portfolio
+
 ```
-GET  /api/v1/portfolio/:address               # Complete portfolio
-GET  /api/v1/portfolio/:address/holdings      # Asset holdings
-GET  /api/v1/portfolio/:address/transactions  # Transaction history
-GET  /api/v1/portfolio/:address/performance   # Performance metrics
+GET /api/v1/portfolio/:address                Portfolio overview
+GET /api/v1/portfolio/:address/holdings       Asset holdings
+GET /api/v1/portfolio/:address/transactions   Transaction history
+GET /api/v1/portfolio/:address/performance    Performance metrics
 ```
 
 ### Trade Finance
+
 ```
-GET  /api/v1/tradefinance/assets                  # List assets
-GET  /api/v1/tradefinance/assets/:id              # Asset details
-POST /api/v1/tradefinance/purchase                # Purchase units
-GET  /api/v1/tradefinance/positions/:address      # User positions
+GET  /api/v1/tradefinance/assets              List available assets
+GET  /api/v1/tradefinance/assets/:id          Asset details
+POST /api/v1/tradefinance/purchase            Purchase units
+GET  /api/v1/tradefinance/positions/:address  User positions
 ```
 
-### Risk Management
+### Risk Management (Port 8001)
+
 ```
-GET /api/v2/risk/portfolio/:address   # Risk metrics (Port 8001)
-GET /api/v2/risk/alerts/:address      # Risk alerts
-WS  ws://localhost:8546               # Real-time updates
+GET /api/v2/risk/portfolio/:address   Portfolio risk metrics
+GET /api/v2/risk/alerts/:address      Risk alerts
+WS  ws://localhost:8546               Real-time updates
 ```
 
-### Compliance
+### Compliance (Port 8002)
+
 ```
-POST /api/v2/compliance/kyc/verify        # KYC verification (Port 8002)
-POST /api/v2/compliance/sanctions/screen  # Sanctions screening
-POST /api/v2/compliance/reports/generate  # Compliance reports
+POST /api/v2/compliance/kyc/verify        KYC verification
+POST /api/v2/compliance/sanctions/screen  Sanctions screening
+POST /api/v2/compliance/reports/generate  Generate reports
+```
+
+---
+
+## Smart Contracts
+
+| Contract | Purpose |
+|----------|---------|
+| `EnhancedSecurityToken.sol` | ERC-1400 security token with dividends and governance |
+| `RiskEngine.sol` | Portfolio risk limits enforcement |
+| `AutomatedComplianceEngine.sol` | Multi-jurisdiction compliance rules |
+| `AssetTemplateRegistry.sol` | Template-based asset deployment |
+| `AssetLifecycleManager.sol` | Automated lifecycle management |
+
+### Testing
+
+```bash
+cd tests/contracts
+npm install
+npx hardhat test
 ```
 
 ---
@@ -111,35 +236,27 @@ POST /api/v2/compliance/reports/generate  # Compliance reports
 ```
 quantera/
 ├── contracts/                 # Solidity smart contracts
-│   ├── institutional/         # RiskEngine.sol
-│   ├── compliance/            # AutomatedComplianceEngine.sol
-│   ├── factories/             # AssetTemplateRegistry.sol
-│   ├── tokens/                # EnhancedSecurityToken.sol
-│   └── lifecycle/             # AssetLifecycleManager.sol
+│   ├── tokens/                # Security token implementations
+│   ├── institutional/         # Risk management
+│   ├── compliance/            # Compliance engine
+│   ├── factories/             # Asset templates
+│   └── lifecycle/             # Lifecycle management
 │
 ├── backend/                   # Rust backend services
 │   ├── src/                   # Main backend (port 3001)
-│   │   ├── api/               # API handlers
-│   │   │   ├── secure_api.rs      # Auth endpoints
-│   │   │   ├── portfolio_api.rs   # Portfolio endpoints
-│   │   │   └── tradefinance_api.rs # Trading endpoints
+│   │   ├── api/               # REST endpoints
 │   │   └── services/          # Business logic
-│   │       ├── portfolio_service.rs
-│   │       └── tradefinance_service.rs
-│   │
-│   ├── risk_service/          # Risk management (port 8001)
-│   ├── compliance_service/    # Compliance (port 8002)
+│   ├── risk_service/          # Risk service (port 8001)
+│   ├── compliance_service/    # Compliance service (port 8002)
 │   └── migrations/            # Database schemas
 │
 └── frontend/                  # React application
     ├── src/
-    │   ├── api/              # API clients
-    │   ├── components/       # React components
-    │   ├── contexts/         # State management
-    │   │   ├── AuthContext.tsx
-    │   │   └── PortfolioContext.tsx
-    │   ├── pages/            # Page components
-    │   └── types/            # TypeScript types
+    │   ├── api/               # API clients
+    │   ├── components/        # React components
+    │   ├── contexts/          # State management
+    │   ├── pages/             # Page components
+    │   └── styles/            # Design system
     └── public/
 ```
 
@@ -147,191 +264,83 @@ quantera/
 
 ## Development
 
-### Prerequisites
-
-- Rust 1.75+
-- Node.js 18+
-- PostgreSQL 15+
-- Redis 7+ (optional)
-- MetaMask browser extension
-
-### Backend Setup
+### Backend
 
 ```bash
-# Build all services
 cd backend
 cargo build --workspace
-
-# Run main backend
 cargo run --bin quantera-backend
 
-# Run specialized services (optional)
+# Run specialized services
 cargo run --bin risk_service_server
 cargo run --bin compliance_service_server
+
+# Run tests
+cargo test
 ```
 
-### Frontend Setup
+### Frontend
 
 ```bash
 cd frontend
 npm install
 npm start
+
+# Run tests
+npm test
+
+# Build for production
+npm run build
 ```
 
-### Database Migrations
-
-```bash
-# Apply in order
-psql quantera_dev < backend/migrations/001_auth_schema.sql
-psql quantera_dev < backend/migrations/002_portfolio_schema.sql
-psql quantera_dev < backend/migrations/003_tradefinance_schema.sql
-psql quantera_dev < backend/migrations/seed_test_data.sql
-```
-
-### Smart Contract Testing
+### Smart Contracts
 
 ```bash
 cd tests/contracts
 npm install
+npx hardhat compile
 npx hardhat test
-```
-
----
-
-## Environment Variables
-
-Create `backend/.env`:
-
-```bash
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/quantera_dev
-REDIS_URL=redis://localhost:6379/0
-JWT_SECRET=your-secret-key-here
-API_PORT=3001
-ALLOWED_ORIGINS=http://localhost:3000
-```
-
-Create `frontend/.env`:
-
-```bash
-REACT_APP_API_URL=http://localhost:3001
-REACT_APP_CHAIN_ID=1337
-```
-
----
-
-## Core Features
-
-### Wallet Authentication
-- MetaMask integration with challenge-response flow
-- JWT-based session management
-- Automatic signature verification (ECDSA)
-
-### Portfolio Management
-- Real-time holdings tracking
-- Transaction history
-- Performance metrics (Sharpe ratio, returns, volatility)
-- Yield distribution tracking
-
-### Trade Finance
-- Tokenized trade finance instruments
-- Fractional investment
-- Automated settlement
-- Risk rating (1-5 scale)
-
-### Risk Management
-- Real-time Value-at-Risk (VaR) calculation
-- Portfolio risk metrics
-- WebSocket updates
-- Risk alerts and notifications
-
-### Compliance
-- Multi-jurisdiction KYC/AML
-- Automated sanctions screening
-- Tax calculation and reporting
-- IPFS-based document storage
-
----
-
-## Smart Contracts
-
-**Deployed on Ethereum-compatible chains:**
-
-- `RiskEngine.sol` - Portfolio risk limits enforcement
-- `AutomatedComplianceEngine.sol` - Multi-jurisdiction compliance rules
-- `AssetTemplateRegistry.sol` - Template-based asset deployment
-- `EnhancedSecurityToken.sol` - ERC-1400 with dividends and governance
-- `AssetLifecycleManager.sol` - Automated asset lifecycle management
-
----
-
-## Database Schema
-
-### Authentication
-- `users` - Wallet-based user accounts
-- `auth_challenges` - Challenge-response authentication
-- `auth_sessions` - JWT session tracking
-
-### Portfolio
-- `portfolio_holdings` - User asset holdings
-- `portfolio_transactions` - Transaction history
-- `yield_distributions` - Dividend tracking
-
-### Trade Finance
-- `tradefinance_assets` - Available investment opportunities
-- `tradefinance_positions` - User positions
-- `tradefinance_transactions` - Trading history
-
-### Risk Management
-- `risk_metrics` - TimescaleDB hypertable for time-series data
-- `risk_alerts` - Risk notification tracking
-- `correlation_matrix` - Asset correlation data
-
----
-
-## Testing
-
-```bash
-# Backend tests
-cd backend
-cargo test
-
-# Frontend tests
-cd frontend
-npm test
-
-# Smart contract tests
-cd tests/contracts
-npx hardhat test
-
-# Integration tests
-npx hardhat test integration/*.test.js
 ```
 
 ---
 
 ## Security
 
-- Wallet signature verification (ECDSA)
-- JWT token authentication (24-hour expiry)
-- SQL injection prevention (parameterized queries)
-- CORS whitelist configuration
-- Role-based access control (RBAC)
-- Session revocation on logout
-- Encrypted sensitive data (AES-256)
+- **Authentication**: ECDSA wallet signature verification
+- **Sessions**: JWT tokens with 24-hour expiry
+- **Data**: SQL injection prevention, parameterized queries
+- **Network**: CORS whitelist, HTTPS in production
+- **Access**: Role-based access control (RBAC)
+- **Encryption**: AES-256 for sensitive data
 
 ---
 
 ## Performance
 
-- Portfolio API: <500ms response time
-- Risk calculation: <1s for 20-asset portfolio
-- WebSocket latency: <50ms
-- Database queries: Indexed for optimal performance
+| Metric | Target |
+|--------|--------|
+| Portfolio API | < 500ms |
+| Risk Calculation | < 1s (20 assets) |
+| WebSocket Latency | < 50ms |
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ---
 
 ## License
 
-MIT
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
 ---
+
+<p align="center">
+  <sub>Built with precision by the Quantera team</sub>
+</p>

@@ -1,85 +1,80 @@
 import React from 'react';
-import { Card, CardMedia, CardContent, Typography, Box, Chip, Button } from '@mui/material';
+import { Card, CardContent, Typography, Box, Button } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { TrendingUp, Shield, Globe, Star, BarChart3 } from 'lucide-react';
+import { TrendingUp, Shield, Globe, Star, BarChart3, ArrowUpRight } from 'lucide-react';
 
-const StyledCard = styled(Card)(({ theme }) => ({
-  background: '#ffffff',
-  borderRadius: '16px',
-  boxShadow: '0 4px 24px rgba(26, 35, 126, 0.08)',
-  border: '1px solid rgba(26, 35, 126, 0.08)',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+// Swiss Precision Asset Card - Clean, minimal, data-focused
+const StyledCard = styled(Card)({
+  background: 'var(--surface-elevated)',
+  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--surface-subtle)',
+  transition: 'border-color 250ms, box-shadow 250ms',
   position: 'relative',
   overflow: 'hidden',
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
-  
-  '&:hover': {
-    boxShadow: '0 8px 40px rgba(26, 35, 126, 0.12)',
-    transform: 'translateY(-4px)',
-  },
-  
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '4px',
-    background: 'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)',
-  },
-}));
 
-const AssetImage = styled(CardMedia)({
-  height: 200,
-  position: 'relative',
-  background: 'linear-gradient(135deg, rgba(26, 35, 126, 0.03) 0%, rgba(63, 81, 181, 0.03) 100%)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
+  '&:hover': {
+    borderColor: 'var(--surface-hover)',
+    boxShadow: 'var(--shadow-glow)',
+  },
 });
 
-const AssetType = styled(Chip)(({ theme }) => ({
-  position: 'absolute',
-  top: 16,
-  right: 16,
-  background: 'rgba(255, 255, 255, 0.95)',
-  color: '#1a237e',
-  fontWeight: 600,
-  fontSize: '12px',
-  backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(26, 35, 126, 0.1)',
-}));
+const CardHeader = styled(Box)({
+  padding: '20px 20px 0',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+  gap: '12px',
+});
 
-const FavoriteButton = styled(Box)({
-  position: 'absolute',
-  top: 16,
-  left: 16,
-  background: 'rgba(255, 255, 255, 0.95)',
-  borderRadius: '50%',
-  width: 36,
-  height: 36,
+const AssetTypeTag = styled(Box)({
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: '4px 10px',
+  background: 'var(--surface-overlay)',
+  borderRadius: 'var(--radius-full)',
+  fontSize: '11px',
+  fontWeight: 600,
+  fontFamily: 'var(--font-body)',
+  color: 'var(--text-secondary)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  whiteSpace: 'nowrap',
+});
+
+const FavoriteButton = styled(Box)<{ active?: boolean }>(({ active }) => ({
+  width: '32px',
+  height: '32px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
+  borderRadius: 'var(--radius-md)',
   cursor: 'pointer',
-  backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(26, 35, 126, 0.1)',
-  transition: 'all 0.3s ease',
-  
+  transition: 'all 150ms',
+  color: active ? 'var(--accent-primary)' : 'var(--text-tertiary)',
+  background: active ? 'var(--accent-muted)' : 'transparent',
+
   '&:hover': {
-    background: '#1a237e',
-    color: '#ffffff',
+    background: active ? 'var(--accent-muted)' : 'var(--surface-overlay)',
+    color: active ? 'var(--accent-primary)' : 'var(--text-secondary)',
   },
+}));
+
+const CardBody = styled(CardContent)({
+  padding: '16px 20px 20px',
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  gap: '16px',
 });
 
 const AssetTitle = styled(Typography)({
-  fontSize: '18px',
-  fontWeight: 700,
-  color: '#263238',
-  marginBottom: '8px',
-  fontFamily: 'Inter, sans-serif',
+  fontFamily: 'var(--font-display)',
+  fontSize: '16px',
+  fontWeight: 600,
+  color: 'var(--text-primary)',
   lineHeight: 1.3,
   display: '-webkit-box',
   WebkitLineClamp: 2,
@@ -88,10 +83,9 @@ const AssetTitle = styled(Typography)({
 });
 
 const AssetDescription = styled(Typography)({
-  fontSize: '14px',
-  color: '#607d8b',
-  marginBottom: '16px',
-  fontFamily: 'Inter, sans-serif',
+  fontFamily: 'var(--font-body)',
+  fontSize: '13px',
+  color: 'var(--text-secondary)',
   lineHeight: 1.5,
   display: '-webkit-box',
   WebkitLineClamp: 2,
@@ -99,86 +93,101 @@ const AssetDescription = styled(Typography)({
   overflow: 'hidden',
 });
 
-const MetricContainer = styled(Box)({
+const MetricsGrid = styled(Box)({
   display: 'grid',
   gridTemplateColumns: 'repeat(2, 1fr)',
-  gap: '16px',
-  marginBottom: '16px',
+  gap: '12px',
 });
 
 const Metric = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'flex-start',
+  gap: '4px',
 });
 
 const MetricLabel = styled(Typography)({
-  fontSize: '12px',
-  color: '#607d8b',
+  fontFamily: 'var(--font-body)',
+  fontSize: '11px',
   fontWeight: 500,
-  marginBottom: '4px',
+  color: 'var(--text-tertiary)',
   textTransform: 'uppercase',
-  letterSpacing: '0.5px',
+  letterSpacing: '0.05em',
 });
 
-const MetricValue = styled(Typography)({
-  fontSize: '16px',
-  fontWeight: 700,
-  color: '#1a237e',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '4px',
+const MetricValue = styled(Box)<{ accent?: boolean; positive?: boolean; negative?: boolean }>(
+  ({ accent, positive, negative }) => ({
+    fontFamily: 'var(--font-mono)',
+    fontSize: '15px',
+    fontWeight: 600,
+    color: positive
+      ? 'var(--status-success)'
+      : negative
+      ? 'var(--status-error)'
+      : accent
+      ? 'var(--accent-primary)'
+      : 'var(--text-primary)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+  })
+);
+
+const Divider = styled(Box)({
+  height: '1px',
+  background: 'var(--surface-subtle)',
+  margin: '4px 0',
 });
 
-const ComplianceContainer = styled(Box)({
+const BadgeContainer = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  gap: '12px',
-  marginBottom: '16px',
+  gap: '6px',
   flexWrap: 'wrap',
 });
 
-const ComplianceBadge = styled(Box)<{ type: 'compliant' | 'verified' | 'institutional' }>(({ type }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '4px',
-  padding: '4px 8px',
-  borderRadius: '6px',
-  fontSize: '12px',
-  fontWeight: 600,
-  ...(type === 'compliant' && {
-    backgroundColor: '#e8f5e8',
-    color: '#2e7d32',
-  }),
-  ...(type === 'verified' && {
-    backgroundColor: '#e3f2fd',
-    color: '#1976d2',
-  }),
-  ...(type === 'institutional' && {
-    backgroundColor: '#fff3e0',
-    color: '#f57c00',
-  }),
-}));
+const Badge = styled(Box)<{ variant?: 'success' | 'warning' | 'info' | 'default' }>(
+  ({ variant = 'default' }) => ({
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '3px 8px',
+    borderRadius: 'var(--radius-sm)',
+    fontSize: '11px',
+    fontWeight: 600,
+    fontFamily: 'var(--font-body)',
+    letterSpacing: '0.02em',
 
-const RiskIndicator = styled(Box)<{ level: 'low' | 'medium' | 'high' }>(({ level }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '4px',
-  padding: '4px 8px',
-  borderRadius: '6px',
-  fontSize: '12px',
-  fontWeight: 600,
+    ...(variant === 'success' && {
+      background: 'var(--status-success-muted)',
+      color: 'var(--status-success)',
+    }),
+    ...(variant === 'warning' && {
+      background: 'var(--status-warning-muted)',
+      color: 'var(--status-warning)',
+    }),
+    ...(variant === 'info' && {
+      background: 'var(--status-info-muted)',
+      color: 'var(--status-info)',
+    }),
+    ...(variant === 'default' && {
+      background: 'var(--surface-overlay)',
+      color: 'var(--text-secondary)',
+    }),
+  })
+);
+
+const RiskBadge = styled(Badge)<{ level: 'low' | 'medium' | 'high' }>(({ level }) => ({
   ...(level === 'low' && {
-    backgroundColor: '#e8f5e8',
-    color: '#2e7d32',
+    background: 'var(--status-success-muted)',
+    color: 'var(--status-success)',
   }),
   ...(level === 'medium' && {
-    backgroundColor: '#fff3e0',
-    color: '#f57c00',
+    background: 'var(--status-warning-muted)',
+    color: 'var(--status-warning)',
   }),
   ...(level === 'high' && {
-    backgroundColor: '#ffebee',
-    color: '#d32f2f',
+    background: 'var(--status-error-muted)',
+    color: 'var(--status-error)',
   }),
 }));
 
@@ -186,45 +195,53 @@ const ActionContainer = styled(Box)({
   display: 'flex',
   gap: '8px',
   marginTop: 'auto',
+  paddingTop: '4px',
 });
 
-const InvestButton = styled(Button)({
-  background: 'linear-gradient(135deg, #1a237e 0%, #3f51b5 100%)',
-  color: '#ffffff',
-  borderRadius: '8px',
-  padding: '12px 24px',
-  fontWeight: 600,
-  textTransform: 'none',
+const PrimaryButton = styled(Button)({
   flex: 1,
-  
+  background: 'var(--accent-primary)',
+  color: 'var(--text-inverse)',
+  borderRadius: 'var(--radius-md)',
+  padding: '10px 16px',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 500,
+  fontSize: '14px',
+  textTransform: 'none',
+  transition: 'background 150ms',
+
   '&:hover': {
-    background: 'linear-gradient(135deg, #0d47a1 0%, #303f9f 100%)',
-    transform: 'translateY(-1px)',
+    background: 'var(--accent-hover)',
   },
 });
 
 const SecondaryButton = styled(Button)({
   background: 'transparent',
-  color: '#1a237e',
-  border: '2px solid #1a237e',
-  borderRadius: '8px',
-  padding: '10px 20px',
-  fontWeight: 600,
+  color: 'var(--text-primary)',
+  border: '1px solid var(--surface-subtle)',
+  borderRadius: 'var(--radius-md)',
+  padding: '9px 16px',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 500,
+  fontSize: '14px',
   textTransform: 'none',
-  
+  minWidth: 'auto',
+  transition: 'all 150ms',
+
   '&:hover': {
-    backgroundColor: 'rgba(26, 35, 126, 0.04)',
+    background: 'var(--surface-overlay)',
+    borderColor: 'var(--surface-hover)',
   },
 });
 
-const LiquidityScore = styled(Box)<{ score: number }>(({ score }) => ({
+const JurisdictionInfo = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  gap: '4px',
-  fontSize: '14px',
-  fontWeight: 600,
-  color: score >= 80 ? '#4caf50' : score >= 60 ? '#ff9800' : '#f44336',
-}));
+  gap: '6px',
+  fontSize: '12px',
+  fontFamily: 'var(--font-body)',
+  color: 'var(--text-tertiary)',
+});
 
 interface AssetCardProps {
   asset: {
@@ -251,9 +268,9 @@ interface AssetCardProps {
   isFavorite?: boolean;
 }
 
-export const AssetCard: React.FC<AssetCardProps> = ({ 
-  asset, 
-  onInvest, 
+export const AssetCard: React.FC<AssetCardProps> = ({
+  asset,
+  onInvest,
   onViewDetails,
   onToggleFavorite,
   isFavorite = false,
@@ -263,51 +280,44 @@ export const AssetCard: React.FC<AssetCardProps> = ({
     if (num >= 1000000) {
       return `$${(num / 1000000).toFixed(1)}M`;
     } else if (num >= 1000) {
-      return `$${(num / 1000).toFixed(1)}K`;
+      return `$${(num / 1000).toFixed(0)}K`;
     }
     return value;
   };
 
-  const getRiskIcon = (level: string) => {
-    switch (level) {
-      case 'low': return <Shield size={14} />;
-      case 'medium': return <BarChart3 size={14} />;
-      case 'high': return <TrendingUp size={14} />;
-      default: return <Shield size={14} />;
-    }
+  const getLiquidityColor = (score: number) => {
+    if (score >= 80) return 'positive';
+    if (score >= 50) return undefined;
+    return 'negative';
   };
 
   return (
-    <StyledCard>
-      <AssetImage image={asset.imageUrl} title={asset.name}>
-        <FavoriteButton onClick={() => onToggleFavorite?.(asset.id)}>
-          <Star size={18} fill={isFavorite ? '#1a237e' : 'none'} />
+    <StyledCard elevation={0}>
+      <CardHeader>
+        <AssetTypeTag>{asset.type}</AssetTypeTag>
+        <FavoriteButton
+          active={isFavorite}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite?.(asset.id);
+          }}
+        >
+          <Star size={16} fill={isFavorite ? 'currentColor' : 'none'} />
         </FavoriteButton>
-        <AssetType label={asset.type} />
-        {!asset.imageUrl && (
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            width: '100%',
-            height: '100%',
-            color: '#607d8b',
-          }}>
-            <BarChart3 size={48} />
-          </Box>
-        )}
-      </AssetImage>
-      
-      <CardContent sx={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <AssetTitle>{asset.name}</AssetTitle>
-        <AssetDescription>{asset.description}</AssetDescription>
-        
-        <MetricContainer>
+      </CardHeader>
+
+      <CardBody>
+        <Box>
+          <AssetTitle>{asset.name}</AssetTitle>
+          <AssetDescription sx={{ mt: 1 }}>{asset.description}</AssetDescription>
+        </Box>
+
+        <MetricsGrid>
           <Metric>
             <MetricLabel>APY</MetricLabel>
-            <MetricValue>
+            <MetricValue positive>
               {asset.yield}
-              <TrendingUp size={16} color="#4caf50" />
+              <TrendingUp size={14} />
             </MetricValue>
           </Metric>
           <Metric>
@@ -320,75 +330,78 @@ export const AssetCard: React.FC<AssetCardProps> = ({
           </Metric>
           <Metric>
             <MetricLabel>Liquidity</MetricLabel>
-            <LiquidityScore score={asset.liquidityScore}>
+            <MetricValue {...{ [getLiquidityColor(asset.liquidityScore) || '']: true }}>
               {asset.liquidityScore}%
-              <BarChart3 size={14} />
-            </LiquidityScore>
+            </MetricValue>
           </Metric>
-        </MetricContainer>
+        </MetricsGrid>
 
         {(asset.maturity || asset.rating) && (
-          <MetricContainer sx={{ gridTemplateColumns: 'repeat(2, 1fr)', mb: 2 }}>
+          <MetricsGrid sx={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
             {asset.maturity && (
               <Metric>
                 <MetricLabel>Maturity</MetricLabel>
-                <MetricValue sx={{ fontSize: '14px' }}>{asset.maturity}</MetricValue>
+                <MetricValue sx={{ fontSize: '13px' }}>{asset.maturity}</MetricValue>
               </Metric>
             )}
             {asset.rating && (
               <Metric>
                 <MetricLabel>Rating</MetricLabel>
-                <MetricValue sx={{ fontSize: '14px' }}>{asset.rating}</MetricValue>
+                <MetricValue accent sx={{ fontSize: '13px' }}>
+                  {asset.rating}
+                </MetricValue>
               </Metric>
             )}
-          </MetricContainer>
+          </MetricsGrid>
         )}
-        
-        <ComplianceContainer>
+
+        <Divider />
+
+        <BadgeContainer>
           {asset.isCompliant && (
-            <ComplianceBadge type="compliant">
-              <Shield size={12} />
+            <Badge variant="success">
+              <Shield size={11} />
               Compliant
-            </ComplianceBadge>
+            </Badge>
           )}
           {asset.isVerified && (
-            <ComplianceBadge type="verified">
-              <Globe size={12} />
+            <Badge variant="info">
+              <Globe size={11} />
               Verified
-            </ComplianceBadge>
+            </Badge>
           )}
           {asset.isInstitutional && (
-            <ComplianceBadge type="institutional">
-              <Star size={12} />
+            <Badge variant="warning">
+              <Star size={11} />
               Institutional
-            </ComplianceBadge>
+            </Badge>
           )}
-          <RiskIndicator level={asset.riskLevel}>
-            {getRiskIcon(asset.riskLevel)}
-            {asset.riskLevel.charAt(0).toUpperCase() + asset.riskLevel.slice(1)} Risk
-          </RiskIndicator>
-        </ComplianceContainer>
+          <RiskBadge level={asset.riskLevel}>
+            <BarChart3 size={11} />
+            {asset.riskLevel.charAt(0).toUpperCase() + asset.riskLevel.slice(1)}
+          </RiskBadge>
+        </BadgeContainer>
 
         {asset.jurisdiction && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="caption" sx={{ color: '#607d8b', display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Globe size={12} />
-              Jurisdiction: {asset.jurisdiction}
-            </Typography>
-          </Box>
+          <JurisdictionInfo>
+            <Globe size={12} />
+            {asset.jurisdiction}
+          </JurisdictionInfo>
         )}
-        
+
         <ActionContainer>
-          <InvestButton onClick={() => onInvest(asset.id)}>
-            Invest Now
-          </InvestButton>
+          <PrimaryButton onClick={() => onInvest(asset.id)} disableRipple>
+            Invest
+          </PrimaryButton>
           {onViewDetails && (
-            <SecondaryButton onClick={() => onViewDetails(asset.id)}>
-              Details
+            <SecondaryButton onClick={() => onViewDetails(asset.id)} disableRipple>
+              <ArrowUpRight size={16} />
             </SecondaryButton>
           )}
         </ActionContainer>
-      </CardContent>
+      </CardBody>
     </StyledCard>
   );
-}; 
+};
+
+export default AssetCard;
