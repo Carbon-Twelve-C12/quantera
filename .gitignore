@@ -9,11 +9,18 @@ coverage/
 # Production
 build/
 dist/
+
+# Environment files - NEVER commit secrets
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+backend/.env
+frontend/.env
+**/secrets/
+**/*.pem
+**/*.key
 
 # Logs
 npm-debug.log*
