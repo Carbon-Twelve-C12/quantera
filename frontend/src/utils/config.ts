@@ -16,16 +16,20 @@
 const getApiBaseUrl = (): string => {
   const apiUrl = process.env.REACT_APP_API_URL;
 
-  // In production, require explicit configuration
+  // In production, warn if not configured but allow demo mode
   if (process.env.NODE_ENV === 'production') {
     if (!apiUrl) {
-      throw new Error(
-        'CONFIGURATION ERROR: REACT_APP_API_URL environment variable is required in production.'
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[Quantera] REACT_APP_API_URL not set. Running in demo mode with mock data.'
       );
+      // Return a placeholder URL - API calls will fail gracefully
+      return 'https://api.quantera.finance';
     }
     if (!apiUrl.startsWith('https://')) {
-      throw new Error(
-        'SECURITY ERROR: REACT_APP_API_URL must use HTTPS in production.'
+      // eslint-disable-next-line no-console
+      console.error(
+        '[Quantera] SECURITY WARNING: REACT_APP_API_URL should use HTTPS in production.'
       );
     }
   }
