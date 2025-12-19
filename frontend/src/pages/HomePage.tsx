@@ -15,6 +15,7 @@ import {
   Leaf
 } from 'lucide-react';
 import CompatGrid from '../components/common/CompatGrid';
+import FractionalizedCube from '../components/common/FractionalizedCube';
 
 const Grid = CompatGrid;
 
@@ -57,7 +58,37 @@ const HeroSection = styled(Box)({
 const HeroContent = styled(Box)({
   position: 'relative',
   zIndex: 1,
-  maxWidth: '720px',
+  maxWidth: '560px',
+});
+
+const HeroGrid = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '40px',
+
+  '@media (max-width: 960px)': {
+    flexDirection: 'column',
+    textAlign: 'center',
+  },
+});
+
+const CubeWrapper = styled(Box)({
+  flex: '0 0 auto',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'relative',
+
+  '@media (max-width: 960px)': {
+    order: -1,
+    marginBottom: '24px',
+    transform: 'scale(0.8)',
+  },
+
+  '@media (max-width: 600px)': {
+    transform: 'scale(0.6)',
+  },
 });
 
 const HeroLabel = styled(Box)({
@@ -398,47 +429,53 @@ const HomePage: React.FC = () => {
       {/* Hero Section */}
       <HeroSection>
         <Container maxWidth="lg">
-          <HeroContent>
-            <HeroLabel>
-              <Coins size={16} />
-              Institutional-Grade Asset Tokenization
-            </HeroLabel>
-            <HeroTitle>
-              The Future of <HeroAccent>Asset</HeroAccent> Ownership
-            </HeroTitle>
-            <HeroSubtitle>
-              Quantera brings real-world assets to blockchain, enabling fractional ownership,
-              instant settlement, and 24/7 liquidity for institutional and retail investors.
-            </HeroSubtitle>
-            <HeroActions>
-              <Button component={Link} to="/marketplace" sx={primaryButtonStyles}>
-                Explore Marketplace
-                <ArrowRight size={18} />
-              </Button>
-              <Button component={Link} to="/portfolio" sx={secondaryButtonStyles}>
-                View Portfolio
-              </Button>
-            </HeroActions>
+          <HeroGrid>
+            <HeroContent>
+              <HeroLabel>
+                <Coins size={16} />
+                Institutional-Grade Asset Tokenization
+              </HeroLabel>
+              <HeroTitle>
+                The Future of <HeroAccent>Asset</HeroAccent> Ownership
+              </HeroTitle>
+              <HeroSubtitle>
+                Quantera brings real-world assets to blockchain, enabling fractional ownership,
+                instant settlement, and 24/7 liquidity for institutional and retail investors.
+              </HeroSubtitle>
+              <HeroActions>
+                <Button component={Link} to="/marketplace" sx={primaryButtonStyles}>
+                  Explore Marketplace
+                  <ArrowRight size={18} />
+                </Button>
+                <Button component={Link} to="/portfolio" sx={secondaryButtonStyles}>
+                  View Portfolio
+                </Button>
+              </HeroActions>
 
-            <StatsBar>
-              <StatItem>
-                <StatValue>$2.4B+</StatValue>
-                <StatLabel>Total Value Locked</StatLabel>
-              </StatItem>
-              <StatItem>
-                <StatValue>150+</StatValue>
-                <StatLabel>Tokenized Assets</StatLabel>
-              </StatItem>
-              <StatItem>
-                <StatValue>12.5%</StatValue>
-                <StatLabel>Average APY</StatLabel>
-              </StatItem>
-              <StatItem>
-                <StatValue>45K+</StatValue>
-                <StatLabel>Active Investors</StatLabel>
-              </StatItem>
-            </StatsBar>
-          </HeroContent>
+              <StatsBar>
+                <StatItem>
+                  <StatValue>$2.4B+</StatValue>
+                  <StatLabel>Total Value Locked</StatLabel>
+                </StatItem>
+                <StatItem>
+                  <StatValue>150+</StatValue>
+                  <StatLabel>Tokenized Assets</StatLabel>
+                </StatItem>
+                <StatItem>
+                  <StatValue>12.5%</StatValue>
+                  <StatLabel>Average APY</StatLabel>
+                </StatItem>
+                <StatItem>
+                  <StatValue>45K+</StatValue>
+                  <StatLabel>Active Investors</StatLabel>
+                </StatItem>
+              </StatsBar>
+            </HeroContent>
+
+            <CubeWrapper>
+              <FractionalizedCube />
+            </CubeWrapper>
+          </HeroGrid>
         </Container>
       </HeroSection>
 
