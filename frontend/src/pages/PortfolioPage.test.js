@@ -1,10 +1,14 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { BrowserRouter } from 'react-router-dom';
 import PortfolioPage from './PortfolioPage';
-import { ThemeContext } from '../contexts/ThemeContext';
-import WalletContext from '../contexts/WalletContext';
+import {
+  renderWithProviders,
+  screen,
+  fireEvent,
+  waitFor,
+  mockContexts,
+  createMockWallet,
+} from '../test-utils';
 
 // Mock chart.js
 jest.mock('react-chartjs-2', () => ({
@@ -13,27 +17,30 @@ jest.mock('react-chartjs-2', () => ({
   Bar: () => <div data-testid="mock-bar-chart">Bar Chart</div>
 }));
 
-// Mock wallet context
-const mockWalletContext = {
-  connected: true,
-  address: '0x1234567890abcdef1234567890abcdef12345678',
-  provider: null,
-  signer: null,
-  chainId: 1,
-  connect: jest.fn(),
-  disconnect: jest.fn()
-};
+// Mock contexts using test-utils pattern
+jest.mock('../contexts/ThemeContext', () => mockContexts.ThemeContext);
 
-// Test wrapper
-const TestWrapper = ({ children, walletValue = mockWalletContext }) => (
-  <BrowserRouter>
-    <ThemeContext.Provider value={{ theme: 'light', toggleTheme: jest.fn() }}>
-      <WalletContext.Provider value={walletValue}>
-        {children}
-      </WalletContext.Provider>
-    </ThemeContext.Provider>
-  </BrowserRouter>
-);
+// Mock WalletContext - we'll override in specific tests
+const mockUseWallet = jest.fn();
+jest.mock('../contexts/WalletContext', () => ({
+  __esModule: true,
+  default: React.createContext(null),
+  useWallet: () => mockUseWallet(),
+}));
+
+// Helper to render with wrapper
+const renderWithTestWrapper = (ui, { walletValue } = {}) => {
+  // Set up the mock for this render
+  if (walletValue) {
+    mockUseWallet.mockReturnValue(walletValue);
+  } else {
+    mockUseWallet.mockReturnValue(createMockWallet({
+      connected: true,
+      address: '0x1234567890abcdef1234567890abcdef12345678',
+    }));
+  }
+  return renderWithProviders(ui);
+};
 
 describe('PortfolioPage Component', () => {
   beforeEach(() => {
@@ -41,22 +48,15 @@ describe('PortfolioPage Component', () => {
   });
 
   it('renders portfolio header', () => {
-    render(
-      <TestWrapper>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    renderWithTestWrapper(<PortfolioPage />);
 
     expect(screen.getByText('Portfolio Dashboard')).toBeInTheDocument();
     expect(screen.getByText(/Comprehensive view of your tokenized assets/i)).toBeInTheDocument();
   });
 
   it('shows connect wallet message when not connected', () => {
-    render(
-      <TestWrapper walletValue={{ ...mockWalletContext, connected: false }}>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    const disconnectedWallet = createMockWallet({ connected: false });
+    renderWithTestWrapper(<PortfolioPage />, { walletValue: disconnectedWallet });
 
     expect(screen.getByText('Connect Your Wallet')).toBeInTheDocument();
     expect(screen.getByText(/Please connect your wallet to view your portfolio/i)).toBeInTheDocument();
@@ -64,11 +64,7 @@ describe('PortfolioPage Component', () => {
   });
 
   it('displays portfolio overview cards', () => {
-    render(
-      <TestWrapper>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    renderWithTestWrapper(<PortfolioPage />);
 
     // Check overview cards
     expect(screen.getByText('Total Portfolio Value')).toBeInTheDocument();
@@ -78,11 +74,7 @@ describe('PortfolioPage Component', () => {
   });
 
   it('renders all portfolio tabs', () => {
-    render(
-      <TestWrapper>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    renderWithTestWrapper(<PortfolioPage />);
 
     expect(screen.getByText('All Assets')).toBeInTheDocument();
     expect(screen.getByText('Treasury Securities')).toBeInTheDocument();
@@ -92,11 +84,7 @@ describe('PortfolioPage Component', () => {
   });
 
   it('switches tabs when clicked', async () => {
-    render(
-      <TestWrapper>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    renderWithTestWrapper(<PortfolioPage />);
 
     // Click Treasury Securities tab
     const treasuryTab = screen.getByText('Treasury Securities');
@@ -116,33 +104,21 @@ describe('PortfolioPage Component', () => {
   });
 
   it('displays asset allocation chart', () => {
-    render(
-      <TestWrapper>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    renderWithTestWrapper(<PortfolioPage />);
 
     expect(screen.getByText('Asset Allocation')).toBeInTheDocument();
     expect(screen.getByTestId('mock-pie-chart')).toBeInTheDocument();
   });
 
   it('displays performance chart', () => {
-    render(
-      <TestWrapper>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    renderWithTestWrapper(<PortfolioPage />);
 
     expect(screen.getByText('Portfolio Performance')).toBeInTheDocument();
     expect(screen.getByTestId('mock-line-chart')).toBeInTheDocument();
   });
 
   it('renders asset holdings table', () => {
-    render(
-      <TestWrapper>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    renderWithTestWrapper(<PortfolioPage />);
 
     // Check table headers
     expect(screen.getByText('Asset Name')).toBeInTheDocument();
@@ -154,11 +130,7 @@ describe('PortfolioPage Component', () => {
   });
 
   it('displays mock portfolio data', () => {
-    render(
-      <TestWrapper>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    renderWithTestWrapper(<PortfolioPage />);
 
     // Check for some mock assets
     expect(screen.getByText('US Treasury Bond 2025')).toBeInTheDocument();
@@ -166,11 +138,7 @@ describe('PortfolioPage Component', () => {
   });
 
   it('shows positive and negative price changes correctly', () => {
-    render(
-      <TestWrapper>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    renderWithTestWrapper(<PortfolioPage />);
 
     // Look for positive change (green)
     const positiveChange = screen.getByText('+2.50%');
@@ -182,22 +150,14 @@ describe('PortfolioPage Component', () => {
   });
 
   it('calculates total portfolio value correctly', () => {
-    render(
-      <TestWrapper>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    renderWithTestWrapper(<PortfolioPage />);
 
     // The mock data should show specific total
     expect(screen.getByText('$125,750.00')).toBeInTheDocument();
   });
 
   it('displays yield strategies tab content', async () => {
-    render(
-      <TestWrapper>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    renderWithTestWrapper(<PortfolioPage />);
 
     const yieldTab = screen.getByText('Yield Strategies');
     fireEvent.click(yieldTab);
@@ -210,11 +170,7 @@ describe('PortfolioPage Component', () => {
   });
 
   it('displays trade finance specific metrics', async () => {
-    render(
-      <TestWrapper>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    renderWithTestWrapper(<PortfolioPage />);
 
     const tradeFinanceTab = screen.getByText('Trade Finance');
     fireEvent.click(tradeFinanceTab);
@@ -227,11 +183,7 @@ describe('PortfolioPage Component', () => {
   });
 
   it('shows empty state when no assets in category', async () => {
-    render(
-      <TestWrapper>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    renderWithTestWrapper(<PortfolioPage />);
 
     // Mock empty custom assets
     const customTab = screen.getByText('Custom Assets');
@@ -244,12 +196,9 @@ describe('PortfolioPage Component', () => {
 
   it('handles wallet connection from portfolio page', () => {
     const mockConnect = jest.fn();
-    
-    render(
-      <TestWrapper walletValue={{ ...mockWalletContext, connected: false, connect: mockConnect }}>
-        <PortfolioPage />
-      </TestWrapper>
-    );
+    const disconnectedWallet = createMockWallet({ connected: false, connect: mockConnect });
+
+    renderWithTestWrapper(<PortfolioPage />, { walletValue: disconnectedWallet });
 
     const connectButton = screen.getByText('Connect Wallet');
     fireEvent.click(connectButton);

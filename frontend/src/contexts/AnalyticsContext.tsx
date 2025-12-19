@@ -1,6 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { PlatformMetrics } from '../types/analyticsTypes';
 import { mockPlatformMetrics } from '../data/mockAnalyticsData';
+import { logger } from '../utils/logger';
+import { FeatureFlags, withMockFallback } from '../utils/featureFlags';
+import api from '../api/api';
 
 interface AnalyticsContextType {
   platformMetrics: PlatformMetrics | null;
@@ -23,34 +26,48 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
   const [error, setError] = useState<string | null>(null);
   const [timeframe, setTimeframe] = useState<string>('30d');
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
+    // Check if feature is enabled
+    if (!FeatureFlags.isEnabled('ANALYTICS')) {
+      logger.debug('Analytics feature is disabled');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
-    
+
     try {
-      // In production, this would be an API call
-      // const response = await fetch('/api/analytics/platform?timeframe=' + timeframe);
-      // const data = await response.json();
-      
-      // Using mock data for development
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate API delay
-      setPlatformMetrics(mockPlatformMetrics);
+      logger.debug('Fetching analytics data', { timeframe });
+
+      const data = await withMockFallback(
+        'analytics',
+        async () => {
+          const response = await api.get(`/api/v1/analytics/platform?timeframe=${timeframe}`);
+          return response.data;
+        },
+        () => mockPlatformMetrics
+      );
+
+      setPlatformMetrics(data);
+      logger.info('Analytics data loaded', { timeframe });
     } catch (err) {
-      console.error('Error fetching analytics data:', err);
-      setError('Failed to load analytics data. Please try again later.');
+      const errorMessage = 'Failed to load analytics data. Please try again later.';
+      logger.error(errorMessage, err instanceof Error ? err : new Error(String(err)));
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeframe]);
 
-  const refreshAnalytics = () => {
+  const refreshAnalytics = useCallback(() => {
     fetchAnalytics();
-  };
+  }, [fetchAnalytics]);
 
   // Initial data fetch
   useEffect(() => {
     fetchAnalytics();
-  }, [timeframe]);
+  }, [fetchAnalytics]);
 
   const value = {
     platformMetrics,

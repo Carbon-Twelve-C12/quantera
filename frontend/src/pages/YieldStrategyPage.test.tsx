@@ -1,9 +1,16 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import YieldStrategyPage from './YieldStrategyPage';
 import { YieldStrategyProvider } from '../contexts/YieldStrategyContext';
+import {
+  render,
+  screen,
+  fireEvent,
+  createMockYieldStrategy,
+  mockContexts,
+} from '../test-utils';
 
-// Mock the useYieldStrategy hook
+// Mock the useYieldStrategy hook using test-utils pattern
 jest.mock('../contexts/YieldStrategyContext', () => {
   const mockStrategy = {
     strategy_id: "0x1234",
@@ -24,7 +31,7 @@ jest.mock('../contexts/YieldStrategyContext', () => {
     transaction_id: "0xabcd",
     strategy_id: "0x1234",
     asset_id: "0xasset1",
-    amount: "1000000000000000000", 
+    amount: "1000000000000000000",
     status: "COMPLETED",
     estimated_yield: "50000000000000000",
   };
@@ -57,17 +64,14 @@ jest.mock('../contexts/YieldStrategyContext', () => {
       resetFilters: jest.fn(),
       setSelectedStrategy: jest.fn()
     }),
-    YieldStrategyProvider: ({ children }) => <div data-testid="strategy-provider">{children}</div>
+    YieldStrategyProvider: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="strategy-provider">{children}</div>
+    )
   };
 });
 
-// Mock ThemeContext
-jest.mock('../contexts/ThemeContext', () => ({
-  useTheme: () => ({
-    theme: 'light',
-    toggleTheme: jest.fn()
-  })
-}));
+// Mock ThemeContext using test-utils pattern
+jest.mock('../contexts/ThemeContext', () => mockContexts.ThemeContext);
 
 // Mock Material-UI components
 jest.mock('@mui/material', () => {
@@ -90,8 +94,8 @@ jest.mock('@mui/material', () => {
       }
     }),
     // Mock Grid component to fix TypeScript errors
-    Grid: ({ children, container, spacing, sx, ...props }) => (
-      <div data-testid={container ? "grid-container" : "grid-item"} style={sx}>{children}</div>
+    Grid: ({ children, container, sx, ...props }: { children: React.ReactNode; container?: boolean; sx?: object }) => (
+      <div data-testid={container ? "grid-container" : "grid-item"} style={sx as React.CSSProperties}>{children}</div>
     )
   };
 });
@@ -111,7 +115,6 @@ jest.mock('@mui/icons-material/RecyclingOutlined', () => () => 'RecyclingOutline
 jest.mock('@mui/icons-material/FilterList', () => () => 'FilterListIcon');
 jest.mock('@mui/icons-material/CalculateOutlined', () => () => 'CalculateOutlinedIcon');
 jest.mock('@mui/icons-material/CompareArrows', () => () => 'CompareArrowsIcon');
-jest.mock('@mui/icons-material/TrendingUp', () => () => 'TrendingUpIcon');
 jest.mock('@mui/icons-material/Home', () => () => 'HomeIcon');
 jest.mock('@mui/icons-material/ShoppingCart', () => () => 'ShoppingCartIcon');
 jest.mock('@mui/icons-material/WaterDrop', () => () => 'WaterDropIcon');
@@ -124,7 +127,7 @@ describe('YieldStrategyPage', () => {
         <YieldStrategyPage />
       </YieldStrategyProvider>
     );
-    
+
     expect(screen.getByText('Yield Strategy Marketplace')).toBeInTheDocument();
   });
 
@@ -134,7 +137,7 @@ describe('YieldStrategyPage', () => {
         <YieldStrategyPage />
       </YieldStrategyProvider>
     );
-    
+
     expect(screen.getByText('All Strategies')).toBeInTheDocument();
     expect(screen.getByText('My Strategies')).toBeInTheDocument();
   });
@@ -145,7 +148,7 @@ describe('YieldStrategyPage', () => {
         <YieldStrategyPage />
       </YieldStrategyProvider>
     );
-    
+
     expect(screen.getByText('Test Strategy')).toBeInTheDocument();
     expect(screen.getByText('Strategy for testing')).toBeInTheDocument();
   });
@@ -156,14 +159,14 @@ describe('YieldStrategyPage', () => {
         <YieldStrategyPage />
       </YieldStrategyProvider>
     );
-    
+
     // Initial tab should be "All Strategies"
     expect(screen.getByText('Test Strategy')).toBeInTheDocument();
-    
+
     // Click on "My Strategies" tab
     fireEvent.click(screen.getByText('My Strategies'));
-    
+
     // Should show the user strategies table
     expect(screen.getByRole('table')).toBeInTheDocument();
   });
-}); 
+});

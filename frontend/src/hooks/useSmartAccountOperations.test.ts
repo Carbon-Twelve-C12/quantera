@@ -1,6 +1,7 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useSmartAccountOperations } from './useSmartAccountOperations';
 import api from '../api/api';
+import { mockContexts } from '../test-utils';
 
 // Mock API
 jest.mock('../api/api', () => ({
@@ -10,9 +11,10 @@ jest.mock('../api/api', () => ({
   }
 }));
 
-// Mock WebSocket context
+// Mock WebSocket context using test-utils pattern
 jest.mock('../contexts/WebSocketContext', () => ({
   useWebSocket: () => ({
+    ...mockContexts.WebSocketContext,
     subscribe: jest.fn(),
     unsubscribe: jest.fn(),
     events: [
@@ -52,18 +54,18 @@ describe('useSmartAccountOperations', () => {
   });
 
   it('should fetch operations when accountId is provided', async () => {
-    const { result } = renderHook(() => 
+    const { result } = renderHook(() =>
       useSmartAccountOperations('acc123')
     );
-    
+
     // Initially loading
     expect(result.current.loading).toBe(true);
-    
+
     // Wait for API call to resolve
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
     });
-    
+
     // Check operations
     expect(result.current.operations.length).toBe(1);
     expect(result.current.operations[0].operationId).toBe('op456');
@@ -71,36 +73,36 @@ describe('useSmartAccountOperations', () => {
       '/api/users/smart-account/acc123/operations'
     );
   });
-  
+
   it('should return empty operations when no accountId is provided', async () => {
     const { result } = renderHook(() => useSmartAccountOperations());
-    
+
     // Should not be loading and return empty operations
     expect(result.current.loading).toBe(false);
     expect(result.current.operations).toEqual([]);
     expect(api.get).not.toHaveBeenCalled();
   });
-  
+
   it('should handle API errors', async () => {
     (api.get as jest.Mock).mockRejectedValue(new Error('API error'));
-    
-    const { result } = renderHook(() => 
+
+    const { result } = renderHook(() =>
       useSmartAccountOperations('acc123')
     );
-    
+
     // Wait for API call to reject
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
     });
-    
+
     // Check error state
     expect(result.current.error).toBe('Failed to load smart account operations');
     expect(result.current.operations).toEqual([]);
   });
-  
+
   it('should get operation details', async () => {
-    (api.get as jest.Mock).mockResolvedValueOnce({ 
-      data: [] 
+    (api.get as jest.Mock).mockResolvedValueOnce({
+      data: []
     }).mockResolvedValueOnce({
       data: {
         operationId: 'op789',
@@ -113,22 +115,22 @@ describe('useSmartAccountOperations', () => {
         transactionHash: '0xabcdef'
       }
     });
-    
-    const { result } = renderHook(() => 
+
+    const { result } = renderHook(() =>
       useSmartAccountOperations('acc123')
     );
-    
+
     // Wait for initial API call to resolve
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
     });
-    
+
     // Call getOperationDetails
     let details;
     await act(async () => {
       details = await result.current.getOperationDetails('op789');
     });
-    
+
     // Check details
     expect(details).toEqual({
       operationId: 'op789',
@@ -144,4 +146,4 @@ describe('useSmartAccountOperations', () => {
       '/api/users/smart-account/operations/op789'
     );
   });
-}); 
+});

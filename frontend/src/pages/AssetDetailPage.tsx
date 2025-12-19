@@ -9,6 +9,7 @@ import api from '../api/api';
 import { Modal, Button, Form } from 'react-bootstrap';
 import TradeFinanceAssetDetails from '../components/tradeFinance/TradeFinanceAssetDetails';
 import { TradeFinanceProvider } from '../contexts/TradeFinanceContext';
+import { logger } from '../utils/logger';
 
 // Combined type for asset details
 type AssetDetail = TreasuryDetail | EnvironmentalAsset | RealEstateAsset | TradeFinanceAsset;
@@ -286,7 +287,7 @@ const AssetDetailPage: React.FC = () => {
   // Handle purchase
   const handlePurchase = (quantity: number) => {
     // In a real implementation, this would call a service to execute the purchase
-    console.log(`Purchasing ${quantity} of asset ${id}`);
+    logger.info('Purchasing asset', { quantity, assetId: id });
     setShowPurchaseModal(false);
     setPurchaseSuccess(true);
     
@@ -302,11 +303,11 @@ const AssetDetailPage: React.FC = () => {
       try {
         // PHASE 4A: Try to fetch from backend API first
         try {
-          console.log(`Fetching asset ${id} from main backend...`);
+          logger.debug('Fetching asset from main backend', { assetId: id });
           const response = await api.get(`/api/v1/assets/${id}`);
-          
+
           if (response.data) {
-            console.log('Asset loaded from backend:', response.data);
+            logger.debug('Asset loaded from backend', { assetId: id });
             setAsset(response.data);
             setLoading(false);
             return;
@@ -314,9 +315,9 @@ const AssetDetailPage: React.FC = () => {
         } catch (apiError: any) {
           // Backend unavailable or asset not found - fall back to mock data
           if (apiError.response?.status === 404) {
-            console.log(`Asset ${id} not found in backend, trying mock data...`);
+            logger.debug('Asset not found in backend, trying mock data', { assetId: id });
           } else {
-            console.warn('Backend API unavailable, using mock data:', apiError.message);
+            logger.warn('Backend API unavailable, using mock data', { error: apiError.message });
           }
         }
         
@@ -362,9 +363,9 @@ const AssetDetailPage: React.FC = () => {
         
         // If we get here, asset not found in backend or mock data
         setAsset(null);
-        console.warn(`Asset not found with ID: ${id}`);
+        logger.warn('Asset not found', { assetId: id });
       } catch (error) {
-        console.error('Error loading asset:', error);
+        logger.error('Error loading asset', error instanceof Error ? error : new Error(String(error)));
         setAsset(null);
       } finally {
         setLoading(false);

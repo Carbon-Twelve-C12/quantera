@@ -1,9 +1,13 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import EnhancedLiquidityPoolPage from './EnhancedLiquidityPoolPage';
 import { LiquidityPoolProvider } from '../contexts/LiquidityPoolContext';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { WalletProvider } from '../contexts/WalletContext';
+import {
+  render,
+  screen,
+} from '../test-utils';
 
 // Mock the chart.js implementation
 jest.mock('chart.js/auto', () => ({

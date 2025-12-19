@@ -1,27 +1,28 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { BrowserRouter } from 'react-router-dom';
 import Header from './Header';
 import { ThemeContext } from '../../contexts/ThemeContext';
+import {
+  renderWithProviders,
+  screen,
+  fireEvent,
+  waitFor,
+  createMockTheme,
+} from '../../test-utils';
 
 // Mock useMediaQuery hook
 jest.mock('@mui/material/useMediaQuery', () => jest.fn(() => false));
 
-// Mock theme context
-const mockThemeContext = {
-  theme: 'light',
-  toggleTheme: jest.fn()
-};
+// Custom wrapper that includes ThemeContext provider
+const renderWithTheme = (ui, themeOverrides = {}) => {
+  const mockTheme = createMockTheme(themeOverrides);
 
-// Wrapper component with router and theme
-const TestWrapper = ({ children, themeValue = mockThemeContext }) => (
-  <BrowserRouter>
-    <ThemeContext.Provider value={themeValue}>
-      {children}
+  return renderWithProviders(
+    <ThemeContext.Provider value={mockTheme}>
+      {ui}
     </ThemeContext.Provider>
-  </BrowserRouter>
-);
+  );
+};
 
 describe('Header Component', () => {
   beforeEach(() => {
@@ -29,11 +30,7 @@ describe('Header Component', () => {
   });
 
   it('renders logo and navigation items', () => {
-    render(
-      <TestWrapper>
-        <Header />
-      </TestWrapper>
-    );
+    renderWithTheme(<Header />);
 
     // Check logo
     expect(screen.getByText('Q')).toBeInTheDocument();
@@ -47,11 +44,7 @@ describe('Header Component', () => {
   });
 
   it('renders theme toggle button', () => {
-    render(
-      <TestWrapper>
-        <Header />
-      </TestWrapper>
-    );
+    renderWithTheme(<Header />);
 
     const themeToggle = screen.getByLabelText(/toggle theme/i);
     expect(themeToggle).toBeInTheDocument();
@@ -59,16 +52,7 @@ describe('Header Component', () => {
 
   it('toggles theme when theme button is clicked', () => {
     const mockToggleTheme = jest.fn();
-    const customThemeContext = {
-      ...mockThemeContext,
-      toggleTheme: mockToggleTheme
-    };
-
-    render(
-      <TestWrapper themeValue={customThemeContext}>
-        <Header />
-      </TestWrapper>
-    );
+    renderWithTheme(<Header />, { toggleTheme: mockToggleTheme });
 
     const themeToggle = screen.getByLabelText(/toggle theme/i);
     fireEvent.click(themeToggle);
@@ -77,20 +61,17 @@ describe('Header Component', () => {
   });
 
   it('shows correct theme icon based on current theme', () => {
-    const { rerender } = render(
-      <TestWrapper themeValue={{ ...mockThemeContext, theme: 'light' }}>
-        <Header />
-      </TestWrapper>
-    );
+    const { rerender } = renderWithTheme(<Header />, { theme: 'light' });
 
     // Light mode should show dark mode icon
     expect(screen.getByTestId('DarkModeIcon')).toBeInTheDocument();
 
     // Switch to dark mode
+    const darkMockTheme = createMockTheme({ theme: 'dark' });
     rerender(
-      <TestWrapper themeValue={{ ...mockThemeContext, theme: 'dark' }}>
+      <ThemeContext.Provider value={darkMockTheme}>
         <Header />
-      </TestWrapper>
+      </ThemeContext.Provider>
     );
 
     // Dark mode should show light mode icon
@@ -98,11 +79,7 @@ describe('Header Component', () => {
   });
 
   it('renders GitHub link', () => {
-    render(
-      <TestWrapper>
-        <Header />
-      </TestWrapper>
-    );
+    renderWithTheme(<Header />);
 
     const githubLink = screen.getByLabelText(/view on github/i);
     expect(githubLink).toBeInTheDocument();
@@ -115,11 +92,7 @@ describe('Header Component', () => {
     const useMediaQuery = require('@mui/material/useMediaQuery');
     useMediaQuery.mockReturnValue(true);
 
-    render(
-      <TestWrapper>
-        <Header />
-      </TestWrapper>
-    );
+    renderWithTheme(<Header />);
 
     // Find and click menu button
     const menuButton = screen.getByLabelText(/menu/i);
@@ -137,11 +110,7 @@ describe('Header Component', () => {
     const useMediaQuery = require('@mui/material/useMediaQuery');
     useMediaQuery.mockReturnValue(true);
 
-    render(
-      <TestWrapper>
-        <Header />
-      </TestWrapper>
-    );
+    renderWithTheme(<Header />);
 
     // Open drawer
     const menuButton = screen.getByLabelText(/menu/i);
@@ -159,11 +128,7 @@ describe('Header Component', () => {
   });
 
   it('navigates to correct routes when nav items are clicked', () => {
-    render(
-      <TestWrapper>
-        <Header />
-      </TestWrapper>
-    );
+    renderWithTheme(<Header />);
 
     // Test each navigation link
     const navItems = [
@@ -180,22 +145,14 @@ describe('Header Component', () => {
   });
 
   it('applies sticky positioning', () => {
-    render(
-      <TestWrapper>
-        <Header />
-      </TestWrapper>
-    );
+    renderWithTheme(<Header />);
 
     const appBar = screen.getByTestId('app-bar');
     expect(appBar).toHaveStyle({ position: 'sticky' });
   });
 
   it('has correct background color', () => {
-    render(
-      <TestWrapper>
-        <Header />
-      </TestWrapper>
-    );
+    renderWithTheme(<Header />);
 
     const appBar = screen.getByTestId('app-bar');
     expect(appBar).toHaveStyle({ backgroundColor: '#2c3e50' });

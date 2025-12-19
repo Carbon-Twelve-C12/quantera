@@ -9,6 +9,8 @@
  * - For maximum security, tokens should be stored in HttpOnly cookies
  */
 
+import { logger } from './logger';
+
 // Encryption configuration
 const ALGORITHM = 'AES-GCM';
 const KEY_LENGTH = 256;
@@ -38,7 +40,7 @@ const APP_SECRET = (() => {
 
   // In development, use a local-only secret with warning
   if (!secret) {
-    console.warn(
+    logger.warn(
       '[SECURITY WARNING] REACT_APP_ENCRYPTION_SECRET not set. Using development-only fallback. ' +
       'This is NOT secure for production use.'
     );
@@ -166,7 +168,7 @@ export async function encryptValue(plaintext: string): Promise<string> {
     // Return as base64
     return arrayBufferToBase64(combined.buffer);
   } catch (error) {
-    console.error('Encryption error:', error);
+    logger.error('Encryption error', error instanceof Error ? error : new Error(String(error)));
     throw new Error('Failed to encrypt value');
   }
 }
@@ -205,7 +207,7 @@ export async function decryptValue(encryptedBase64: string): Promise<string> {
     const decoder = new TextDecoder();
     return decoder.decode(plaintextBuffer);
   } catch (error) {
-    console.error('Decryption error:', error);
+    logger.error('Decryption error', error instanceof Error ? error : new Error(String(error)));
     throw new Error('Failed to decrypt value');
   }
 }
@@ -237,7 +239,7 @@ export const secureStorage = {
           'Please use a modern browser that supports the Web Crypto API.'
         );
       }
-      console.warn(
+      logger.warn(
         '[SECURITY WARNING] Web Crypto not available. Storing data unencrypted. ' +
         'This is NOT secure for production use.'
       );
@@ -249,7 +251,7 @@ export const secureStorage = {
       const encrypted = await encryptValue(value);
       localStorage.setItem(key, encrypted);
     } catch (error) {
-      console.error('Secure storage setItem error:', error);
+      logger.error('Secure storage setItem error', error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   },
@@ -266,11 +268,11 @@ export const secureStorage = {
     if (!isCryptoAvailable()) {
       // In production, refuse to return potentially unencrypted sensitive data
       if (process.env.NODE_ENV === 'production') {
-        console.error('SECURITY ERROR: Web Crypto API not available. Cannot decrypt data.');
+        logger.error('SECURITY ERROR: Web Crypto API not available. Cannot decrypt data.', new Error('Crypto unavailable'));
         localStorage.removeItem(key);
         return null;
       }
-      console.warn(
+      logger.warn(
         '[SECURITY WARNING] Web Crypto not available. Returning potentially unencrypted value. ' +
         'This is NOT secure for production use.'
       );
@@ -281,7 +283,7 @@ export const secureStorage = {
       return await decryptValue(encrypted);
     } catch (error) {
       // If decryption fails, the data may be corrupted or from a different device
-      console.error('Secure storage getItem error:', error);
+      logger.error('Secure storage getItem error', error instanceof Error ? error : new Error(String(error)));
       // Clear the corrupted data
       localStorage.removeItem(key);
       return null;

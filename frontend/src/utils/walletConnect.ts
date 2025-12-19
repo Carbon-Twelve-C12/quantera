@@ -8,6 +8,7 @@
  */
 
 import { WALLET_CONFIG, SUPPORTED_CHAINS } from './config';
+import { logger } from './logger';
 
 // Import actual WalletKit if available
 let WalletKitClass: any;
@@ -23,12 +24,12 @@ try {
 
   // In production, this is a critical error
   if (process.env.NODE_ENV === 'production') {
-    console.error(
+    logger.error(
       'CRITICAL: WalletKit failed to load in production. Wallet connections will not work.',
-      error
+      error as Error
     );
   } else {
-    console.warn(
+    logger.warn(
       '[DEV] WalletKit not available, mock implementation enabled for development only.'
     );
   }
@@ -64,14 +65,14 @@ class WalletConnectWrapper {
             icons: [WALLET_CONFIG.appIcon]
           }
         });
-        console.log('WalletKit initialized successfully');
+        logger.info('WalletKit initialized successfully');
       } catch (error) {
-        console.error('Failed to initialize WalletKit:', error);
+        logger.error('Failed to initialize WalletKit', error instanceof Error ? error : new Error(String(error)));
         this.instance = null;
       }
     } else {
       this.instance = null;
-      console.log('Using mock wallet implementation');
+      logger.debug('Using mock wallet implementation');
     }
   }
 
@@ -91,7 +92,7 @@ class WalletConnectWrapper {
           connected: true
         };
       } catch (error) {
-        console.error('Error connecting to wallet:', error);
+        logger.error('Error connecting to wallet', error instanceof Error ? error : new Error(String(error)));
         throw error;
       }
     } else {
@@ -104,7 +105,7 @@ class WalletConnectWrapper {
         );
       }
 
-      console.warn(
+      logger.warn(
         '[DEV ONLY] Using mock wallet connection. This is NOT available in production.'
       );
       this.mockSession = {
@@ -126,12 +127,12 @@ class WalletConnectWrapper {
         // This would need to be updated with the actual WalletKit API
         this.instance.disconnectSession();
       } catch (error) {
-        console.error('Error disconnecting wallet:', error);
+        logger.error('Error disconnecting wallet', error instanceof Error ? error : new Error(String(error)));
       }
     } else {
       // Mock implementation
       this.mockSession = null;
-      console.log('Mock wallet disconnected');
+      logger.debug('Mock wallet disconnected');
     }
   }
 
@@ -154,7 +155,7 @@ class WalletConnectWrapper {
         }
         return null;
       } catch (error) {
-        console.error('Error getting session:', error);
+        logger.error('Error getting session', error instanceof Error ? error : new Error(String(error)));
         return null;
       }
     } else {
@@ -175,14 +176,14 @@ class WalletConnectWrapper {
           chainId
         });
       } catch (error) {
-        console.error('Error switching chain:', error);
+        logger.error('Error switching chain', error instanceof Error ? error : new Error(String(error)));
         throw error;
       }
     } else {
       // Mock implementation
       if (this.mockSession) {
         this.mockSession.chainId = chainId;
-        console.log(`Mock wallet switched to chain: ${chainId}`);
+        logger.debug('Mock wallet switched to chain', { chainId });
       } else {
         throw new Error('Not connected to wallet');
       }
@@ -199,7 +200,7 @@ class WalletConnectWrapper {
         // For now, return a mock value
         return '1250.75';
       } catch (error) {
-        console.error('Error getting balance:', error);
+        logger.error('Error getting balance', error instanceof Error ? error : new Error(String(error)));
         return '0';
       }
     } else {

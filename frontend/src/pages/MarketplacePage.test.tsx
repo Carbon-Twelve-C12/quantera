@@ -1,9 +1,16 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { BrowserRouter } from 'react-router-dom';
 import MarketplacePage from './MarketplacePage';
-import { ThemeContext } from '../contexts/ThemeContext';
+import {
+  renderWithProviders,
+  screen,
+  fireEvent,
+  waitFor,
+  mockContexts,
+} from '../test-utils';
+
+// Mock ThemeContext using test-utils pattern
+jest.mock('../contexts/ThemeContext', () => mockContexts.ThemeContext);
 
 // Mock data
 jest.mock('../data/mockTreasuriesData', () => ({
@@ -41,14 +48,10 @@ jest.mock('../data/mockEnvironmentalAssetsData', () => ({
   ]
 }));
 
-// Router wrapper
-const TestWrapper = ({ children }) => (
-  <BrowserRouter>
-    <ThemeContext.Provider value={{ theme: 'light', toggleTheme: jest.fn() }}>
-      {children}
-    </ThemeContext.Provider>
-  </BrowserRouter>
-);
+// Custom render with theme using test-utils
+const renderWithTheme = (ui: React.ReactElement) => {
+  return renderWithProviders(ui);
+};
 
 describe('MarketplacePage Component', () => {
   beforeEach(() => {
@@ -56,33 +59,21 @@ describe('MarketplacePage Component', () => {
   });
 
   it('renders marketplace header', () => {
-    render(
-      <TestWrapper>
-        <MarketplacePage />
-      </TestWrapper>
-    );
+    renderWithTheme(<MarketplacePage />);
 
     expect(screen.getByText('Asset Marketplace')).toBeInTheDocument();
     expect(screen.getByText(/Browse and invest in tokenized assets/i)).toBeInTheDocument();
   });
 
   it('renders search input', () => {
-    render(
-      <TestWrapper>
-        <MarketplacePage />
-      </TestWrapper>
-    );
+    renderWithTheme(<MarketplacePage />);
 
     const searchInput = screen.getByPlaceholderText('Search assets...');
     expect(searchInput).toBeInTheDocument();
   });
 
   it('renders filter tabs', () => {
-    render(
-      <TestWrapper>
-        <MarketplacePage />
-      </TestWrapper>
-    );
+    renderWithTheme(<MarketplacePage />);
 
     expect(screen.getByText('All Assets')).toBeInTheDocument();
     expect(screen.getByText('Treasury Securities')).toBeInTheDocument();
@@ -92,11 +83,7 @@ describe('MarketplacePage Component', () => {
   });
 
   it('displays treasury assets', () => {
-    render(
-      <TestWrapper>
-        <MarketplacePage />
-      </TestWrapper>
-    );
+    renderWithTheme(<MarketplacePage />);
 
     expect(screen.getByText('US Treasury Bond 2025')).toBeInTheDocument();
     expect(screen.getByText('4.50%')).toBeInTheDocument();
@@ -104,11 +91,7 @@ describe('MarketplacePage Component', () => {
   });
 
   it('displays environmental assets', () => {
-    render(
-      <TestWrapper>
-        <MarketplacePage />
-      </TestWrapper>
-    );
+    renderWithTheme(<MarketplacePage />);
 
     expect(screen.getByText('Amazon Forest Carbon Credits')).toBeInTheDocument();
     expect(screen.getByText('$25')).toBeInTheDocument();
@@ -116,11 +99,7 @@ describe('MarketplacePage Component', () => {
   });
 
   it('filters assets by category when tab is clicked', async () => {
-    render(
-      <TestWrapper>
-        <MarketplacePage />
-      </TestWrapper>
-    );
+    renderWithTheme(<MarketplacePage />);
 
     // Initially shows all assets
     expect(screen.getByText('US Treasury Bond 2025')).toBeInTheDocument();
@@ -137,14 +116,10 @@ describe('MarketplacePage Component', () => {
   });
 
   it('searches assets based on search input', async () => {
-    render(
-      <TestWrapper>
-        <MarketplacePage />
-      </TestWrapper>
-    );
+    renderWithTheme(<MarketplacePage />);
 
     const searchInput = screen.getByPlaceholderText('Search assets...');
-    
+
     // Search for treasury
     fireEvent.change(searchInput, { target: { value: 'treasury' } });
 
@@ -163,11 +138,7 @@ describe('MarketplacePage Component', () => {
   });
 
   it('displays create asset CTA', () => {
-    render(
-      <TestWrapper>
-        <MarketplacePage />
-      </TestWrapper>
-    );
+    renderWithTheme(<MarketplacePage />);
 
     expect(screen.getByText("Don't see what you're looking for?")).toBeInTheDocument();
     const createButton = screen.getByText('Create Your Own Asset');
@@ -176,11 +147,7 @@ describe('MarketplacePage Component', () => {
   });
 
   it('navigates to asset detail page when asset is clicked', () => {
-    render(
-      <TestWrapper>
-        <MarketplacePage />
-      </TestWrapper>
-    );
+    renderWithTheme(<MarketplacePage />);
 
     const viewDetailsButton = screen.getAllByText('View Details')[0];
     expect(viewDetailsButton.closest('a')).toHaveAttribute('href', expect.stringContaining('/assets/'));
@@ -188,25 +155,17 @@ describe('MarketplacePage Component', () => {
 
   it('shows loading state initially', () => {
     // Temporarily mock a loading state
-    const { container } = render(
-      <TestWrapper>
-        <MarketplacePage />
-      </TestWrapper>
-    );
+    const { container } = renderWithTheme(<MarketplacePage />);
 
     // The component loads data synchronously from mock, so we check the structure exists
     expect(container.querySelector('.marketplace-container')).toBeInTheDocument();
   });
 
   it('handles empty search results', async () => {
-    render(
-      <TestWrapper>
-        <MarketplacePage />
-      </TestWrapper>
-    );
+    renderWithTheme(<MarketplacePage />);
 
     const searchInput = screen.getByPlaceholderText('Search assets...');
-    
+
     // Search for non-existent asset
     fireEvent.change(searchInput, { target: { value: 'xyz123nonexistent' } });
 
@@ -217,11 +176,7 @@ describe('MarketplacePage Component', () => {
   });
 
   it('displays asset counts in filter tabs', () => {
-    render(
-      <TestWrapper>
-        <MarketplacePage />
-      </TestWrapper>
-    );
+    renderWithTheme(<MarketplacePage />);
 
     // Check that tabs show counts
     const allTab = screen.getByText('All Assets').closest('button');

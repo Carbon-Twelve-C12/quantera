@@ -1,14 +1,18 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import SmartAccountPage from './SmartAccountPage';
+import {
+  render,
+  screen,
+  mockContexts,
+  createMockWallet,
+} from '../test-utils';
 
-// Mock the context hooks
+// Mock the context hooks using test-utils
 jest.mock('../contexts/WalletContext', () => ({
-  useWallet: () => ({
+  useWallet: () => createMockWallet({
     address: '0x1234567890123456789012345678901234567890',
     connected: true,
-    connect: jest.fn(),
-    disconnect: jest.fn(),
   }),
 }));
 
@@ -26,7 +30,7 @@ jest.mock('../hooks/useSmartAccountOperations', () => ({
 jest.mock('../api/api', () => ({
   __esModule: true,
   default: {
-    get: jest.fn().mockImplementation((url) => {
+    get: jest.fn().mockImplementation((url: string) => {
       if (url.includes('/smart-account/templates')) {
         return Promise.resolve({
           data: [
@@ -47,7 +51,7 @@ jest.mock('../api/api', () => ({
           ]
         });
       }
-      
+
       if (url.includes('/smart-account')) {
         return Promise.resolve({
           data: [
@@ -64,7 +68,7 @@ jest.mock('../api/api', () => ({
           ]
         });
       }
-      
+
       return Promise.resolve({ data: [] });
     }),
     post: jest.fn().mockResolvedValue({ data: { success: true } }),
@@ -76,24 +80,24 @@ jest.mock('../api/api', () => ({
 describe('SmartAccountPage', () => {
   it('renders the page when user is connected', async () => {
     render(<SmartAccountPage />);
-    
+
     // Check if the component renders main elements
     expect(screen.getByText('Smart Account Management')).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'My Accounts' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Create New Account' })).toBeInTheDocument();
   });
-  
+
   it('shows connect wallet message when user is not connected', () => {
     // Override the mock for this specific test
-    jest.spyOn(require('../contexts/WalletContext'), 'useWallet').mockReturnValue({
-      address: null,
-      connected: false,
-      connect: jest.fn(),
-      disconnect: jest.fn(),
-    });
-    
+    jest.spyOn(require('../contexts/WalletContext'), 'useWallet').mockReturnValue(
+      createMockWallet({
+        address: '',
+        connected: false,
+      })
+    );
+
     render(<SmartAccountPage />);
-    
+
     expect(screen.getByText('Please connect your wallet to access Smart Account features')).toBeInTheDocument();
   });
-}); 
+});

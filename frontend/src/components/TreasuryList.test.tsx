@@ -1,9 +1,13 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { BrowserRouter } from 'react-router-dom';
 import { TreasuryList } from './index';
 import { treasuryService } from '../api/treasuryService';
+import {
+  renderWithProviders,
+  screen,
+  fireEvent,
+  waitFor,
+} from '../test-utils';
 
 // Mock the treasury service
 jest.mock('../api/treasuryService', () => ({
@@ -36,11 +40,6 @@ const mockTreasuries = [
   },
 ];
 
-// Test wrapper component
-const renderWithRouter = (ui: React.ReactElement) => {
-  return render(<BrowserRouter>{ui}</BrowserRouter>);
-};
-
 describe('TreasuryList Component', () => {
   beforeEach(() => {
     // Reset mock and set default implementation
@@ -49,18 +48,18 @@ describe('TreasuryList Component', () => {
   });
 
   test('renders loading state initially', () => {
-    renderWithRouter(<TreasuryList />);
+    renderWithProviders(<TreasuryList />);
     expect(screen.getByText(/loading treasuries/i)).toBeInTheDocument();
   });
 
   test('renders treasuries after loading', async () => {
-    renderWithRouter(<TreasuryList />);
-    
+    renderWithProviders(<TreasuryList />);
+
     // Wait for treasuries to load
     await waitFor(() => {
       expect(screen.queryByText(/loading treasuries/i)).not.toBeInTheDocument();
     });
-    
+
     // Check if treasuries are rendered
     expect(screen.getByText('Treasury 1')).toBeInTheDocument();
     expect(screen.getByText('Treasury 2')).toBeInTheDocument();
@@ -72,17 +71,17 @@ describe('TreasuryList Component', () => {
     (treasuryService.listTreasuries as jest.Mock)
       .mockResolvedValueOnce(mockTreasuries)
       .mockResolvedValueOnce(filteredMockTreasuries);
-    
-    renderWithRouter(<TreasuryList />);
-    
+
+    renderWithProviders(<TreasuryList />);
+
     // Wait for initial data to load
     await waitFor(() => {
       expect(screen.getByText('Treasury 1')).toBeInTheDocument();
     });
-    
+
     // Change type filter to tbill
     fireEvent.change(screen.getByLabelText(/type:/i), { target: { value: 'tbill' } });
-    
+
     // Check if filter was applied correctly
     await waitFor(() => {
       expect(treasuryService.listTreasuries).toHaveBeenCalledWith('tbill', undefined, undefined, 10, 0);
@@ -92,9 +91,9 @@ describe('TreasuryList Component', () => {
   test('handles error state', async () => {
     // Mock error response
     (treasuryService.listTreasuries as jest.Mock).mockRejectedValue(new Error('Failed to load treasuries'));
-    
-    renderWithRouter(<TreasuryList />);
-    
+
+    renderWithProviders(<TreasuryList />);
+
     // Check if error message is displayed
     await waitFor(() => {
       expect(screen.getByText(/failed to load treasuries/i)).toBeInTheDocument();
@@ -104,9 +103,9 @@ describe('TreasuryList Component', () => {
   test('shows empty state when no data', async () => {
     // Mock empty response
     (treasuryService.listTreasuries as jest.Mock).mockResolvedValue([]);
-    
-    renderWithRouter(<TreasuryList />);
-    
+
+    renderWithProviders(<TreasuryList />);
+
     // Check if empty state is displayed
     await waitFor(() => {
       expect(screen.getByText(/no treasuries found/i)).toBeInTheDocument();
@@ -114,19 +113,19 @@ describe('TreasuryList Component', () => {
   });
 
   test('pagination works correctly', async () => {
-    renderWithRouter(<TreasuryList initialLimit={1} />);
-    
+    renderWithProviders(<TreasuryList initialLimit={1} />);
+
     // Wait for initial data to load
     await waitFor(() => {
       expect(screen.getByText('Treasury 1')).toBeInTheDocument();
     });
-    
+
     // Click next page button
     fireEvent.click(screen.getByText('Next'));
-    
+
     // Check if second page was requested
     await waitFor(() => {
       expect(treasuryService.listTreasuries).toHaveBeenCalledWith(undefined, undefined, undefined, 1, 1);
     });
   });
-}); 
+});

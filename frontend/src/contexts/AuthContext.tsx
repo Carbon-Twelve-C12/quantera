@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { authAPI } from '../api/api';
 import { isAxiosError, isWeb3Error, MetaMaskErrorCodes, getErrorMessage } from '../types/errors';
+import { logger } from '../utils/logger';
 
 // Types for auth context
 interface User {
@@ -73,7 +74,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
             localStorage.removeItem('walletAddress');
           }
         } catch (err) {
-          console.error('Token validation failed:', err);
+          logger.error('Token validation failed', err instanceof Error ? err : new Error(String(err)));
           // Clear invalid session
           localStorage.removeItem('token');
           localStorage.removeItem('user');
@@ -102,19 +103,19 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
       
-      console.log('Connected wallet:', address);
+      logger.info('Wallet connected', { address });
       
       // 3. Request challenge from backend
       const challengeData = await authAPI.requestChallenge(address);
-      console.log('Challenge received from backend');
+      logger.debug('Challenge received from backend');
       
       // 4. Sign the challenge message
       const signature = await signer.signMessage(challengeData.challenge);
-      console.log('Message signed by wallet');
+      logger.debug('Message signed by wallet');
       
       // 5. Verify signature and get JWT token
       const authData = await authAPI.verifySignature(address, signature);
-      console.log('Authentication successful');
+      logger.info('Authentication successful');
       
       // 6. Create user object
       const user: User = {
@@ -135,9 +136,9 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       setWalletAddress(authData.wallet_address);
       setIsAuthenticated(true);
       
-      console.log('Login complete');
+      logger.info('Login complete');
     } catch (err: unknown) {
-      console.error('Login error:', err);
+      logger.error('Login error', err instanceof Error ? err : new Error(String(err)));
 
       // Handle specific errors with user-friendly messages
       const errorMessage = getErrorMessage(err);
@@ -172,10 +173,10 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       // Call backend to revoke session if we have a token
       if (token) {
         await authAPI.logout(token);
-        console.log('Session revoked on backend');
+        logger.info('Session revoked on backend');
       }
     } catch (err) {
-      console.error('Logout error:', err);
+      logger.error('Logout error', err instanceof Error ? err : new Error(String(err)));
       // Continue with local logout even if backend call fails
     } finally {
       // Clear local state
@@ -202,11 +203,11 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       const handleAccountsChanged = (accounts: string[]) => {
         if (accounts.length === 0) {
           // User disconnected wallet
-          console.log('Wallet disconnected');
+          logger.info('Wallet disconnected');
           logout();
         } else if (accounts[0] !== walletAddress) {
           // User switched accounts - require re-authentication
-          console.log('Account changed, logging out');
+          logger.info('Account changed, logging out');
           logout();
         }
       };

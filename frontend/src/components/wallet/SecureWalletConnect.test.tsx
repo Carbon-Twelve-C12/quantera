@@ -1,9 +1,14 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { SecureWalletConnect } from './SecureWalletConnect';
 import { ThemeContext } from '../../contexts/ThemeContext';
-import { BrowserProvider } from 'ethers';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  createMockTheme,
+} from '../../test-utils';
 
 // Mock ethers
 jest.mock('ethers', () => ({
@@ -19,23 +24,24 @@ const mockEthereum = {
   isMetaMask: true
 };
 
-// Theme context wrapper
-const ThemeWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const value = {
-    theme: 'light',
-    toggleTheme: jest.fn()
-  };
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+// Theme context wrapper using test-utils
+const renderWithTheme = (ui: React.ReactElement, themeOverrides = {}) => {
+  const mockTheme = createMockTheme({ theme: 'light', ...themeOverrides });
+  return render(
+    <ThemeContext.Provider value={mockTheme}>
+      {ui}
+    </ThemeContext.Provider>
+  );
 };
 
 describe('SecureWalletConnect', () => {
   beforeEach(() => {
     // Reset mocks
     jest.clearAllMocks();
-    
+
     // Setup window.ethereum
     (window as any).ethereum = mockEthereum;
-    
+
     // Setup localStorage mock
     Storage.prototype.getItem = jest.fn();
     Storage.prototype.setItem = jest.fn();
@@ -47,23 +53,15 @@ describe('SecureWalletConnect', () => {
   });
 
   it('renders connect button when not connected', () => {
-    render(
-      <ThemeWrapper>
-        <SecureWalletConnect />
-      </ThemeWrapper>
-    );
+    renderWithTheme(<SecureWalletConnect />);
 
     expect(screen.getByText(/Connect Wallet/i)).toBeInTheDocument();
   });
 
   it('shows "No Wallet" when ethereum is not available', () => {
     delete (window as any).ethereum;
-    
-    render(
-      <ThemeWrapper>
-        <SecureWalletConnect />
-      </ThemeWrapper>
-    );
+
+    renderWithTheme(<SecureWalletConnect />);
 
     const button = screen.getByRole('button');
     expect(button).toHaveTextContent('No Wallet');
@@ -72,16 +70,12 @@ describe('SecureWalletConnect', () => {
   it('connects wallet successfully', async () => {
     const mockAccounts = ['0x1234567890abcdef1234567890abcdef12345678'];
     const mockChainId = '0x1';
-    
+
     mockEthereum.request
       .mockResolvedValueOnce(mockAccounts) // eth_requestAccounts
       .mockResolvedValueOnce(mockChainId); // eth_chainId
-    
-    render(
-      <ThemeWrapper>
-        <SecureWalletConnect />
-      </ThemeWrapper>
-    );
+
+    renderWithTheme(<SecureWalletConnect />);
 
     const connectButton = screen.getByText(/Connect Wallet/i);
     fireEvent.click(connectButton);
@@ -94,12 +88,8 @@ describe('SecureWalletConnect', () => {
 
   it('handles connection error gracefully', async () => {
     mockEthereum.request.mockRejectedValueOnce(new Error('User rejected request'));
-    
-    render(
-      <ThemeWrapper>
-        <SecureWalletConnect />
-      </ThemeWrapper>
-    );
+
+    renderWithTheme(<SecureWalletConnect />);
 
     const connectButton = screen.getByText(/Connect Wallet/i);
     fireEvent.click(connectButton);
@@ -111,19 +101,15 @@ describe('SecureWalletConnect', () => {
 
   it('displays connected address correctly', async () => {
     const mockAddress = '0x1234567890abcdef1234567890abcdef12345678';
-    
+
     // Mock already connected state
     Storage.prototype.getItem = jest.fn(() => JSON.stringify({
       address: mockAddress,
       chainId: 1,
       timestamp: Date.now()
     }));
-    
-    render(
-      <ThemeWrapper>
-        <SecureWalletConnect />
-      </ThemeWrapper>
-    );
+
+    renderWithTheme(<SecureWalletConnect />);
 
     await waitFor(() => {
       expect(screen.getByText(/0x1234...5678/i)).toBeInTheDocument();
@@ -132,19 +118,15 @@ describe('SecureWalletConnect', () => {
 
   it('disconnects wallet when clicking disconnect', async () => {
     const mockAddress = '0x1234567890abcdef1234567890abcdef12345678';
-    
+
     // Mock connected state
     Storage.prototype.getItem = jest.fn(() => JSON.stringify({
       address: mockAddress,
       chainId: 1,
       timestamp: Date.now()
     }));
-    
-    render(
-      <ThemeWrapper>
-        <SecureWalletConnect />
-      </ThemeWrapper>
-    );
+
+    renderWithTheme(<SecureWalletConnect />);
 
     // Wait for connected state
     await waitFor(() => {
@@ -167,19 +149,15 @@ describe('SecureWalletConnect', () => {
 
   it('shows correct security indicator for supported network', async () => {
     const mockAddress = '0x1234567890abcdef1234567890abcdef12345678';
-    
+
     // Mock connected state on mainnet (chainId: 1)
     Storage.prototype.getItem = jest.fn(() => JSON.stringify({
       address: mockAddress,
       chainId: 1,
       timestamp: Date.now()
     }));
-    
-    render(
-      <ThemeWrapper>
-        <SecureWalletConnect />
-      </ThemeWrapper>
-    );
+
+    renderWithTheme(<SecureWalletConnect />);
 
     await waitFor(() => {
       const securityIndicator = screen.getByTestId('security-indicator');
@@ -189,19 +167,15 @@ describe('SecureWalletConnect', () => {
 
   it('shows warning for unsupported network', async () => {
     const mockAddress = '0x1234567890abcdef1234567890abcdef12345678';
-    
+
     // Mock connected state on unsupported network
     Storage.prototype.getItem = jest.fn(() => JSON.stringify({
       address: mockAddress,
       chainId: 999,
       timestamp: Date.now()
     }));
-    
-    render(
-      <ThemeWrapper>
-        <SecureWalletConnect />
-      </ThemeWrapper>
-    );
+
+    renderWithTheme(<SecureWalletConnect />);
 
     await waitFor(() => {
       const securityIndicator = screen.getByTestId('security-indicator');
@@ -212,25 +186,21 @@ describe('SecureWalletConnect', () => {
   it('handles account change events', async () => {
     const initialAddress = '0x1111111111111111111111111111111111111111';
     const newAddress = '0x2222222222222222222222222222222222222222';
-    
+
     // Mock initial connected state
     Storage.prototype.getItem = jest.fn(() => JSON.stringify({
       address: initialAddress,
       chainId: 1,
       timestamp: Date.now()
     }));
-    
-    render(
-      <ThemeWrapper>
-        <SecureWalletConnect />
-      </ThemeWrapper>
-    );
+
+    renderWithTheme(<SecureWalletConnect />);
 
     // Simulate account change
     const accountsChangedHandler = mockEthereum.on.mock.calls.find(
-      call => call[0] === 'accountsChanged'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === 'accountsChanged'
     )?.[1];
-    
+
     if (accountsChangedHandler) {
       accountsChangedHandler([newAddress]);
     }
@@ -242,25 +212,21 @@ describe('SecureWalletConnect', () => {
 
   it('handles chain change events', async () => {
     const mockAddress = '0x1234567890abcdef1234567890abcdef12345678';
-    
+
     // Mock initial connected state
     Storage.prototype.getItem = jest.fn(() => JSON.stringify({
       address: mockAddress,
       chainId: 1,
       timestamp: Date.now()
     }));
-    
-    render(
-      <ThemeWrapper>
-        <SecureWalletConnect />
-      </ThemeWrapper>
-    );
+
+    renderWithTheme(<SecureWalletConnect />);
 
     // Simulate chain change
     const chainChangedHandler = mockEthereum.on.mock.calls.find(
-      call => call[0] === 'chainChanged'
+      (call: [string, (...args: unknown[]) => void]) => call[0] === 'chainChanged'
     )?.[1];
-    
+
     if (chainChangedHandler) {
       chainChangedHandler('0x5'); // Goerli
     }

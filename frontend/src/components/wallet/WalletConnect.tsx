@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Menu, MenuItem, Box, Typography, Avatar, Alert, Snackbar } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { AccountBalanceWallet, ExpandMore, Warning } from '@mui/icons-material';
+import { logger } from '../../utils/logger';
 
 const WalletButton = styled(Button)({
   background: 'rgba(255, 255, 255, 0.15)',
@@ -119,7 +120,7 @@ export const WalletConnect: React.FC = () => {
         await updateChainId();
       }
     } catch (error) {
-      console.error('Error checking connection:', error);
+      logger.error('Error checking connection', error instanceof Error ? error : new Error(String(error)));
     }
   };
 
@@ -143,10 +144,10 @@ export const WalletConnect: React.FC = () => {
         setIsConnected(true);
         await updateBalance(accounts[0]);
         await updateChainId();
-        console.log('Wallet connected:', accounts[0]);
+        logger.info('Wallet connected', { address: accounts[0] });
       }
     } catch (error: unknown) {
-      console.error('Failed to connect wallet:', error);
+      logger.error('Failed to connect wallet', error instanceof Error ? error : new Error(String(error)));
       const web3Error = error as { code?: number; message?: string };
       if (web3Error.code === 4001) {
         setError('Connection rejected by user');
@@ -171,7 +172,7 @@ export const WalletConnect: React.FC = () => {
       const balanceInEth = parseInt(balance, 16) / Math.pow(10, 18);
       setBalance(balanceInEth.toFixed(4));
     } catch (error) {
-      console.error('Error fetching balance:', error);
+      logger.error('Error fetching balance', error instanceof Error ? error : new Error(String(error)));
       setBalance('0.00');
     }
   };
@@ -183,7 +184,7 @@ export const WalletConnect: React.FC = () => {
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
       setChainId(chainId);
     } catch (error) {
-      console.error('Error fetching chain ID:', error);
+      logger.error('Error fetching chain ID', error instanceof Error ? error : new Error(String(error)));
     }
   };
 
@@ -210,7 +211,7 @@ export const WalletConnect: React.FC = () => {
     setBalance('0.00');
     setChainId('');
     setMenuAnchor(null);
-    console.log('Wallet disconnected');
+    logger.info('Wallet disconnected');
   };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -227,7 +228,7 @@ export const WalletConnect: React.FC = () => {
       setError('Address copied to clipboard!');
       setTimeout(() => setError(''), 2000);
     } catch (error) {
-      console.error('Failed to copy address:', error);
+      logger.error('Failed to copy address', error instanceof Error ? error : new Error(String(error)));
     }
     handleMenuClose();
   };

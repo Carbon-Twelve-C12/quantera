@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import walletConnect from '../utils/walletConnect';
+import { logger } from '../utils/logger';
 
 // Define wallet context state interface
 interface WalletContextState {
@@ -57,7 +58,7 @@ export const WalletProvider: React.FC<{children: React.ReactNode}> = ({ children
               // Fetch trading volume - this would be from your API in production
               setTradingVolume(120000); // Mock trading volume until API integration
             } catch (err) {
-              console.warn('Failed to fetch initial balance:', err);
+              logger.warn('Failed to fetch initial balance', { error: err });
               setBalance('0');
             }
           } else {
@@ -66,7 +67,7 @@ export const WalletProvider: React.FC<{children: React.ReactNode}> = ({ children
             localStorage.removeItem('wallet_connected');
           }
         } catch (err) {
-          console.error('Failed to restore wallet session:', err);
+          logger.error('Failed to restore wallet session', err instanceof Error ? err : new Error(String(err)));
           localStorage.removeItem('wallet_address');
           localStorage.removeItem('wallet_connected');
         }
@@ -91,7 +92,7 @@ export const WalletProvider: React.FC<{children: React.ReactNode}> = ({ children
           const balance = await walletConnect.getBalance(session.address);
           setBalance(balance);
         } catch (err) {
-          console.warn('Failed to fetch balance:', err);
+          logger.warn('Failed to fetch balance', { error: err });
           setBalance('0');
         }
         
@@ -100,11 +101,11 @@ export const WalletProvider: React.FC<{children: React.ReactNode}> = ({ children
         
         localStorage.setItem('wallet_address', session.address);
         localStorage.setItem('wallet_connected', 'true');
-        
-        console.log('Wallet connected:', session.address);
+
+        logger.info('Wallet connected', { address: session.address });
       }
     } catch (error) {
-      console.error('Connection error:', error);
+      logger.error('Connection error', error instanceof Error ? error : new Error(String(error)));
       setConnected(false);
       setAddress(null);
       setBalance('0');
@@ -128,8 +129,8 @@ export const WalletProvider: React.FC<{children: React.ReactNode}> = ({ children
     
     localStorage.removeItem('wallet_address');
     localStorage.removeItem('wallet_connected');
-    
-    console.log('Wallet disconnected');
+
+    logger.info('Wallet disconnected');
   };
 
   // Switch network
@@ -144,13 +145,13 @@ export const WalletProvider: React.FC<{children: React.ReactNode}> = ({ children
           const balance = await walletConnect.getBalance(address);
           setBalance(balance);
         } catch (err) {
-          console.warn('Failed to update balance after network switch:', err);
+          logger.warn('Failed to update balance after network switch', { error: err });
         }
       }
-      
-      console.log(`Switched to network: ${chainId}`);
+
+      logger.info('Switched to network', { chainId });
     } catch (error) {
-      console.error('Error switching network:', error);
+      logger.error('Error switching network', error instanceof Error ? error : new Error(String(error)));
     }
   };
 

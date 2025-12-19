@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useWallet } from '../contexts/WalletContext';
+import { logger } from '../utils/logger';
 
 // WebSocket Event Types
 export enum WebSocketEventType {
@@ -92,7 +93,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       const ws = new WebSocket(url);
       
       ws.onopen = () => {
-        console.log('WebSocket connection established');
+        logger.info('WebSocket connection established');
         setIsConnected(true);
         
         // Resubscribe to topics
@@ -117,19 +118,19 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
           const data = JSON.parse(event.data) as WebSocketEvent;
           setLastEvent(data);
           setEvents(prev => [...prev, data]);
-          console.log('WebSocket message received:', data);
+          logger.debug('WebSocket message received', { type: data.type });
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+          logger.error('Error parsing WebSocket message', error instanceof Error ? error : new Error(String(error)));
         }
       };
       
       ws.onclose = () => {
-        console.log('WebSocket connection closed');
+        logger.info('WebSocket connection closed');
         setIsConnected(false);
       };
-      
+
       ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        logger.error('WebSocket error', new Error('WebSocket connection error'));
         // Close the socket on error to trigger the onclose handler
         ws.close();
       };
@@ -141,7 +142,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
         ws.close();
       };
     } catch (error) {
-      console.error('Error initializing WebSocket:', error);
+      logger.error('Error initializing WebSocket', error instanceof Error ? error : new Error(String(error)));
     }
   }, [url, address, subscriptions]);
   
@@ -158,7 +159,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   useEffect(() => {
     if (!isConnected && socket === null) {
       const reconnectTimeout = setTimeout(() => {
-        console.log('Attempting to reconnect...');
+        logger.debug('Attempting to reconnect WebSocket');
         initializeWebSocket();
       }, 3000);
       

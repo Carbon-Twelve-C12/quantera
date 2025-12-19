@@ -1,7 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import '@testing-library/jest-dom';
 import AssetCreationWizardPage from './AssetCreationWizardPage';
+import {
+  renderWithProviders,
+  screen,
+  fireEvent,
+} from '../test-utils';
 
 // Mock the API calls used in the component
 jest.mock('../api', () => ({
@@ -16,11 +20,7 @@ describe('AssetCreationWizardPage', () => {
   });
 
   test('renders the component with initial step', () => {
-    render(
-      <MemoryRouter>
-        <AssetCreationWizardPage />
-      </MemoryRouter>
-    );
+    renderWithProviders(<AssetCreationWizardPage />);
 
     // Check for main heading
     expect(screen.getByText('Create New Asset')).toBeInTheDocument();
@@ -43,11 +43,7 @@ describe('AssetCreationWizardPage', () => {
   });
 
   test('navigates through the wizard steps', () => {
-    render(
-      <MemoryRouter>
-        <AssetCreationWizardPage />
-      </MemoryRouter>
-    );
+    renderWithProviders(<AssetCreationWizardPage />);
     
     // Initial step
     expect(screen.getByText('Select Asset Class')).toBeInTheDocument();

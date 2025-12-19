@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { ethers } from 'ethers';
 import { secureStorage, isCryptoAvailable } from '../utils/crypto';
 import { getErrorMessage } from '../types/errors';
+import { logger } from '../utils/logger';
 
 // Security configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
@@ -11,7 +12,7 @@ const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours
 
 // Log crypto availability on load
 if (typeof window !== 'undefined') {
-  console.log(`[Security] Web Crypto API available: ${isCryptoAvailable()}`);
+  logger.info('Security initialization', { cryptoAvailable: isCryptoAvailable() });
 }
 
 // User roles and permissions
@@ -129,7 +130,7 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
         }
       }
     } catch (error) {
-      console.error('Auth initialization error:', error);
+      logger.error('Auth initialization error', error instanceof Error ? error : new Error(String(error)));
       clearAuthData();
     } finally {
       setIsLoading(false);
@@ -196,7 +197,7 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
 
       return true;
     } catch (error: unknown) {
-      console.error('Login error:', error);
+      logger.error('Login error', error instanceof Error ? error : new Error(String(error)));
       setError(getErrorMessage(error));
       return false;
     } finally {
@@ -213,7 +214,7 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
         headers: {
           'Authorization': `Bearer ${token}`,
         },
-      }).catch(console.error);
+      }).catch((err) => logger.error('Logout cleanup error', err instanceof Error ? err : new Error(String(err))));
     }
   };
 
@@ -226,7 +227,7 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
 
       return await refreshTokenWithBackend(refreshTokenValue);
     } catch (error) {
-      console.error('Token refresh error:', error);
+      logger.error('Token refresh error', error instanceof Error ? error : new Error(String(error)));
       clearAuthData();
       return false;
     }
@@ -247,7 +248,7 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
       const recoveredAddress = ethers.verifyMessage(message, signature);
       return recoveredAddress.toLowerCase() === address.toLowerCase();
     } catch (error) {
-      console.error('Signature verification error:', error);
+      logger.error('Signature verification error', error instanceof Error ? error : new Error(String(error)));
       return false;
     }
   };
@@ -292,7 +293,7 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
         throw new Error('Failed to fetch user profile');
       }
     } catch (error) {
-      console.error('Profile fetch error:', error);
+      logger.error('Profile fetch error', error instanceof Error ? error : new Error(String(error)));
       clearAuthData();
     }
   };
@@ -327,7 +328,7 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
         return false;
       }
     } catch (error) {
-      console.error('Token refresh error:', error);
+      logger.error('Token refresh error', error instanceof Error ? error : new Error(String(error)));
       return false;
     }
   };
@@ -346,7 +347,7 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
     try {
       await secureStorage.setItem(key, value);
     } catch (error) {
-      console.error('Secure storage error:', error);
+      logger.error('Secure storage error', error instanceof Error ? error : new Error(String(error)));
       throw error;
     }
   }, []);
@@ -355,7 +356,7 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
     try {
       return await secureStorage.getItem(key);
     } catch (error) {
-      console.error('Secure retrieval error:', error);
+      logger.error('Secure retrieval error', error instanceof Error ? error : new Error(String(error)));
       return null;
     }
   }, []);
@@ -364,7 +365,7 @@ export const SecureAuthProvider: React.FC<{ children: ReactNode }> = ({ children
     try {
       secureStorage.removeItem(key);
     } catch (error) {
-      console.error('Secure removal error:', error);
+      logger.error('Secure removal error', error instanceof Error ? error : new Error(String(error)));
     }
   }, []);
 

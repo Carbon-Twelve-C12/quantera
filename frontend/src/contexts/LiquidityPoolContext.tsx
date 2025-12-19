@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useWallet } from './WalletContext';
+import { logger } from '../utils/logger';
+import { FeatureFlags } from '../utils/featureFlags';
 
 // Types for liquidity pools based on the ILiquidityPools.sol interface
 export interface PoolConfig {
@@ -261,7 +263,7 @@ export const LiquidityPoolProvider: React.FC<{ children: ReactNode }> = ({ child
     
     try {
       // In a real implementation, this would call the contract
-      console.log("Creating new pool", { tokenA, tokenB, assetClassA, assetClassB, feeTier, initialSqrtPrice, tickSpacing });
+      logger.info("Creating new liquidity pool", { tokenA, tokenB, assetClassA, assetClassB, feeTier, tickSpacing });
       
       // Mock implementation - just return a new pool ID
       const newPoolId = `0xpool${pools.length + 1}`;
@@ -304,7 +306,7 @@ export const LiquidityPoolProvider: React.FC<{ children: ReactNode }> = ({ child
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error creating pool";
       setError(errorMessage);
-      console.error("Error creating pool:", err);
+      logger.error("Error creating pool", err instanceof Error ? err : new Error(String(err)));
       throw err;
     } finally {
       setIsLoading(false);
@@ -325,7 +327,7 @@ export const LiquidityPoolProvider: React.FC<{ children: ReactNode }> = ({ child
     
     try {
       // In a real implementation, this would call the contract
-      console.log("Adding liquidity", { poolId, lowerTick, upperTick, amount0Desired, amount1Desired, amount0Min, amount1Min });
+      logger.info("Adding liquidity to pool", { poolId, lowerTick, upperTick });
       
       // Mock implementation
       const newPositionId = `0xposition${positions.length + 1}`;
@@ -375,7 +377,7 @@ export const LiquidityPoolProvider: React.FC<{ children: ReactNode }> = ({ child
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error adding liquidity";
       setError(errorMessage);
-      console.error("Error adding liquidity:", err);
+      logger.error("Error adding liquidity", err instanceof Error ? err : new Error(String(err)));
       throw err;
     } finally {
       setIsLoading(false);
@@ -393,7 +395,7 @@ export const LiquidityPoolProvider: React.FC<{ children: ReactNode }> = ({ child
     
     try {
       // In a real implementation, this would call the contract
-      console.log("Removing liquidity", { positionId, liquidityAmount, amount0Min, amount1Min });
+      logger.info("Removing liquidity from position", { positionId, liquidityAmount });
       
       // Mock implementation
       const position = positions.find(p => p.positionId === positionId);
@@ -446,7 +448,7 @@ export const LiquidityPoolProvider: React.FC<{ children: ReactNode }> = ({ child
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error removing liquidity";
       setError(errorMessage);
-      console.error("Error removing liquidity:", err);
+      logger.error("Error removing liquidity", err instanceof Error ? err : new Error(String(err)));
       throw err;
     } finally {
       setIsLoading(false);
@@ -459,7 +461,7 @@ export const LiquidityPoolProvider: React.FC<{ children: ReactNode }> = ({ child
     
     try {
       // In a real implementation, this would call the contract
-      console.log("Collecting fees", { positionId });
+      logger.info("Collecting fees from position", { positionId });
       
       // Mock implementation
       const position = positions.find(p => p.positionId === positionId);
@@ -494,7 +496,7 @@ export const LiquidityPoolProvider: React.FC<{ children: ReactNode }> = ({ child
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error collecting fees";
       setError(errorMessage);
-      console.error("Error collecting fees:", err);
+      logger.error("Error collecting fees", err instanceof Error ? err : new Error(String(err)));
       throw err;
     } finally {
       setIsLoading(false);
@@ -503,19 +505,26 @@ export const LiquidityPoolProvider: React.FC<{ children: ReactNode }> = ({ child
   
   // Function to refresh pools data
   const refreshPools = async () => {
+    // Check if feature is enabled
+    if (!FeatureFlags.isEnabled('LIQUIDITY_POOLS')) {
+      logger.debug('Liquidity pools feature is disabled');
+      return;
+    }
+
     setIsLoading(true);
-    
+
     try {
-      // In a real implementation, this would call the API
-      console.log("Refreshing pools data");
-      
+      logger.debug("Refreshing liquidity pools data");
+
       // For now, we'll just use the mock data
       setPools(mockPools);
       setPoolStates(mockPoolStates);
+
+      logger.info("Liquidity pools data refreshed", { poolCount: mockPools.length });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error refreshing pools";
       setError(errorMessage);
-      console.error("Error refreshing pools:", err);
+      logger.error("Error refreshing pools", err instanceof Error ? err : new Error(String(err)));
     } finally {
       setIsLoading(false);
     }
@@ -524,21 +533,22 @@ export const LiquidityPoolProvider: React.FC<{ children: ReactNode }> = ({ child
   // Function to refresh user positions
   const refreshUserPositions = async () => {
     setIsLoading(true);
-    
+
     try {
-      // In a real implementation, this would call the API
-      console.log("Refreshing user positions");
-      
+      logger.debug("Refreshing user liquidity positions", { address });
+
       // For now, we'll just use the mock data
       if (address) {
-        setUserPositions(mockPositions.filter(p => p.owner.toLowerCase() === address.toLowerCase()));
+        const userPos = mockPositions.filter(p => p.owner.toLowerCase() === address.toLowerCase());
+        setUserPositions(userPos);
+        logger.info("User positions refreshed", { positionCount: userPos.length });
       } else {
         setUserPositions([]);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error refreshing user positions";
       setError(errorMessage);
-      console.error("Error refreshing user positions:", err);
+      logger.error("Error refreshing user positions", err instanceof Error ? err : new Error(String(err)));
     } finally {
       setIsLoading(false);
     }
