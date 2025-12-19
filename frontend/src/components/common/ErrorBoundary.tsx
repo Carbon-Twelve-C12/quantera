@@ -1,16 +1,21 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { captureException, addBreadcrumb } from '../../utils/errorTracking';
+import { logger } from '../../utils/logger';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
   showDetails?: boolean;
+  /** Component name for error tracking context */
+  componentName?: string;
 }
 
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;
+  eventId: string | null;
 }
 
 /**
@@ -31,6 +36,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       hasError: false,
       error: null,
       errorInfo: null,
+      eventId: null,
     };
   }
 
@@ -40,51 +46,47 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Log the error for debugging
-    console.error('ErrorBoundary caught an error:', error);
-    console.error('Component stack:', errorInfo.componentStack);
+    // Use structured logging instead of console
+    logger.error('ErrorBoundary caught an error', error, {
+      componentStack: errorInfo.componentStack,
+      componentName: this.props.componentName,
+    });
 
-    // Update state with error details
-    this.setState({ errorInfo });
+    // Add breadcrumb for context
+    addBreadcrumb({
+      type: 'error',
+      category: 'error-boundary',
+      message: `Error in ${this.props.componentName || 'component'}: ${error.message}`,
+      data: { componentStack: errorInfo.componentStack },
+    });
+
+    // Capture exception with error tracking service
+    const eventId = captureException(error, {
+      component: this.props.componentName || 'ErrorBoundary',
+      componentStack: errorInfo.componentStack,
+    });
+
+    // Update state with error details and event ID
+    this.setState({ errorInfo, eventId });
 
     // Call custom error handler if provided
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
-
-    // In production, you would send this to an error reporting service
-    this.reportError(error, errorInfo);
-  }
-
-  private reportError(error: Error, errorInfo: ErrorInfo): void {
-    // Send error to monitoring service (Sentry, LogRocket, etc.)
-    // This is a placeholder - integrate with your error monitoring service
-    const errorReport = {
-      message: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      timestamp: new Date().toISOString(),
-      url: window.location.href,
-      userAgent: navigator.userAgent,
-    };
-
-    // Example: Send to backend error logging endpoint
-    if (process.env.NODE_ENV === 'production') {
-      fetch('/api/v1/error-log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(errorReport),
-      }).catch(() => {
-        // Silently fail if error reporting fails
-      });
-    }
   }
 
   private handleRetry = (): void => {
+    addBreadcrumb({
+      type: 'user',
+      category: 'error-boundary',
+      message: 'User clicked retry after error',
+    });
+
     this.setState({
       hasError: false,
       error: null,
       errorInfo: null,
+      eventId: null,
     });
   };
 
@@ -148,6 +150,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
             <p style={styles.supportText}>
               If the problem persists, please contact support.
+              {this.state.eventId && (
+                <span style={styles.eventId}>
+                  <br />
+                  Reference: {this.state.eventId}
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -256,6 +264,11 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '14px',
     color: '#71717A',
     margin: 0,
+  },
+  eventId: {
+    fontSize: '12px',
+    color: '#52525B',
+    fontFamily: "'JetBrains Mono', monospace",
   },
 };
 
