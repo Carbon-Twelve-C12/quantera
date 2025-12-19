@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import api from '../api/api';
 import { StrategiesResponse, UserStrategiesResponse } from '../api/api';
+import { logger } from '../utils/logger';
+import { FeatureFlags, withMockFallback } from '../utils/featureFlags';
 
 // Types for yield strategies
 export interface YieldStrategy {
@@ -129,64 +131,66 @@ export const YieldStrategyProvider: React.FC<YieldStrategyProviderProps> = ({ ch
   });
 
   // Fetch strategies from API
-  const fetchStrategies = async () => {
+  const fetchStrategies = useCallback(async () => {
+    // Check if feature is enabled
+    if (!FeatureFlags.isEnabled('YIELD_STRATEGIES')) {
+      logger.debug('Yield strategies feature is disabled');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
-      
-      // In a real implementation, this would make a real API call with filters
-      try {
-        const response = await api.get<StrategiesResponse>('/yield/strategies');
-        const data = response.data?.strategies || getMockStrategies();
-        
-        setStrategies(data);
-        applyFilters(data, filters);
-      } catch (apiError) {
-        console.error('API error:', apiError);
-        // Fallback to mock data
-        const mockData = getMockStrategies();
-        setStrategies(mockData);
-        applyFilters(mockData, filters);
-      }
-      
+
+      logger.debug('Fetching yield strategies');
+
+      const data = await withMockFallback(
+        'yieldStrategy',
+        async () => {
+          const response = await api.get<StrategiesResponse>('/yield/strategies');
+          return response.data?.strategies || [];
+        },
+        () => getMockStrategies()
+      );
+
+      setStrategies(data);
+      applyFilters(data, filters);
+
+      logger.info('Yield strategies loaded', { count: data.length });
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching yield strategies:', err);
-      setError('Failed to load yield strategies');
+      const errorMessage = 'Failed to load yield strategies';
+      logger.error(errorMessage, err instanceof Error ? err : new Error(String(err)));
+      setError(errorMessage);
       setLoading(false);
-      
-      // For demo purposes, set mock data if API fails
-      const mockData = getMockStrategies();
-      setStrategies(mockData);
-      applyFilters(mockData, filters);
     }
-  };
+  }, [filters]);
 
   // Fetch user's applied strategies
   const fetchUserStrategies = async () => {
     try {
       setLoading(true);
-      
-      // In a real implementation, this would make a real API call
-      try {
-        const response = await api.get<UserStrategiesResponse>('/yield/strategies/user');
-        const data = response.data?.strategies || getMockUserStrategies();
-        
-        setUserStrategies(data);
-      } catch (apiError) {
-        console.error('API error:', apiError);
-        // Fallback to mock data
-        setUserStrategies(getMockUserStrategies());
-      }
-      
+
+      logger.debug('Fetching user yield strategies');
+
+      const data = await withMockFallback(
+        'yieldStrategy',
+        async () => {
+          const response = await api.get<UserStrategiesResponse>('/yield/strategies/user');
+          return response.data?.strategies || [];
+        },
+        () => getMockUserStrategies()
+      );
+
+      setUserStrategies(data);
+      logger.info('User yield strategies loaded', { count: data.length });
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching user strategies:', err);
-      setError('Failed to load your applied strategies');
+      const errorMessage = 'Failed to load your applied strategies';
+      logger.error(errorMessage, err instanceof Error ? err : new Error(String(err)));
+      setError(errorMessage);
       setLoading(false);
-      
-      // For demo purposes, set mock data if API fails
-      setUserStrategies(getMockUserStrategies());
     }
   };
 
@@ -194,38 +198,45 @@ export const YieldStrategyProvider: React.FC<YieldStrategyProviderProps> = ({ ch
   const applyStrategy = async (params: ApplyStrategyParams): Promise<ApplyStrategyResult> => {
     try {
       setLoading(true);
-      
-      // In a real implementation, this would make a real API call
-      let result: ApplyStrategyResult;
-      
-      try {
-        const response = await api.post<ApplyStrategyResult>('/yield/strategies/apply', params);
-        // Ensure the response is properly typed or use the mock result
-        if (response.data && 'transaction_id' in response.data) {
-          result = response.data;
-        } else {
-          result = getMockApplyResult(params);
-        }
-      } catch (apiError) {
-        console.error('API error:', apiError);
-        // Fallback to mock data
-        result = getMockApplyResult(params);
-      }
-      
+
+      logger.info('Applying yield strategy', {
+        strategyId: params.strategy_id,
+        assetId: params.asset_id,
+        amount: params.amount
+      });
+
+      const result = await withMockFallback(
+        'yieldStrategy',
+        async () => {
+          const response = await api.post<ApplyStrategyResult>('/yield/strategies/apply', params);
+          if (response.data && 'transaction_id' in response.data) {
+            return response.data;
+          }
+          throw new Error('Invalid response format');
+        },
+        () => getMockApplyResult(params)
+      );
+
       // Update user strategies
       setUserStrategies(prev => [...prev, result]);
-      
+
+      logger.info('Yield strategy applied successfully', {
+        transactionId: result.transaction_id,
+        status: result.status
+      });
+
       setLoading(false);
       return result;
     } catch (err) {
-      console.error('Error applying strategy:', err);
-      setError('Failed to apply strategy');
+      const errorMessage = 'Failed to apply strategy';
+      logger.error(errorMessage, err instanceof Error ? err : new Error(String(err)), {
+        strategyId: params.strategy_id,
+        assetId: params.asset_id,
+        amount: params.amount
+      });
+      setError(errorMessage);
       setLoading(false);
-      
-      // For demo purposes, return mock data if API fails
-      const mockResult = getMockApplyResult(params);
-      setUserStrategies(prev => [...prev, mockResult]);
-      return mockResult;
+      throw err;
     }
   };
 
@@ -237,38 +248,42 @@ export const YieldStrategyProvider: React.FC<YieldStrategyProviderProps> = ({ ch
   ): Promise<YieldImpactResults> => {
     try {
       setLoading(true);
-      
-      // Build request payload
+
+      logger.debug('Calculating yield strategy impact', {
+        strategyId: strategy_id,
+        investmentAmount: investment_amount,
+        durationDays: duration_days
+      });
+
       const payload = {
         strategy_id,
         investment_amount,
         duration_days,
       };
-      
-      // In a real implementation, this would make a real API call
-      let result: YieldImpactResults;
-      
-      try {
-        const response = await api.post<YieldImpactResults>('/yield/strategies/impact', payload);
-        result = response.data || getMockImpactResults(strategy_id, investment_amount, duration_days);
-      } catch (apiError) {
-        console.error('API error:', apiError);
-        // Fallback to mock data
-        result = getMockImpactResults(strategy_id, investment_amount, duration_days);
-      }
-      
+
+      const result = await withMockFallback(
+        'yieldStrategy',
+        async () => {
+          const response = await api.post<YieldImpactResults>('/yield/strategies/impact', payload);
+          return response.data;
+        },
+        () => getMockImpactResults(strategy_id, investment_amount, duration_days)
+      );
+
       setImpactResults(result);
+      logger.info('Impact calculated', {
+        strategyId: strategy_id,
+        carbonOffset: result.impact_metrics.carbon_offset_tons
+      });
+
       setLoading(false);
       return result;
     } catch (err) {
-      console.error('Error calculating impact:', err);
-      setError('Failed to calculate impact');
+      const errorMessage = 'Failed to calculate impact';
+      logger.error(errorMessage, err instanceof Error ? err : new Error(String(err)));
+      setError(errorMessage);
       setLoading(false);
-      
-      // For demo purposes, return mock data if API fails
-      const mockResult = getMockImpactResults(strategy_id, investment_amount, duration_days);
-      setImpactResults(mockResult);
-      return mockResult;
+      throw err;
     }
   };
 

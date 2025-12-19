@@ -1,19 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { tradeFinanceClient } from '../api/tradeFinance/tradeFinanceClient';
-import { 
-  TradeFinanceAsset, 
-  TradeFinancePosition, 
+import {
+  TradeFinanceAsset,
+  TradeFinancePosition,
   TradeFinanceAnalytics,
   TradeFinanceAssetType
 } from '../types/tradeFinance';
+import { logger } from '../utils/logger';
+import { FeatureFlags } from '../utils/featureFlags';
 
-// TODO: Replace with real API call
-// const fetchTradeFinanceAssets = async () => {
-//   const response = await api.getTradeFinanceAssets();
-//   return response.data;
-// };
-
-// Temporary mock data - will be replaced with API integration
+// Mock data kept for reference - actual fallback is handled by tradeFinanceClient
 const mockTradeFinanceAssets: TradeFinanceAsset[] = [
   {
     id: 'tf-001',
@@ -119,10 +115,19 @@ export const TradeFinanceProvider: React.FC<TradeFinanceProviderProps> = ({
     : assets;
 
   const refreshData = async (): Promise<void> => {
+    // Check if feature is enabled
+    if (!FeatureFlags.isEnabled('TRADE_FINANCE')) {
+      logger.debug('Trade finance feature is disabled');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
+      logger.debug('Refreshing trade finance data', { userAddress });
+
       const [assetsData, positionsData, analyticsData] = await Promise.all([
         tradeFinanceClient.getTradeFinanceAssets(),
         tradeFinanceClient.getUserTradeFinancePositions(userAddress),
@@ -132,9 +137,15 @@ export const TradeFinanceProvider: React.FC<TradeFinanceProviderProps> = ({
       setAssets(assetsData);
       setPositions(positionsData);
       setAnalytics(analyticsData);
+
+      logger.info('Trade finance data loaded', {
+        assetsCount: assetsData.length,
+        positionsCount: positionsData.length
+      });
     } catch (err) {
-      setError('Failed to load trade finance data');
-      console.error('TradeFinance data loading error:', err);
+      const errorMessage = 'Failed to load trade finance data';
+      setError(errorMessage);
+      logger.error(errorMessage, err instanceof Error ? err : new Error(String(err)));
     } finally {
       setLoading(false);
     }
@@ -149,25 +160,30 @@ export const TradeFinanceProvider: React.FC<TradeFinanceProviderProps> = ({
   };
 
   const purchaseAsset = async (
-    assetId: string, 
-    userAddress: string, 
+    assetId: string,
+    purchaseUserAddress: string,
     units: number
   ): Promise<boolean> => {
     try {
       const result = await tradeFinanceClient.purchaseTradeFinanceAsset(
         assetId,
-        userAddress,
+        purchaseUserAddress,
         units
       );
-      
+
       if (result.success) {
         await refreshData(); // Refresh data after successful purchase
         return true;
       }
       return false;
     } catch (err) {
-      console.error('Error purchasing asset:', err);
-      setError('Failed to purchase asset');
+      const errorMessage = 'Failed to purchase asset';
+      logger.error(errorMessage, err instanceof Error ? err : new Error(String(err)), {
+        assetId,
+        userAddress: purchaseUserAddress,
+        units
+      });
+      setError(errorMessage);
       return false;
     }
   };
