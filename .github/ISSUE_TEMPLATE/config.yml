@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability
+    url: https://github.com/Carbon-Twelve-C12/quantera/security/policy
+    about: Please report security vulnerabilities through our security policy, not as public issues.
+  - name: Questions & Discussions
+    url: https://github.com/Carbon-Twelve-C12/quantera/discussions
+    about: Ask questions and discuss Quantera in GitHub Discussions.
+  - name: Documentation
+    url: https://docs.quantera.finance
+    about: Check our documentation for guides and API references.

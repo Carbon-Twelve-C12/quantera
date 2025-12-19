@@ -42,7 +42,7 @@ yarn-error.log*
 **/.cloudflare/
 
 # GitHub workflows and CI/CD
-.github/
+# Note: .github/ should be tracked - contains workflows, templates, etc.
 
 # OS generated files
 .DS_Store
