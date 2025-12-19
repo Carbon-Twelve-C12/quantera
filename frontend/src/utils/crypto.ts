@@ -16,8 +16,37 @@ const IV_LENGTH = 12; // 96 bits for AES-GCM
 const SALT_LENGTH = 16;
 const KEY_DERIVATION_ITERATIONS = 100000;
 
-// App secret (should be different per environment)
-const APP_SECRET = process.env.REACT_APP_ENCRYPTION_SECRET || 'quantera-default-secret-change-in-production';
+// App secret - REQUIRED for production security
+// DO NOT use default values - this must be explicitly configured
+const APP_SECRET = (() => {
+  const secret = process.env.REACT_APP_ENCRYPTION_SECRET;
+
+  // In production, require explicit configuration
+  if (process.env.NODE_ENV === 'production') {
+    if (!secret) {
+      throw new Error(
+        'CRITICAL SECURITY ERROR: REACT_APP_ENCRYPTION_SECRET environment variable is required in production. ' +
+        'Generate a secure random string of at least 32 characters.'
+      );
+    }
+    if (secret.length < 32) {
+      throw new Error(
+        'CRITICAL SECURITY ERROR: REACT_APP_ENCRYPTION_SECRET must be at least 32 characters long.'
+      );
+    }
+  }
+
+  // In development, use a local-only secret with warning
+  if (!secret) {
+    console.warn(
+      '[SECURITY WARNING] REACT_APP_ENCRYPTION_SECRET not set. Using development-only fallback. ' +
+      'This is NOT secure for production use.'
+    );
+    return 'dev-only-local-secret-do-not-use-in-production';
+  }
+
+  return secret;
+})();
 
 /**
  * Generate a device fingerprint for key derivation
@@ -201,7 +230,17 @@ export const secureStorage = {
    */
   async setItem(key: string, value: string): Promise<void> {
     if (!isCryptoAvailable()) {
-      console.warn('Web Crypto not available, falling back to plain storage');
+      // In production, refuse to store sensitive data without encryption
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error(
+          'SECURITY ERROR: Web Crypto API not available. Cannot securely store sensitive data. ' +
+          'Please use a modern browser that supports the Web Crypto API.'
+        );
+      }
+      console.warn(
+        '[SECURITY WARNING] Web Crypto not available. Storing data unencrypted. ' +
+        'This is NOT secure for production use.'
+      );
       localStorage.setItem(key, value);
       return;
     }
@@ -225,7 +264,16 @@ export const secureStorage = {
     }
 
     if (!isCryptoAvailable()) {
-      console.warn('Web Crypto not available, returning plain value');
+      // In production, refuse to return potentially unencrypted sensitive data
+      if (process.env.NODE_ENV === 'production') {
+        console.error('SECURITY ERROR: Web Crypto API not available. Cannot decrypt data.');
+        localStorage.removeItem(key);
+        return null;
+      }
+      console.warn(
+        '[SECURITY WARNING] Web Crypto not available. Returning potentially unencrypted value. ' +
+        'This is NOT secure for production use.'
+      );
       return encrypted;
     }
 

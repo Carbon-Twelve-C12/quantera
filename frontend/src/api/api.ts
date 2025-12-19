@@ -1,20 +1,22 @@
 import axios from 'axios';
 import { YieldStrategy, ApplyStrategyParams, ApplyStrategyResult, YieldImpactResults } from '../contexts/YieldStrategyContext';
-import { 
-  AssetClass, 
-  AssetTemplate, 
-  ComplianceModule, 
-  CreateAssetRequest, 
+import {
+  AssetClass,
+  AssetTemplate,
+  ComplianceModule,
+  CreateAssetRequest,
   CreateAssetResponse,
 } from '../types/assetTypes';
 import { getMockTemplatesByClass } from '../data/mockTemplatesData';
+import { API_CONFIG } from '../utils/config';
 
-// API base URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+// Use centralized API configuration - single source of truth
+const API_BASE_URL = API_CONFIG.baseUrl;
 
-// Create base axios instance
+// Create base axios instance with centralized configuration
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'https://api.quantera.io/v1',
+  baseURL: API_CONFIG.baseUrl,
+  timeout: API_CONFIG.timeout,
   headers: {
     'Content-Type': 'application/json',
   },

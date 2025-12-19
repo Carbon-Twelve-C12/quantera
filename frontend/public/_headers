@@ -1,9 +1,27 @@
 /*
-  Cache-Control: public, max-age=3600
+  # Security Headers
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   X-XSS-Protection: 1; mode=block
-  Referrer-Policy: no-referrer-when-downgrade
-  
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
+
+  # Content Security Policy
+  # - default-src 'self': Only allow resources from same origin by default
+  # - script-src 'self': Only allow scripts from same origin (no inline scripts)
+  # - style-src 'self' 'unsafe-inline': Allow styles from same origin and inline (needed for CSS-in-JS)
+  # - img-src 'self' data: https:: Allow images from same origin, data URIs, and any HTTPS source
+  # - font-src 'self' https://fonts.gstatic.com: Allow fonts from same origin and Google Fonts
+  # - connect-src: API endpoints and WebSocket connections
+  # - frame-ancestors 'none': Prevent embedding in iframes (clickjacking protection)
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.quantera.io wss://*.quantera.io https://api.quantera.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self';
+
+  # Cache Control
+  Cache-Control: public, max-age=3600
+
 /static/*
-  Cache-Control: public, max-age=31536000, immutable 
+  Cache-Control: public, max-age=31536000, immutable
+
+# API proxy headers (if using Cloudflare Workers)
+/api/*
+  Cache-Control: no-store, no-cache, must-revalidate

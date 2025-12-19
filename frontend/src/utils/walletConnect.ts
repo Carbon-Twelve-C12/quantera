@@ -1,22 +1,37 @@
 /**
  * WalletConnect integration
- * 
- * This module provides a wrapper around the WalletKit library
- * with fallback to mock functionality during development.
+ *
+ * This module provides a wrapper around the WalletKit library.
+ * Mock functionality is ONLY available in development mode.
+ *
+ * SECURITY: In production, real wallet connections are required.
  */
 
 import { WALLET_CONFIG, SUPPORTED_CHAINS } from './config';
 
-// Import actual WalletKit if available, otherwise use mock
+// Import actual WalletKit if available
 let WalletKitClass: any;
+let walletKitLoadError: Error | null = null;
 
 try {
   // Try to import the real WalletKit if available
   const walletKitModule = require('@reown/walletkit');
   WalletKitClass = walletKitModule.WalletKit;
 } catch (error) {
-  console.warn('WalletKit not available, using mock implementation');
+  walletKitLoadError = error as Error;
   WalletKitClass = null;
+
+  // In production, this is a critical error
+  if (process.env.NODE_ENV === 'production') {
+    console.error(
+      'CRITICAL: WalletKit failed to load in production. Wallet connections will not work.',
+      error
+    );
+  } else {
+    console.warn(
+      '[DEV] WalletKit not available, mock implementation enabled for development only.'
+    );
+  }
 }
 
 /**
@@ -80,8 +95,18 @@ class WalletConnectWrapper {
         throw error;
       }
     } else {
-      // Mock implementation
-      console.log('Using mock wallet connection');
+      // Mock implementation - ONLY allowed in development
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error(
+          'SECURITY ERROR: WalletKit is not available. Cannot connect wallet in production. ' +
+          'Please ensure @reown/walletkit is properly installed and configured. ' +
+          (walletKitLoadError ? `Load error: ${walletKitLoadError.message}` : '')
+        );
+      }
+
+      console.warn(
+        '[DEV ONLY] Using mock wallet connection. This is NOT available in production.'
+      );
       this.mockSession = {
         address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
         chainId: SUPPORTED_CHAINS.ETHEREUM,
