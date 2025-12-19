@@ -1,18 +1,19 @@
 import React, { useState, useRef } from 'react';
-import { 
-  Box, 
-  Button, 
-  Typography, 
-  CircularProgress, 
-  Paper, 
+import {
+  Box,
+  Button,
+  Typography,
+  CircularProgress,
+  Paper,
   IconButton,
-  TextField
+  TextField,
+  Alert,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import { useUrlInput } from '../../hooks/useValidation';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -33,6 +34,11 @@ interface ImageUploaderProps {
   label?: string;
 }
 
+// Maximum file size for uploads (5MB)
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+// Allowed image MIME types
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+
 const ImageUploader: React.FC<ImageUploaderProps> = ({
   imageUrl,
   onChange,
@@ -41,12 +47,33 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [useUrl, setUseUrl] = useState(false);
-  const [urlInput, setUrlInput] = useState('');
+  const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Use validated URL input hook - allows both http and https for images
+  const urlInput = useUrlInput({
+    initialValue: '',
+    allowedProtocols: ['https', 'http'],
+  });
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    // Clear previous errors
+    setFileError(null);
+
+    // Validate file type
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      setFileError('Invalid file type. Please upload a JPEG, PNG, GIF, WebP, or SVG image.');
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      setFileError('File too large. Maximum size is 5MB.');
+      return;
+    }
 
     setIsUploading(true);
 
@@ -59,21 +86,36 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         onChange(result);
         setIsUploading(false);
       };
+      reader.onerror = () => {
+        setFileError('Failed to read file. Please try again.');
+        setIsUploading(false);
+      };
       reader.readAsDataURL(file);
     }, 1000);
   };
 
-  const handleUrlChange = () => {
-    if (urlInput) {
-      setIsUploading(true);
-      // In a real app, you might want to validate the URL
-      setTimeout(() => {
-        onChange(urlInput);
-        setIsUploading(false);
-        setUseUrl(false);
-        setUrlInput('');
-      }, 500);
+  const handleUrlSubmit = () => {
+    // Validate URL before submitting
+    const result = urlInput.validate();
+    if (!result.valid) {
+      return;
     }
+
+    setIsUploading(true);
+    // Use sanitized URL from validation
+    const sanitizedUrl = result.sanitized as string;
+
+    setTimeout(() => {
+      onChange(sanitizedUrl);
+      setIsUploading(false);
+      setUseUrl(false);
+      urlInput.reset();
+    }, 500);
+  };
+
+  const handleCancelUrl = () => {
+    setUseUrl(false);
+    urlInput.reset();
   };
 
   const handleRemoveImage = () => {
@@ -88,6 +130,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       <Typography variant="subtitle2" gutterBottom>
         {label}
       </Typography>
+
+      {/* File upload error alert */}
+      {fileError && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setFileError(null)}>
+          {fileError}
+        </Alert>
+      )}
+
       <Box sx={{ mb: 2 }}>
         {!imageUrl && !useUrl ? (
           <Paper
@@ -112,16 +162,19 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             <Typography variant="body2" color="text.secondary">
               Click to upload an image
             </Typography>
+            <Typography variant="caption" color="text.secondary">
+              JPEG, PNG, GIF, WebP, SVG (max 5MB)
+            </Typography>
             <VisuallyHiddenInput
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
               onChange={handleFileChange}
             />
             <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-              <Button 
-                size="small" 
-                variant="outlined" 
+              <Button
+                size="small"
+                variant="outlined"
                 onClick={(e) => {
                   e.stopPropagation();
                   setUseUrl(true);
@@ -136,21 +189,28 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             <TextField
               fullWidth
               label="Image URL"
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              helperText="Enter a URL for your asset image"
+              value={urlInput.value}
+              onChange={urlInput.onChange}
+              onBlur={urlInput.onBlur}
+              error={urlInput.isTouched && !!urlInput.error}
+              helperText={
+                urlInput.isTouched && urlInput.error
+                  ? urlInput.error
+                  : 'Enter a valid HTTPS or HTTP URL for your asset image'
+              }
+              placeholder="https://example.com/image.jpg"
             />
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button 
-                variant="contained" 
-                onClick={handleUrlChange}
-                disabled={!urlInput || isUploading}
+              <Button
+                variant="contained"
+                onClick={handleUrlSubmit}
+                disabled={!urlInput.value || !urlInput.isValid || isUploading}
               >
                 {isUploading ? <CircularProgress size={24} /> : 'Set Image URL'}
               </Button>
-              <Button 
-                variant="outlined" 
-                onClick={() => setUseUrl(false)}
+              <Button
+                variant="outlined"
+                onClick={handleCancelUrl}
               >
                 Cancel
               </Button>
