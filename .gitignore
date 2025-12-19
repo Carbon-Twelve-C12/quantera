@@ -159,4 +159,4 @@ checkpoint*.md
 *-copy.*
 *.backup
 *.old
-!RULES.md 
+!RULES.md .claude/
