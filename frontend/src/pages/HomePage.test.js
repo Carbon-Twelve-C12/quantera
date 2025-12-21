@@ -5,7 +5,6 @@ import {
   renderWithProviders,
   screen,
   fireEvent,
-  mockContexts,
 } from '../test-utils';
 
 // Mock router navigation
@@ -15,8 +14,15 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate
 }));
 
-// Mock ThemeContext using test-utils pattern
-jest.mock('../contexts/ThemeContext', () => mockContexts.ThemeContext);
+// Mock ThemeContext with inline factory
+jest.mock('../contexts/ThemeContext', () => ({
+  useTheme: jest.fn(() => ({
+    theme: 'dark',
+    resolvedTheme: 'dark',
+    toggleTheme: jest.fn(),
+    setTheme: jest.fn(),
+  })),
+}));
 
 // Custom render with theme using test-utils
 const renderWithTheme = (ui, themeValue = 'light') => {

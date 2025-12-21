@@ -7,10 +7,9 @@ import {
   screen,
   fireEvent,
   createMockYieldStrategy,
-  mockContexts,
 } from '../test-utils';
 
-// Mock the useYieldStrategy hook using test-utils pattern
+// Mock the useYieldStrategy hook
 jest.mock('../contexts/YieldStrategyContext', () => {
   const mockStrategy = {
     strategy_id: "0x1234",
@@ -70,8 +69,15 @@ jest.mock('../contexts/YieldStrategyContext', () => {
   };
 });
 
-// Mock ThemeContext using test-utils pattern
-jest.mock('../contexts/ThemeContext', () => mockContexts.ThemeContext);
+// Mock ThemeContext with inline factory
+jest.mock('../contexts/ThemeContext', () => ({
+  useTheme: jest.fn(() => ({
+    theme: 'dark',
+    resolvedTheme: 'dark',
+    toggleTheme: jest.fn(),
+    setTheme: jest.fn(),
+  })),
+}));
 
 // Mock Material-UI components
 jest.mock('@mui/material', () => {

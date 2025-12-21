@@ -6,9 +6,8 @@ import {
   screen,
   fireEvent,
   waitFor,
-  mockContexts,
-  createMockWallet,
 } from '../test-utils';
+import { useWallet, createMockWallet } from '../contexts/WalletContext';
 
 // Mock chart.js
 jest.mock('react-chartjs-2', () => ({
@@ -17,24 +16,61 @@ jest.mock('react-chartjs-2', () => ({
   Bar: () => <div data-testid="mock-bar-chart">Bar Chart</div>
 }));
 
-// Mock contexts using test-utils pattern
-jest.mock('../contexts/ThemeContext', () => mockContexts.ThemeContext);
+// Mock contexts with inline factories
+jest.mock('../contexts/ThemeContext', () => ({
+  useTheme: jest.fn(() => ({
+    theme: 'dark',
+    resolvedTheme: 'dark',
+    toggleTheme: jest.fn(),
+    setTheme: jest.fn(),
+  })),
+}));
 
-// Mock WalletContext - we'll override in specific tests
-const mockUseWallet = jest.fn();
 jest.mock('../contexts/WalletContext', () => ({
-  __esModule: true,
-  default: React.createContext(null),
-  useWallet: () => mockUseWallet(),
+  useWallet: jest.fn(() => ({
+    address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+    connected: true,
+    balance: '1.5',
+    provider: { getSigner: jest.fn() },
+    chainId: 1,
+    connect: jest.fn(),
+    disconnect: jest.fn(),
+  })),
+  createMockWallet: (overrides = {}) => ({
+    address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+    connected: true,
+    balance: '1.5',
+    provider: { getSigner: jest.fn() },
+    chainId: 1,
+    connect: jest.fn(),
+    disconnect: jest.fn(),
+    ...overrides,
+  }),
+}));
+
+jest.mock('../contexts/AuthContext', () => ({
+  useAuth: jest.fn(() => ({
+    currentUser: {
+      uid: 'test-user-id',
+      email: 'test@example.com',
+      displayName: 'Test User',
+    },
+    loading: false,
+    error: null,
+    signIn: jest.fn(),
+    signUp: jest.fn(),
+    signOut: jest.fn(),
+    resetPassword: jest.fn(),
+  })),
 }));
 
 // Helper to render with wrapper
 const renderWithTestWrapper = (ui, { walletValue } = {}) => {
   // Set up the mock for this render
   if (walletValue) {
-    mockUseWallet.mockReturnValue(walletValue);
+    useWallet.mockReturnValue(walletValue);
   } else {
-    mockUseWallet.mockReturnValue(createMockWallet({
+    useWallet.mockReturnValue(createMockWallet({
       connected: true,
       address: '0x1234567890abcdef1234567890abcdef12345678',
     }));

@@ -4,16 +4,36 @@ import SmartAccountPage from './SmartAccountPage';
 import {
   render,
   screen,
-  mockContexts,
   createMockWallet,
 } from '../test-utils';
 
-// Mock the context hooks using test-utils
+// Mock the context hooks with inline factory
 jest.mock('../contexts/WalletContext', () => ({
-  useWallet: () => createMockWallet({
+  useWallet: jest.fn(() => ({
     address: '0x1234567890123456789012345678901234567890',
     connected: true,
-  }),
+    balance: '1.5',
+    provider: { getSigner: jest.fn() },
+    chainId: 1,
+    connect: jest.fn(),
+    disconnect: jest.fn(),
+  })),
+}));
+
+jest.mock('../contexts/AuthContext', () => ({
+  useAuth: jest.fn(() => ({
+    currentUser: {
+      uid: 'test-user-id',
+      email: 'test@example.com',
+      displayName: 'Test User',
+    },
+    loading: false,
+    error: null,
+    signIn: jest.fn(),
+    signUp: jest.fn(),
+    signOut: jest.fn(),
+    resetPassword: jest.fn(),
+  })),
 }));
 
 jest.mock('../hooks/useSmartAccountOperations', () => ({
@@ -89,12 +109,16 @@ describe('SmartAccountPage', () => {
 
   it('shows connect wallet message when user is not connected', () => {
     // Override the mock for this specific test
-    jest.spyOn(require('../contexts/WalletContext'), 'useWallet').mockReturnValue(
-      createMockWallet({
-        address: '',
-        connected: false,
-      })
-    );
+    const { useWallet } = require('../contexts/WalletContext');
+    useWallet.mockReturnValueOnce({
+      address: '',
+      connected: false,
+      balance: '0',
+      provider: null,
+      chainId: 1,
+      connect: jest.fn(),
+      disconnect: jest.fn(),
+    });
 
     render(<SmartAccountPage />);
 

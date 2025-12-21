@@ -1,7 +1,6 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useSmartAccountOperations } from './useSmartAccountOperations';
 import api from '../api/api';
-import { mockContexts } from '../test-utils';
 
 // Mock API
 jest.mock('../api/api', () => ({
@@ -11,24 +10,18 @@ jest.mock('../api/api', () => ({
   }
 }));
 
-// Mock WebSocket context using test-utils pattern
+// Mock WebSocket context with inline definition (avoids hoisting issues)
+const mockSubscribe = jest.fn();
+const mockUnsubscribe = jest.fn();
+
 jest.mock('../contexts/WebSocketContext', () => ({
   useWebSocket: () => ({
-    ...mockContexts.WebSocketContext,
-    subscribe: jest.fn(),
-    unsubscribe: jest.fn(),
-    events: [
-      {
-        type: 'SmartAccountOperation',
-        payload: {
-          operation_id: 'op123',
-          account_id: 'acc123',
-          operation_type: 'TRANSFER',
-          timestamp: 1620000000,
-          executor: '0x1234567890123456789012345678901234567890'
-        }
-      }
-    ]
+    isConnected: true,
+    subscribe: mockSubscribe,
+    unsubscribe: mockUnsubscribe,
+    events: [],
+    lastMessage: null,
+    send: jest.fn(),
   }),
   SubscriptionTopic: {
     SMART_ACCOUNTS: 'smart_accounts',

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useWebSocket, SubscriptionTopic, SmartAccountOperation } from '../contexts/WebSocketContext';
 import api from '../api/api';
 
@@ -32,13 +32,19 @@ export const useSmartAccountOperations = (
   const [operations, setOperations] = useState<SmartAccountOperationDetails[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { subscribe, unsubscribe, events } = useWebSocket();
-  
-  // Filter WebSocket events for smart account operations
-  const accountOperations = events.filter(
-    event => event.type === 'SmartAccountOperation'
-  ) as Array<{ type: 'SmartAccountOperation', payload: SmartAccountOperation }>;
+
+  // Track processed event IDs to avoid duplicates
+  const processedEventIds = useRef<Set<string>>(new Set());
+
+  // Memoize filtered events to prevent infinite loops
+  const accountOperations = useMemo(() =>
+    events.filter(
+      event => event.type === 'SmartAccountOperation'
+    ) as Array<{ type: 'SmartAccountOperation', payload: SmartAccountOperation }>,
+    [events]
+  );
   
   // Fetch operations from API
   const fetchOperations = useCallback(async () => {
@@ -80,26 +86,40 @@ export const useSmartAccountOperations = (
   
   // Update operations when WebSocket events are received
   useEffect(() => {
-    accountOperations.forEach(event => {
-      const operation = event.payload;
-      
-      // If the operation is for the current account (or no account filter is set)
-      if (!accountId || operation.account_id === accountId) {
-        setOperations(prevOperations => {
+    // Process only new events that haven't been processed yet
+    const newEvents = accountOperations.filter(event => {
+      const eventId = event.payload.operation_id;
+      if (processedEventIds.current.has(eventId)) {
+        return false;
+      }
+      processedEventIds.current.add(eventId);
+      return true;
+    });
+
+    // Only update state if there are new events to process
+    if (newEvents.length === 0) {
+      return;
+    }
+
+    setOperations(prevOperations => {
+      let updatedOperations = [...prevOperations];
+
+      newEvents.forEach(event => {
+        const operation = event.payload;
+
+        // If the operation is for the current account (or no account filter is set)
+        if (!accountId || operation.account_id === accountId) {
           // Check if operation already exists
-          const exists = prevOperations.some(op => op.operationId === operation.operation_id);
-          
-          if (exists) {
+          const existingIndex = updatedOperations.findIndex(
+            op => op.operationId === operation.operation_id
+          );
+
+          if (existingIndex >= 0) {
             // Update existing operation
-            return prevOperations.map(op => 
-              op.operationId === operation.operation_id
-                ? {
-                    ...op,
-                    timestamp: operation.timestamp,
-                    // Update other fields as needed
-                  }
-                : op
-            );
+            updatedOperations[existingIndex] = {
+              ...updatedOperations[existingIndex],
+              timestamp: operation.timestamp,
+            };
           } else {
             // Add new operation
             const newOperation: SmartAccountOperationDetails = {
@@ -108,13 +128,14 @@ export const useSmartAccountOperations = (
               operationType: operation.operation_type,
               timestamp: operation.timestamp,
               executedBy: operation.executor,
-              status: 'SUCCESS', // Default status, adjust based on your data
+              status: 'SUCCESS',
             };
-            
-            return [...prevOperations, newOperation];
+            updatedOperations = [...updatedOperations, newOperation];
           }
-        });
-      }
+        }
+      });
+
+      return updatedOperations;
     });
   }, [accountOperations, accountId]);
   

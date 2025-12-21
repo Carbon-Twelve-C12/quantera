@@ -6,11 +6,17 @@ import {
   screen,
   fireEvent,
   waitFor,
-  mockContexts,
 } from '../test-utils';
 
-// Mock ThemeContext using test-utils pattern
-jest.mock('../contexts/ThemeContext', () => mockContexts.ThemeContext);
+// Mock ThemeContext with inline factory
+jest.mock('../contexts/ThemeContext', () => ({
+  useTheme: jest.fn(() => ({
+    theme: 'dark',
+    resolvedTheme: 'dark',
+    toggleTheme: jest.fn(),
+    setTheme: jest.fn(),
+  })),
+}));
 
 // Mock data
 jest.mock('../data/mockTreasuriesData', () => ({

@@ -1,11 +1,10 @@
 import React from 'react';
 import '@testing-library/jest-dom';
 import LiquidityPoolPage from './LiquidityPoolPage';
-import { LiquidityPoolProvider } from '../contexts/LiquidityPoolContext';
+import { LiquidityPoolProvider } from '../contexts/__mocks__/LiquidityPoolContext';
 import {
   render,
   screen,
-  mockContexts,
 } from '../test-utils';
 
 // Mock the chart.js module
@@ -27,32 +26,10 @@ jest.mock('react-chartjs-2', () => ({
   Line: () => <div data-testid="mocked-chart" />,
 }));
 
-// Mock contexts using test-utils pattern
-jest.mock('../contexts/ThemeContext', () => mockContexts.ThemeContext);
-jest.mock('../contexts/WalletContext', () => mockContexts.WalletContext);
-
-jest.mock('../contexts/LiquidityPoolContext', () => {
-  const originalModule = jest.requireActual('../contexts/LiquidityPoolContext');
-  return {
-    ...originalModule,
-    useLiquidityPool: () => ({
-      pools: [],
-      positions: [],
-      poolStates: {},
-      tokens: {},
-      userPositions: [],
-      isLoading: false,
-      error: null,
-      createPool: jest.fn(),
-      addLiquidity: jest.fn(),
-      removeLiquidity: jest.fn(),
-      collectFees: jest.fn(),
-      refreshPools: jest.fn(),
-      refreshUserPositions: jest.fn(),
-    }),
-    LiquidityPoolProvider: ({ children }) => <div>{children}</div>,
-  };
-});
+// Mock contexts - Jest will use __mocks__ versions
+jest.mock('../contexts/ThemeContext');
+jest.mock('../contexts/WalletContext');
+jest.mock('../contexts/LiquidityPoolContext');
 
 describe('LiquidityPoolPage', () => {
   it('renders without crashing', () => {
